@@ -6,12 +6,15 @@ import Dashboard from './components/Dashboard';
 import ModuleView from './components/ModuleView';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import PaymentModal from './components/PaymentModal';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'module'>('dashboard');
   const [selectedModule, setSelectedModule] = useState<ModuleType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
 
   useEffect(() => {
     // Check local storage for session
@@ -32,6 +35,30 @@ const App: React.FC = () => {
     localStorage.removeItem('edu_user');
     setCurrentView('dashboard');
     setSelectedModule(null);
+  };
+
+  const handleStartUpgrade = () => {
+    setShowPaymentModal(true);
+  };
+
+  const handleReceiptUpload = (file: File) => {
+    setIsVerifyingPayment(true);
+    
+    // Simulate admin verification process
+    setTimeout(() => {
+      if (user) {
+        const updatedUser = { 
+          ...user, 
+          isPremium: true, 
+          isPendingVerification: false 
+        };
+        setUser(updatedUser);
+        localStorage.setItem('edu_user', JSON.stringify(updatedUser));
+        setIsVerifyingPayment(false);
+        setShowPaymentModal(false);
+        alert("Receipt Verified! Your Pro Account is now active. Enjoy premium features!");
+      }
+    }, 3000);
   };
 
   const navigateToModule = (module: ModuleType) => {
@@ -58,7 +85,14 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex bg-gray-50">
-      <Sidebar activeModule={selectedModule} onNavigate={navigateToModule} onHome={navigateHome} />
+      <Sidebar 
+        activeModule={selectedModule} 
+        onNavigate={navigateToModule} 
+        onHome={navigateHome} 
+        isPremium={user.isPremium}
+        isPending={user.isPendingVerification}
+        onUpgrade={handleStartUpgrade}
+      />
       
       <div className="flex-1 flex flex-col min-h-screen">
         <Navbar user={user} onLogout={handleLogout} onHome={navigateHome} />
@@ -67,7 +101,7 @@ const App: React.FC = () => {
           {currentView === 'dashboard' ? (
             <Dashboard onSelectModule={navigateToModule} />
           ) : (
-            selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} />
+            selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} />
           )}
         </main>
 
@@ -75,6 +109,14 @@ const App: React.FC = () => {
           &copy; {new Date().getFullYear()} SKILL PILOT by RK FOUNDATIONS. All rights reserved.
         </footer>
       </div>
+
+      {showPaymentModal && (
+        <PaymentModal 
+          onClose={() => setShowPaymentModal(false)} 
+          onUpload={handleReceiptUpload}
+          isProcessing={isVerifyingPayment}
+        />
+      )}
     </div>
   );
 };

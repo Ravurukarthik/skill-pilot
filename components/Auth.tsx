@@ -31,6 +31,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         email: `github_user@example.com`,
         name: `GitHub Explorer`,
         role: UserRole.STUDENT,
+        isPremium: false,
       };
       onLogin(mockUser);
       setSocialLoading(null);
@@ -57,10 +58,28 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         email: account.email,
         name: account.name,
         role: UserRole.STUDENT,
+        isPremium: false,
       };
       onLogin(authenticatedUser);
       setSocialLoading(null);
     }, 1000);
+  };
+
+  const handleUseAnotherAccount = () => {
+    setShowVerification(false);
+    setSocialLoading('google');
+    // Simulate a redirect to the actual Google login page and back
+    setTimeout(() => {
+      const authenticatedUser: User = {
+        id: `google_ext_${Math.random().toString(36).substr(2, 9)}`,
+        email: 'new.user@gmail.com',
+        name: 'Verified Google User',
+        role: UserRole.STUDENT,
+        isPremium: false,
+      };
+      onLogin(authenticatedUser);
+      setSocialLoading(null);
+    }, 2000);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -78,6 +97,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         email,
         name: isLogin ? email.split('@')[0] : name,
         role: UserRole.STUDENT,
+        isPremium: false,
       };
       onLogin(mockUser);
       setLoading(false);
@@ -86,6 +106,21 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 relative">
+      {/* Loading Overlay for simulated redirects */}
+      {socialLoading === 'google' && !showVerification && (
+        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white/90 backdrop-blur-md animate-in fade-in duration-300">
+           <div className="relative w-24 h-24 mb-6">
+              <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <Chrome className="text-indigo-600" size={32} />
+              </div>
+           </div>
+           <h3 className="text-xl font-bold text-gray-900">Redirecting to Google...</h3>
+           <p className="text-gray-500 mt-2">Please wait while we establish a secure connection.</p>
+        </div>
+      )}
+
       {/* Verification Modal Simulator */}
       {showVerification && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -118,7 +153,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                     <CheckCircle2 size={16} className="text-green-500 opacity-0 group-hover:opacity-100" />
                   </button>
                 ))}
-                <button className="w-full p-4 text-left text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-4">
+                <button 
+                  onClick={handleUseAnotherAccount}
+                  className="w-full p-4 text-left text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-4"
+                >
                   <div className="w-10 h-10 rounded-full border border-dashed flex items-center justify-center text-gray-400">
                     <UserIcon size={18} />
                   </div>

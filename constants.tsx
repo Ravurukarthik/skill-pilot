@@ -10,7 +10,7 @@ import {
   Award,
   Users
 } from 'lucide-react';
-import { ModuleType, BTechCourse } from './types';
+import { ModuleType, BTechCourse, Internship } from './types';
 
 export const MODULES_DATA = [
   { type: ModuleType.CLASS_10, icon: <BookOpen className="w-8 h-8 text-blue-500" />, description: "Complete study resources for 10th grade students." },
@@ -96,3 +96,12 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
   'ece': ['Microprocessors', 'Digital Electronics', 'Signals & Systems', 'Control Systems'],
   'civil': ['Structural Analysis', 'Fluid Mechanics', 'Surveying', 'Geotechnical Engineering'],
 };
+
+export const INTERNSHIP_MOCK: Internship[] = [
+  { id: '1', title: 'React Frontend Developer', company: 'TechNova Solutions', stipend: '₹15,000/mo', duration: '3 Months', location: 'Remote', type: 'paid', link: '#' },
+  { id: '2', title: 'Data Science Intern', company: 'Insight Analytics', stipend: '₹20,000/mo', duration: '6 Months', location: 'Hyderabad', type: 'paid', link: '#' },
+  { id: '3', title: 'UX/UI Designer', company: 'Creative Peak', stipend: '₹12,000/mo', duration: '4 Months', location: 'Bangalore', type: 'paid', link: '#' },
+  { id: '4', title: 'Python Backend Trainee', company: 'Alpha Systems', stipend: null, duration: '2 Months', location: 'Remote', type: 'unpaid', link: '#' },
+  { id: '5', title: 'Social Media Marketing', company: 'RK Foundations', stipend: null, duration: '3 Months', location: 'Remote', type: 'unpaid', link: '#' },
+  { id: '6', title: 'Java Developer Intern', company: 'Global Soft', stipend: null, duration: '6 Months', location: 'Chennai', type: 'unpaid', link: '#' },
+];

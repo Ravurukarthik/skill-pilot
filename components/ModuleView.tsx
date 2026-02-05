@@ -1,25 +1,30 @@
 
 import React, { useState } from 'react';
-import { ModuleType, BTechCourse } from '../types';
-import { SUB_MODULES_GENERAL, BTECH_COURSES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER } from '../constants';
-import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText } from 'lucide-react';
+import { ModuleType, BTechCourse, User, Internship } from '../types';
+import { SUB_MODULES_GENERAL, BTECH_COURSES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK } from '../constants';
+import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
 interface ModuleViewProps {
   type: ModuleType;
   onBack: () => void;
+  user: User;
+  onUpgrade: () => void;
 }
 
 type SubTab = 'papers' | 'tutorials' | 'hallticket' | 'marks' | null;
+type InternshipTab = 'paid' | 'unpaid';
 
-const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
+const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>(null);
+  const [internshipTab, setInternshipTab] = useState<InternshipTab>('paid');
   const [selectedCourse, setSelectedCourse] = useState<BTechCourse | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [aiContent, setAiContent] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const handleTutorialRequest = async (subject: string) => {
+    if (!user.isPremium) return;
     setSelectedSubject(subject);
     setAiContent(null);
     setIsAiLoading(true);
@@ -135,6 +140,44 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
 
   const renderSubjectTutorials = (subjectKey: string) => {
     const subjects = SUBJECTS_MOCK[subjectKey] || SUBJECTS_MOCK['10th Class Guide'];
+    
+    if (!user.isPremium) {
+      return (
+        <div className="relative overflow-hidden bg-white p-12 rounded-3xl border border-gray-100 text-center animate-in zoom-in-95">
+          <div className="absolute inset-0 opacity-10 pointer-events-none select-none blur-sm filter grayscale p-10">
+            <div className="grid grid-cols-3 gap-4">
+               {[1,2,3,4,5,6].map(i => <div key={i} className="h-20 bg-gray-200 rounded-xl"></div>)}
+            </div>
+          </div>
+          
+          <div className="relative z-10 max-w-lg mx-auto py-10">
+            <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-indigo-600 shadow-inner">
+               <Lock size={40} />
+            </div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Premium Content Locked</h3>
+            <p className="text-gray-500 mb-8 leading-relaxed">
+              Unlock AI-powered Subject Wise Tutorials and comprehensive study guides by upgrading to a Premium Membership today.
+            </p>
+            
+            <div className="space-y-4">
+              <button 
+                onClick={onUpgrade}
+                className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 group"
+              >
+                <Zap size={20} className="fill-current text-indigo-200" /> Upgrade to Pro Now
+              </button>
+              <div className="flex items-center justify-center gap-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-green-500" /> AI Explainer</span>
+                <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-green-500" /> 24/7 Access</span>
+                <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-green-500" /> Ad Free</span>
+              </div>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">Only ₹299 per month</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
         <h4 className="font-bold text-gray-700 flex items-center gap-2">
@@ -179,6 +222,103 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
     );
   };
 
+  const renderInternships = () => {
+    const filteredInternships = INTERNSHIP_MOCK.filter(i => i.type === internshipTab);
+
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+        {/* Classification Tabs */}
+        <div className="flex flex-wrap gap-4 p-1 bg-gray-100 rounded-2xl w-fit">
+          <button 
+            onClick={() => setInternshipTab('paid')}
+            className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${internshipTab === 'paid' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-200'}`}
+          >
+            <Banknote size={18} />
+            Level 1: With Stipend
+          </button>
+          <button 
+            onClick={() => setInternshipTab('unpaid')}
+            className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${internshipTab === 'unpaid' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-200'}`}
+          >
+            <Zap size={18} />
+            Level 2: Skill Focus (Unpaid)
+          </button>
+        </div>
+
+        {internshipTab === 'paid' && !user.isPremium ? (
+          <div className="relative overflow-hidden bg-white p-12 rounded-3xl border border-gray-100 text-center animate-in zoom-in-95">
+            <div className="absolute inset-0 opacity-10 pointer-events-none select-none blur-sm filter grayscale p-10">
+              <div className="grid grid-cols-3 gap-6">
+                {[1,2,3].map(i => (
+                  <div key={i} className="h-48 bg-gray-200 rounded-3xl"></div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="relative z-10 max-w-lg mx-auto py-12">
+              <div className="w-20 h-20 bg-amber-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-amber-600 shadow-inner">
+                 <ShieldCheck size={40} />
+              </div>
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Pro Membership Required</h3>
+              <p className="text-gray-500 mb-8 leading-relaxed">
+                Level 1: Stipend-based internships are reserved for our Pro community. Get early access to high-paying roles and resume-boosting opportunities.
+              </p>
+              
+              <div className="space-y-4">
+                <button 
+                  onClick={onUpgrade}
+                  className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100"
+                >
+                  <Zap size={20} className="fill-current text-indigo-200" /> Unlock Paid Internships
+                </button>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Only ₹299 per Month Access</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredInternships.map((intern) => (
+              <div key={intern.id} className="bg-white rounded-3xl border border-gray-100 p-6 hover:shadow-xl transition-all group flex flex-col">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-xl group-hover:bg-indigo-50 transition-colors">
+                    {intern.company.charAt(0)}
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${intern.type === 'paid' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                    {intern.type === 'paid' ? 'Stipend Available' : 'Certificate Included'}
+                  </span>
+                </div>
+                
+                <h4 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">{intern.title}</h4>
+                <p className="text-gray-500 text-sm mb-6">{intern.company}</p>
+                
+                <div className="space-y-3 mb-8 flex-1">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <MapPin size={16} className="text-gray-400" />
+                    {intern.location}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Calendar size={16} className="text-gray-400" />
+                    {intern.duration}
+                  </div>
+                  {intern.stipend && (
+                    <div className="flex items-center gap-3 text-sm font-bold text-green-600">
+                      <Banknote size={16} />
+                      {intern.stipend}
+                    </div>
+                  )}
+                </div>
+
+                <button className="w-full bg-gray-50 text-gray-900 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2">
+                  Apply Now <ArrowLeft size={18} className="rotate-180" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderGeneralSubModules = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
       {SUB_MODULES_GENERAL.map((sub) => (
@@ -188,7 +328,10 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
           className={`bg-white p-6 rounded-2xl border transition-all text-left group ${activeSubTab === sub.id ? 'border-indigo-600 ring-2 ring-indigo-100 shadow-md' : 'border-gray-100 hover:shadow-md hover:border-indigo-200'}`}
         >
           <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 transition-colors ${activeSubTab === sub.id ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'}`}>
-            {sub.icon}
+            <div className="relative">
+               {sub.id === 'tutorials' && !user.isPremium && <Lock size={12} className="absolute -top-1 -right-1 text-amber-500" />}
+               {sub.icon}
+            </div>
           </div>
           <h4 className={`font-bold mb-2 ${activeSubTab === sub.id ? 'text-indigo-600' : 'text-gray-800'}`}>{sub.title}</h4>
           <p className="text-xs text-gray-500 mb-4">{sub.description}</p>
@@ -201,6 +344,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
   );
 
   const isBTech = type === ModuleType.BTECH;
+  const isInternship = type === ModuleType.INTERNSHIPS;
 
   const handleBack = () => {
     if (activeSubTab) {
@@ -230,7 +374,8 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
             {isBTech ? (selectedCourse ? `${selectedCourse.code} Resources` : 'B.Tech Engineering Guide') : type}
           </h1>
           <p className="text-gray-500">
-            {activeSubTab === 'papers' ? `Viewing previous year examination papers for ${type}.` : 
+            {isInternship ? 'Kickstart your professional journey with handpicked opportunities.' :
+             activeSubTab === 'papers' ? `Viewing previous year examination papers for ${type}.` : 
              activeSubTab === 'tutorials' ? `Explore comprehensive AI-powered tutorials for ${type}.` :
              isBTech 
               ? (selectedCourse ? `Access specialized subjects and materials for ${selectedCourse.name}.` : 'Select your engineering branch to view course-specific tutorials.')
@@ -243,7 +388,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
         </div>
       </div>
 
-      {!isBTech && (
+      {isInternship && renderInternships()}
+
+      {!isBTech && !isInternship && (
         <>
           {renderGeneralSubModules()}
           
@@ -271,7 +418,6 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
                   </div>
                 ) : type === ModuleType.INTER ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    {/* Inter 1st Year Hall Tickets */}
                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                       <h4 className="font-bold text-indigo-900 mb-4 flex items-center gap-2">
                         <span className="bg-indigo-600 text-white w-6 h-6 rounded text-[10px] flex items-center justify-center font-bold">I</span>
@@ -293,7 +439,6 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
                       </div>
                     </div>
 
-                    {/* Inter 2nd Year Hall Tickets */}
                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                       <h4 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
                         <span className="bg-purple-600 text-white w-6 h-6 rounded text-[10px] flex items-center justify-center font-bold">II</span>
@@ -343,7 +488,6 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
                   </div>
                 ) : type === ModuleType.INTER ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    {/* Inter 1st Year Mark Lists */}
                     <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
                       <h4 className="font-bold text-purple-900 mb-4 flex items-center gap-2">
                         <span className="bg-purple-600 text-white w-6 h-6 rounded text-[10px] flex items-center justify-center font-bold">I</span>
@@ -365,7 +509,6 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
                       </div>
                     </div>
 
-                    {/* Inter 2nd Year Mark Lists */}
                     <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
                       <h4 className="font-bold text-indigo-900 mb-4 flex items-center gap-2">
                         <span className="bg-indigo-600 text-white w-6 h-6 rounded text-[10px] flex items-center justify-center font-bold">II</span>
@@ -428,7 +571,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack }) => {
         </div>
       )}
 
-      {(type === ModuleType.INTERNSHIPS || type === ModuleType.JOBS || type === ModuleType.CERTIFICATIONS) && (
+      {(type === ModuleType.JOBS || type === ModuleType.CERTIFICATIONS) && (
         <div className="bg-white p-12 rounded-3xl border border-dashed border-gray-300 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400">

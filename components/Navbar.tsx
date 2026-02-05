@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User } from '../types';
-import { LogOut, User as UserIcon, Bell, Search } from 'lucide-react';
+import { LogOut, User as UserIcon, Bell, Search, ShieldCheck } from 'lucide-react';
 
 interface NavbarProps {
   user: User;
@@ -14,9 +14,16 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onHome }) => {
     <header className="bg-white border-b h-16 flex items-center justify-between px-6 sticky top-0 z-10 shadow-sm">
       <div className="flex items-center gap-4">
         <button onClick={onHome} className="flex flex-col items-start text-left leading-tight group">
-          <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
-            SKILL PILOT
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
+              SKILL PILOT
+            </span>
+            {user.isPremium && (
+              <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold shadow-sm flex items-center gap-1 uppercase tracking-tighter">
+                <ShieldCheck size={10} /> PRO
+              </span>
+            )}
+          </div>
           <span className="text-[10px] font-medium text-gray-400 tracking-widest uppercase">
             by RK FOUNDATIONS
           </span>
@@ -42,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onHome }) => {
             <p className="text-sm font-semibold text-gray-800">{user.name}</p>
             <p className="text-xs text-gray-500 capitalize">{user.role.toLowerCase()}</p>
           </div>
-          <div className="bg-indigo-100 p-2 rounded-full text-indigo-600">
+          <div className={`p-2 rounded-full ${user.isPremium ? 'bg-amber-100 text-amber-600' : 'bg-indigo-100 text-indigo-600'}`}>
             <UserIcon size={20} />
           </div>
           <button 

@@ -9,6 +9,8 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  isPremium: boolean;
+  isPendingVerification?: boolean;
   password?: string;
 }
 
@@ -39,4 +41,15 @@ export interface Tutorial {
   subject: string;
   content: string;
   resources: string[];
+}
+
+export interface Internship {
+  id: string;
+  title: string;
+  company: string;
+  stipend: string | null;
+  duration: string;
+  location: string;
+  type: 'paid' | 'unpaid';
+  link: string;
 }
