@@ -2,18 +2,22 @@
 import React from 'react';
 import { ModuleType } from '../types';
 import { MODULES_DATA } from '../constants';
-import { LayoutDashboard, GraduationCap, ShieldCheck, Clock } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, ShieldCheck, Clock, Settings } from 'lucide-react';
+import { UserRole } from '../types';
 
 interface SidebarProps {
   activeModule: ModuleType | null;
   onNavigate: (module: ModuleType) => void;
   onHome: () => void;
+  onAdmin?: () => void;
   isPremium: boolean;
   isPending?: boolean;
   onUpgrade: () => void;
+  userRole?: UserRole;
+  isAdminView?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeModule, onNavigate, onHome, isPremium, isPending, onUpgrade }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeModule, onNavigate, onHome, onAdmin, isPremium, isPending, onUpgrade, userRole, isAdminView }) => {
   return (
     <aside className="w-20 md:w-64 bg-white border-r min-h-screen flex flex-col transition-all duration-300 overflow-hidden">
       <div className="p-4 md:p-6 flex items-center gap-3 border-b mb-4">
@@ -31,6 +35,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, onNavigate, onHome, isP
           <LayoutDashboard size={22} />
           <span className="font-medium hidden md:block">Dashboard</span>
         </button>
+
+        {userRole === UserRole.ADMIN && (
+          <button 
+            onClick={onAdmin}
+            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${isAdminView ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'}`}
+          >
+            <Settings size={22} />
+            <span className="font-medium hidden md:block">Admin Panel</span>
+          </button>
+        )}
 
         <div className="pt-4 pb-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider hidden md:block">
           Main Modules

@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { ModuleType, BTechCourse, User, Internship } from '../types';
-import { SUB_MODULES_GENERAL, BTECH_COURSES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK } from '../constants';
-import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote } from 'lucide-react';
+import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
+import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK } from '../constants';
+import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
 interface ModuleViewProps {
@@ -20,15 +20,51 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   const [internshipTab, setInternshipTab] = useState<InternshipTab>('paid');
   const [selectedCourse, setSelectedCourse] = useState<BTechCourse | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [selectedSubSubject, setSelectedSubSubject] = useState<string | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [aiContent, setAiContent] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  const handleTutorialRequest = async (subject: string) => {
+  const handleTutorialRequest = async (subject: string, subSubject?: string, lesson?: string) => {
     if (!user.isPremium) return;
+
+    if (type === ModuleType.CLASS_10 && subject === 'Telugu') {
+      if (!subSubject) {
+        setSelectedSubject(subject);
+        setSelectedSubSubject(null);
+        setSelectedLesson(null);
+        setAiContent(null);
+        return;
+      }
+      if ((subSubject === 'విషయా సుచికా' || subSubject === 'ఉపవాచకం') && !lesson) {
+        setSelectedSubject(subject);
+        setSelectedSubSubject(subSubject);
+        setSelectedLesson(null);
+        setAiContent(null);
+        return;
+      }
+    }
+
     setSelectedSubject(subject);
+    setSelectedSubSubject(subSubject || null);
+    setSelectedLesson(lesson || null);
+    
     setAiContent(null);
+    setVideoUrl(null);
+
+    if (lesson === 'రామాయణం') {
+      setVideoUrl('https://www.youtube-nocookie.com/embed/f-WPzbNi-Eg');
+      return;
+    }
+
     setIsAiLoading(true);
-    const content = await getTutorialSummary(subject, type === ModuleType.BTECH ? (selectedCourse?.name || '') : type);
+    
+    let displaySubject = subject;
+    if (subSubject) displaySubject += ` (${subSubject})`;
+    if (lesson) displaySubject += ` - ${lesson}`;
+    
+    const content = await getTutorialSummary(displaySubject, type === ModuleType.BTECH ? (selectedCourse?.name || '') : type);
     setAiContent(content);
     setIsAiLoading(false);
   };
@@ -53,9 +89,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
     window.open(url, '_blank');
   };
 
-  const renderBTechBranchGrid = () => (
+  const renderBranchGrid = (courses: BTechCourse[]) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {BTECH_COURSES.map((course) => (
+      {courses.map((course) => (
         <button
           key={course.id}
           onClick={() => setSelectedCourse(course)}
@@ -118,7 +154,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
       );
     }
 
-    const subjects = type === ModuleType.BTECH && selectedCourse 
+    const subjects = (type === ModuleType.BTECH || type === ModuleType.MTECH || type === ModuleType.MBA) && selectedCourse 
       ? (SUBJECTS_MOCK[selectedCourse.id] || []) 
       : (SUBJECTS_MOCK[type] || SUBJECTS_MOCK['10th Class Guide']);
 
@@ -197,17 +233,104 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
           ))}
         </div>
 
-        {(isAiLoading || aiContent) && (
+        {selectedSubject === 'Telugu' && type === ModuleType.CLASS_10 && !selectedSubSubject && (
+          <div className="mt-6 p-6 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in zoom-in-95">
+            <h5 className="font-bold text-indigo-900 mb-4 flex items-center gap-2">
+              <Sparkles size={18} /> Select Module for Telugu
+            </h5>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {['విషయా సుచికా', 'ఉపవాచకం'].map((mod, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleTutorialRequest('Telugu', mod)}
+                  className="bg-white p-4 rounded-xl border border-indigo-200 text-indigo-600 font-bold hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center justify-between group"
+                >
+                  <span>{mod}</span>
+                  <ChevronRight size={16} className="text-indigo-300 group-hover:text-white transition-colors" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {selectedSubject === 'Telugu' && type === ModuleType.CLASS_10 && selectedSubSubject === 'విషయా సుచికా' && !selectedLesson && (
+          <div className="mt-6 p-6 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in zoom-in-95">
+            <h5 className="font-bold text-indigo-900 mb-4 flex items-center gap-2">
+              <Sparkles size={18} /> Select Lesson Name
+            </h5>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {[
+                'ప్రత్యక్ష దైవాలు',
+                'బతుకు గంప',
+                'శతక మాధుర్యం',
+                'ఉపన్యాస కళ',
+                'జలేయాన్ వాలా బాగ్',
+                'ప్రకృతి సందేశం',
+                'చెజారిన బాల్యం',
+                'జీవని',
+                'రాజధర్మం',
+                'కన్యాశుల్కం',
+                'యుద్ధ విజేత',
+                'సూక్తి సుధ'
+              ].map((lesson, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleTutorialRequest('Telugu', 'విషయా సుచికా', lesson)}
+                  className="bg-white p-3 rounded-xl border border-indigo-200 text-sm text-indigo-600 font-semibold hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center justify-between group"
+                >
+                  <span className="truncate mr-2">{lesson}</span>
+                  <ChevronRight size={14} className="text-indigo-300 group-hover:text-white flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {selectedSubject === 'Telugu' && type === ModuleType.CLASS_10 && selectedSubSubject === 'ఉపవాచకం' && !selectedLesson && (
+          <div className="mt-6 p-6 bg-indigo-50 rounded-2xl border border-indigo-100 animate-in fade-in zoom-in-95">
+            <h5 className="font-bold text-indigo-900 mb-4 flex items-center gap-2">
+              <Sparkles size={18} /> Select Lesson Name
+            </h5>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                'రామాయణం'
+              ].map((lesson, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleTutorialRequest('Telugu', 'ఉపవాచకం', lesson)}
+                  className="bg-white p-3 rounded-xl border border-indigo-200 text-sm text-indigo-600 font-semibold hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center justify-between group"
+                >
+                  <span className="truncate mr-2">{lesson}</span>
+                  <ChevronRight size={14} className="text-indigo-300 group-hover:text-white flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(isAiLoading || aiContent || videoUrl) && (
           <div className="mt-10 bg-white rounded-3xl border border-gray-100 shadow-sm p-8 animate-in zoom-in-95 duration-300">
             <div className="flex items-center gap-2 mb-6 text-indigo-600 font-bold border-b pb-4">
               <Sparkles size={20} />
-              AI Tutorial Helper: {selectedSubject}
+              AI Tutorial Helper: {selectedSubject} {selectedSubSubject ? `(${selectedSubSubject})` : ''} {selectedLesson ? `- ${selectedLesson}` : ''}
             </div>
             
             {isAiLoading ? (
               <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                 <Loader2 className="animate-spin mb-4" size={32} />
                 <p>Generating your comprehensive tutorial guide...</p>
+              </div>
+            ) : videoUrl ? (
+              <div className="aspect-video rounded-2xl overflow-hidden shadow-lg border-4 border-indigo-100">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={videoUrl}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
               </div>
             ) : (
               <div className="prose prose-indigo max-w-none">
@@ -289,7 +412,10 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                 </div>
                 
                 <h4 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">{intern.title}</h4>
-                <p className="text-gray-500 text-sm mb-6">{intern.company}</p>
+                <p className="text-gray-500 text-sm mb-2">{intern.company}</p>
+                {intern.description && (
+                  <p className="text-xs text-indigo-600 font-medium mb-4 italic">"{intern.description}"</p>
+                )}
                 
                 <div className="space-y-3 mb-8 flex-1">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
@@ -308,7 +434,10 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                   )}
                 </div>
 
-                <button className="w-full bg-gray-50 text-gray-900 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => handleExternalRedirect(intern.link)}
+                  className="w-full bg-gray-50 text-gray-900 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
+                >
                   Apply Now <ArrowLeft size={18} className="rotate-180" />
                 </button>
               </div>
@@ -319,38 +448,113 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
     );
   };
 
-  const renderGeneralSubModules = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-      {SUB_MODULES_GENERAL.map((sub) => (
-        <button 
-          key={sub.id} 
-          onClick={() => setActiveSubTab(sub.id as SubTab)}
-          className={`bg-white p-6 rounded-2xl border transition-all text-left group ${activeSubTab === sub.id ? 'border-indigo-600 ring-2 ring-indigo-100 shadow-md' : 'border-gray-100 hover:shadow-md hover:border-indigo-200'}`}
-        >
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 transition-colors ${activeSubTab === sub.id ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'}`}>
-            <div className="relative">
-               {sub.id === 'tutorials' && !user.isPremium && <Lock size={12} className="absolute -top-1 -right-1 text-amber-500" />}
-               {sub.icon}
+  const renderJobs = () => {
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+        <div className="grid grid-cols-1 gap-6">
+          {JOBS_MOCK.map((job) => (
+            <div key={job.id} className="bg-white rounded-3xl border border-gray-100 p-8 hover:shadow-xl transition-all group">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+                <div className="flex items-start gap-6">
+                  <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-2xl">
+                    {job.company.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{job.title}</h4>
+                    <p className="text-gray-500 font-medium">{job.company}</p>
+                    <div className="flex flex-wrap gap-4 mt-3">
+                      <span className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase tracking-wider">
+                        <MapPin size={14} /> {job.location}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase tracking-wider">
+                        <Calendar size={14} /> {job.postedAt}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase tracking-wider">
+                        <Users size={14} /> {job.applicants}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className="px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                    {job.type}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-6 rounded-2xl mb-8">
+                <h5 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                  <FileText size={16} className="text-indigo-600" />
+                  Brief Overview
+                </h5>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {job.description}
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => handleExternalRedirect(job.link)}
+                  className="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
+                >
+                  Apply on Portal <ExternalLink size={18} />
+                </button>
+                <button className="flex-1 bg-white text-gray-700 border border-gray-200 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all">
+                  Save for Later
+                </button>
+              </div>
             </div>
-          </div>
-          <h4 className={`font-bold mb-2 ${activeSubTab === sub.id ? 'text-indigo-600' : 'text-gray-800'}`}>{sub.title}</h4>
-          <p className="text-xs text-gray-500 mb-4">{sub.description}</p>
-          <div className={`w-full py-2 text-xs font-bold rounded-lg text-center transition-all ${activeSubTab === sub.id ? 'bg-indigo-600 text-white' : 'bg-gray-50 text-gray-600 group-hover:bg-indigo-600 group-hover:text-white'}`}>
-            {activeSubTab === sub.id ? 'SELECTED' : 'GO TO SECTION'}
-          </div>
-        </button>
-      ))}
-    </div>
-  );
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderGeneralSubModules = () => {
+    const filteredSubModules = hasBranches 
+      ? SUB_MODULES_GENERAL.filter(sub => sub.id === 'tutorials')
+      : SUB_MODULES_GENERAL;
+
+    return (
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${filteredSubModules.length > 2 ? 4 : filteredSubModules.length} gap-6 mb-12`}>
+        {filteredSubModules.map((sub) => (
+          <button 
+            key={sub.id} 
+            onClick={() => setActiveSubTab(sub.id as SubTab)}
+            className={`bg-white p-6 rounded-2xl border transition-all text-left group ${activeSubTab === sub.id ? 'border-indigo-600 ring-2 ring-indigo-100 shadow-md' : 'border-gray-100 hover:shadow-md hover:border-indigo-200'}`}
+          >
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 transition-colors ${activeSubTab === sub.id ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600'}`}>
+              <div className="relative">
+                 {sub.id === 'tutorials' && !user.isPremium && <Lock size={12} className="absolute -top-1 -right-1 text-amber-500" />}
+                 {sub.icon}
+              </div>
+            </div>
+            <h4 className={`font-bold mb-2 ${activeSubTab === sub.id ? 'text-indigo-600' : 'text-gray-800'}`}>{sub.title}</h4>
+            <p className="text-xs text-gray-500 mb-4">{sub.description}</p>
+            <div className={`w-full py-2 text-xs font-bold rounded-lg text-center transition-all ${activeSubTab === sub.id ? 'bg-indigo-600 text-white' : 'bg-gray-50 text-gray-600 group-hover:bg-indigo-600 group-hover:text-white'}`}>
+              {activeSubTab === sub.id ? 'SELECTED' : 'GO TO SECTION'}
+            </div>
+          </button>
+        ))}
+      </div>
+    );
+  };
 
   const isBTech = type === ModuleType.BTECH;
+  const isMTech = type === ModuleType.MTECH;
+  const isMBA = type === ModuleType.MBA;
+  const isCompetitiveExams = type === ModuleType.COMPETITIVE_EXAMS;
   const isInternship = type === ModuleType.INTERNSHIPS;
+  const hasBranches = isBTech || isMTech || isMBA || isCompetitiveExams;
 
   const handleBack = () => {
     if (activeSubTab) {
       setActiveSubTab(null);
       setSelectedSubject(null);
+      setSelectedSubSubject(null);
+      setSelectedLesson(null);
       setAiContent(null);
+      setVideoUrl(null);
     } else if (selectedCourse) {
       setSelectedCourse(null);
     } else {
@@ -371,14 +575,14 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-            {isBTech ? (selectedCourse ? `${selectedCourse.code} Resources` : 'B.Tech Engineering Guide') : type}
+            {hasBranches ? (selectedCourse ? `${selectedCourse.code} Resources` : `${type}`) : type}
           </h1>
           <p className="text-gray-500">
             {isInternship ? 'Kickstart your professional journey with handpicked opportunities.' :
              activeSubTab === 'papers' ? `Viewing previous year examination papers for ${type}.` : 
              activeSubTab === 'tutorials' ? `Explore comprehensive AI-powered tutorials for ${type}.` :
-             isBTech 
-              ? (selectedCourse ? `Access specialized subjects and materials for ${selectedCourse.name}.` : 'Select your engineering branch to view course-specific tutorials.')
+             hasBranches 
+              ? (selectedCourse ? `Access specialized subjects and materials for ${selectedCourse.name}.` : `Select your ${isMBA ? 'year' : 'branch'} to view course-specific tutorials.`)
               : `Comprehensive resources including question papers, tutorials, and examination tools for ${type}.`}
           </p>
         </div>
@@ -390,7 +594,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
 
       {isInternship && renderInternships()}
 
-      {!isBTech && !isInternship && (
+      {type === ModuleType.JOBS && renderJobs()}
+
+      {!hasBranches && !isInternship && type !== ModuleType.JOBS && (
         <>
           {renderGeneralSubModules()}
           
@@ -541,37 +747,38 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
         </>
       )}
 
-      {isBTech && !selectedCourse && renderBTechBranchGrid()}
+      {hasBranches && !selectedCourse && (
+        <>
+          {renderGeneralSubModules()}
+          <div className="mt-8">
+            {activeSubTab === 'tutorials' && renderBranchGrid(isBTech ? BTECH_COURSES : (isMTech ? MTECH_BRANCHES : (isMBA ? MBA_YEARS : COMPETITIVE_EXAM_CATEGORIES)))}
+            {!activeSubTab && renderBranchGrid(isBTech ? BTECH_COURSES : (isMTech ? MTECH_BRANCHES : (isMBA ? MBA_YEARS : COMPETITIVE_EXAM_CATEGORIES)))}
+          </div>
+        </>
+      )}
 
-      {isBTech && selectedCourse && (
+      {hasBranches && selectedCourse && (
         <div className="space-y-10">
           <div className="bg-indigo-600 text-white p-8 rounded-3xl shadow-lg relative overflow-hidden">
-             <h3 className="text-2xl font-bold mb-2">Branch: {selectedCourse.name}</h3>
-             <p className="opacity-80 text-sm">Comprehensive semester-wise materials and expert tutorials.</p>
+             <h3 className="text-2xl font-bold mb-2">{isMBA || isCompetitiveExams ? '' : 'Branch: '}{selectedCourse.name}</h3>
+             <p className="opacity-80 text-sm">Comprehensive {isMBA ? 'year' : (isCompetitiveExams ? 'exam' : 'semester')}-wise materials and expert tutorials.</p>
              <FileSearch className="absolute -right-8 -bottom-8 w-48 h-48 opacity-10 rotate-12" />
           </div>
           
           <div className="flex gap-4 mb-6">
             <button 
               onClick={() => setActiveSubTab('tutorials')}
-              className={`px-6 py-3 rounded-xl font-bold transition-all ${activeSubTab === 'tutorials' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-100'}`}
+              className="px-6 py-3 rounded-xl font-bold transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-100"
             >
               Subject Tutorials
             </button>
-            <button 
-              onClick={() => setActiveSubTab('papers')}
-              className={`px-6 py-3 rounded-xl font-bold transition-all ${activeSubTab === 'papers' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-100'}`}
-            >
-              Previous Papers
-            </button>
           </div>
 
-          {activeSubTab === 'tutorials' && renderSubjectTutorials(selectedCourse.id)}
-          {activeSubTab === 'papers' && renderPreviousPapersList()}
+          {renderSubjectTutorials(selectedCourse.id)}
         </div>
       )}
 
-      {(type === ModuleType.JOBS || type === ModuleType.CERTIFICATIONS) && (
+      {type === ModuleType.CERTIFICATIONS && (
         <div className="bg-white p-12 rounded-3xl border border-dashed border-gray-300 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400">

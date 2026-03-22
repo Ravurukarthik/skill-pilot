@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user profile information and subscription status.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the user."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "student"],
+          "description": "User role."
+        },
+        "isPremium": {
+          "type": "boolean",
+          "description": "Whether the user has a premium subscription."
+        },
+        "isPendingVerification": {
+          "type": "boolean",
+          "description": "Whether the user's payment is pending verification."
+        },
+        "paymentProofUrl": {
+          "type": "string",
+          "description": "URL to the payment proof image."
+        },
+        "paymentDate": {
+          "type": "string",
+          "description": "Date of payment."
+        },
+        "password": {
+          "type": "string",
+          "description": "The user's password (stored for display purposes)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the account was created."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Auth provider used (google, email)."
+        },
+        "providerData": {
+          "type": "array",
+          "items": { "type": "object" },
+          "description": "List of auth providers linked to the account."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's phone number."
+        }
+      },
+      "required": ["name", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection of user profiles indexed by their Firebase Auth UID."
+    }
+  }
+}

@@ -1,16 +1,61 @@
 
 import React from 'react';
-import { ModuleType } from '../types';
+import { ModuleType, User } from '../types';
 import { MODULES_DATA } from '../constants';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, User as UserIcon, Mail, Lock, ShieldAlert } from 'lucide-react';
 
 interface DashboardProps {
   onSelectModule: (module: ModuleType) => void;
+  user: User;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onSelectModule }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user }) => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {!user.isPremium && (
+        <div className="bg-white border-2 border-amber-100 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 text-amber-600">
+            <ShieldAlert size={24} />
+            <h2 className="text-lg font-bold">Free Tier Account Details</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
+              <div className="bg-white p-2 rounded-lg text-gray-400 shadow-sm">
+                <UserIcon size={18} />
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Full Name</p>
+                <p className="text-sm font-semibold text-gray-800">{user.name}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
+              <div className="bg-white p-2 rounded-lg text-gray-400 shadow-sm">
+                <Mail size={18} />
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email ID</p>
+                <p className="text-sm font-semibold text-gray-800">{user.email}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
+              <div className="bg-white p-2 rounded-lg text-gray-400 shadow-sm">
+                <Lock size={18} />
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Password</p>
+                <p className="text-sm font-semibold text-gray-800">
+                  {user.password || '••••••••'} 
+                  <span className="text-[8px] ml-2 text-gray-400 font-normal">(Encrypted)</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <p className="mt-4 text-[10px] text-amber-600 font-medium bg-amber-50 p-2 rounded-lg inline-block">
+            Note: Upgrade to Pro to remove this panel and access all premium features.
+          </p>
+        </div>
+      )}
+
       <div className="relative overflow-hidden bg-indigo-600 rounded-3xl p-8 md:p-12 text-white shadow-xl shadow-indigo-100">
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 bg-indigo-500/30 px-3 py-1 rounded-full text-indigo-100 text-xs font-semibold mb-6">

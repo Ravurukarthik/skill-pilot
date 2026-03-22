@@ -10,12 +10,15 @@ import {
   Award,
   Users
 } from 'lucide-react';
-import { ModuleType, BTechCourse, Internship } from './types';
+import { ModuleType, BTechCourse, Internship, Job } from './types';
 
 export const MODULES_DATA = [
   { type: ModuleType.CLASS_10, icon: <BookOpen className="w-8 h-8 text-blue-500" />, description: "Complete study resources for 10th grade students." },
   { type: ModuleType.INTER, icon: <GraduationCap className="w-8 h-8 text-purple-500" />, description: "Intermediate education (11th & 12th) resources." },
   { type: ModuleType.BTECH, icon: <Layers className="w-8 h-8 text-indigo-500" />, description: "Advanced engineering guides and tutorials." },
+  { type: ModuleType.MTECH, icon: <GraduationCap className="w-8 h-8 text-cyan-500" />, description: "Post-graduate engineering specializations." },
+  { type: ModuleType.MBA, icon: <Briefcase className="w-8 h-8 text-rose-500" />, description: "Management and business administration resources." },
+  { type: ModuleType.COMPETITIVE_EXAMS, icon: <Award className="w-8 h-8 text-yellow-500" />, description: "GATE, CAT, UPSC and other exam materials." },
   { type: ModuleType.INTERNSHIPS, icon: <Users className="w-8 h-8 text-green-500" />, description: "Explore latest internship opportunities." },
   { type: ModuleType.JOBS, icon: <Briefcase className="w-8 h-8 text-orange-500" />, description: "Find and apply for top tech and non-tech jobs." },
   { type: ModuleType.CERTIFICATIONS, icon: <Award className="w-8 h-8 text-red-500" />, description: "Boost your resume with professional certificates." }
@@ -87,6 +90,30 @@ export const BTECH_COURSES: BTechCourse[] = [
   { id: 'eee', name: 'Electrical & Electronics Engineering', code: 'EEE' },
 ];
 
+export const MTECH_BRANCHES: BTechCourse[] = [
+  { id: 'mtech-cse', name: 'Computer Science & Engineering', code: 'CSE' },
+  { id: 'mtech-aids', name: 'Artificial Intelligence & Data Science', code: 'AIDS' },
+  { id: 'mtech-ece', name: 'Electronics & Comm Engineering', code: 'ECE' },
+  { id: 'mtech-mechanical', name: 'Mechanical Engineering', code: 'MECHANICAL' },
+  { id: 'mtech-civil', name: 'Civil Engineering', code: 'CIVIL' },
+  { id: 'mtech-eee', name: 'Electrical & Electronics Engineering', code: 'EEE' },
+];
+
+export const MBA_YEARS: BTechCourse[] = [
+  { id: 'mba-1st', name: 'First Year MBA', code: '1st Year' },
+  { id: 'mba-2nd', name: 'Second Year MBA', code: '2nd Year' },
+];
+
+export const COMPETITIVE_EXAM_CATEGORIES: BTechCourse[] = [
+  { id: 'eng-tech-exams', name: 'Engineering & Technology Exams', code: 'ENGG' },
+  { id: 'medical-exams', name: 'Medical Exams', code: 'MED' },
+  { id: 'gov-civil-exams', name: 'Government / Civil Services Exams', code: 'CIVIL' },
+  { id: 'banking-exams', name: 'Banking Exams', code: 'BANK' },
+  { id: 'defence-exams', name: 'Defence Exams', code: 'DEF' },
+  { id: 'other-imp-exams', name: 'Other Important Exams', code: 'IMP' },
+  { id: 'other-gov-exams', name: 'Other Government Exams', code: 'GOV' },
+];
+
 export const SUBJECTS_MOCK: Record<string, string[]> = {
   '10th Class Guide': ['Telugu', 'Hindi', 'English', 'Mathematics', 'Physics', 'Biology', 'Social Studies'],
   'Inter Guide 1st Year': ['Sanskrit (1st Year)', 'English (1st Year)', 'Maths 1A', 'Maths 1B', 'Physics (1st Year)', 'Chemistry (1st Year)'],
@@ -95,13 +122,58 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
   'cse': ['Data Structures', 'Algorithms', 'DBMS', 'Operating Systems', 'Computer Networks'],
   'ece': ['Microprocessors', 'Digital Electronics', 'Signals & Systems', 'Control Systems'],
   'civil': ['Structural Analysis', 'Fluid Mechanics', 'Surveying', 'Geotechnical Engineering'],
+  'mtech-cse': ['Advanced Algorithms', 'Distributed Systems', 'Cloud Computing', 'Network Security'],
+  'mtech-aids': ['Machine Learning', 'Deep Learning', 'Big Data Analytics', 'Natural Language Processing'],
+  'mtech-ece': ['Embedded Systems', 'VLSI Design', 'Digital Signal Processing', 'Wireless Communications'],
+  'mtech-mechanical': ['Advanced Thermodynamics', 'Robotics', 'CAD/CAM', 'Finite Element Analysis'],
+  'mtech-civil': ['Advanced Structural Design', 'Environmental Engineering', 'Transportation Engineering', 'Construction Management'],
+  'mtech-eee': ['Power Systems', 'Electric Drives', 'Renewable Energy', 'Smart Grids'],
+  'mba-1st': ['Management Principles', 'Marketing Management', 'Financial Accounting', 'Human Resource Management'],
+  'mba-2nd': ['Strategic Management', 'Entrepreneurship', 'Business Ethics', 'International Business'],
+  'M.Tech Guide': ['Advanced Mathematics', 'Research Methodology', 'Specialization Elective I', 'Specialization Elective II'],
+  'MBA Guide': ['Marketing Management', 'Financial Accounting', 'Organizational Behavior', 'Business Analytics'],
+  'Competitive Exams': [
+    'Engineering & Technology Exams', 
+    'Medical Exams', 
+    'Government / Civil Services Exams', 
+    'Banking Exams', 
+    'Defence Exams', 
+    'Other Important Exams', 
+    'Other Government Exams'
+  ],
+  'eng-tech-exams': ['GATE', 'JEE Mains', 'JEE Advanced', 'BITSAT', 'VITEEE'],
+  'medical-exams': ['NEET UG', 'NEET PG', 'AIIMS', 'JIPMER'],
+  'gov-civil-exams': ['UPSC Civil Services', 'APPSC Group 1', 'APPSC Group 2', 'SSC CGL'],
+  'banking-exams': ['IBPS PO', 'IBPS Clerk', 'SBI PO', 'SBI Clerk', 'RBI Grade B'],
+  'defence-exams': ['NDA', 'CDS', 'AFCAT', 'Indian Navy Entrance'],
+  'other-imp-exams': ['CAT', 'MAT', 'XAT', 'CLAT'],
+  'other-gov-exams': ['Railway Recruitment (RRB)', 'Post Office Exams', 'Police Recruitment'],
 };
 
 export const INTERNSHIP_MOCK: Internship[] = [
-  { id: '1', title: 'React Frontend Developer', company: 'TechNova Solutions', stipend: '₹15,000/mo', duration: '3 Months', location: 'Remote', type: 'paid', link: '#' },
-  { id: '2', title: 'Data Science Intern', company: 'Insight Analytics', stipend: '₹20,000/mo', duration: '6 Months', location: 'Hyderabad', type: 'paid', link: '#' },
-  { id: '3', title: 'UX/UI Designer', company: 'Creative Peak', stipend: '₹12,000/mo', duration: '4 Months', location: 'Bangalore', type: 'paid', link: '#' },
-  { id: '4', title: 'Python Backend Trainee', company: 'Alpha Systems', stipend: null, duration: '2 Months', location: 'Remote', type: 'unpaid', link: '#' },
-  { id: '5', title: 'Social Media Marketing', company: 'RK Foundations', stipend: null, duration: '3 Months', location: 'Remote', type: 'unpaid', link: '#' },
-  { id: '6', title: 'Java Developer Intern', company: 'Global Soft', stipend: null, duration: '6 Months', location: 'Chennai', type: 'unpaid', link: '#' },
+  { 
+    id: 'tcs-internship', 
+    title: 'TCS Internship Program', 
+    company: 'Tata Consultancy Services (TCS)', 
+    stipend: null, 
+    duration: '8-12 Weeks', 
+    location: 'Pan India / Remote', 
+    type: 'unpaid', 
+    link: 'https://www.tcs.com/careers/india/internship',
+    description: 'Accelerate your career with TCS internships'
+  },
+];
+
+export const JOBS_MOCK: Job[] = [
+  {
+    id: 'ge-hc-get',
+    title: 'Graduate Engineer Trainee',
+    company: 'GE HealthCare',
+    postedAt: '6 days ago',
+    applicants: 'Over 300 applicants',
+    location: 'Bengaluru, India',
+    description: 'Ensure an uninterrupted supply of materials to support production and sales. Work to resolve materials issues while achieving and maintaining inventory business metrics. Roles: Material ordering, scheduling, Oracle expert, inventory accuracy, rescheduling, root cause investigation.',
+    link: 'https://www.foundit.in/seeker-profile/single-page-registration?jobid=143011155&spl=IN_paid_display_direct_acq_affiliate_Asterix_FO2011_Multiple_Apr25&utm_source=Asterix&utm_medium=affiliate&utm_campaign=IN_paid_display_direct_acq_affiliate_Asterix_FO2011_Multiple_Apr25',
+    type: 'Permanent Job'
+  }
 ];

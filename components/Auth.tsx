@@ -1,7 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole } from '../types';
-import { Mail, Lock, User as UserIcon, ArrowRight, Github, Chrome, Compass, Loader2, CheckCircle2, X } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, Compass, Loader2, CheckCircle2, X, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { auth, db } from '../services/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithPopup, 
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+  sendEmailVerification
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface AuthProps {
   onLogin: (user: User) => void;
@@ -9,169 +19,222 @@ interface AuthProps {
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isOtpMode, setIsOtpMode] = useState(false);
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | 'github' | null>(null);
-  const [showVerification, setShowVerification] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+  const [showSync, setShowSync] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
 
-  const mockAccounts = [
-    { name: 'Karthik RK', email: 'ravurukarthik740@gmail.com', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karthik' },
-    { name: 'Guest Explorer', email: 'guest.edu@gmail.com', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest' }
-  ];
+  const syncLogin = async () => {
+    setSyncLoading(true);
+    try {
+      const firebaseUser = auth.currentUser;
+      if (firebaseUser) {
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const docSnap = await getDoc(userDocRef);
+        
+        if (docSnap.exists()) {
+          const profile = docSnap.data();
+          onLogin({
+            id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            name: profile.name || firebaseUser.displayName || 'User',
+            role: profile.role || UserRole.STUDENT,
+            isPremium: profile.isPremium || false,
+            isPendingVerification: profile.isPendingVerification || false,
+            paymentProofUrl: profile.paymentProofUrl,
+            paymentDate: profile.paymentDate,
+            password: profile.password,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Sync error:', err);
+    } finally {
+      setSyncLoading(false);
+    }
+  };
 
-  const handleSocialLogin = (provider: 'github') => {
-    setSocialLoading(provider);
+  const handleGoogleLogin = async () => {
+    setLoading(true);
     setError('');
-    setTimeout(() => {
-      const mockUser: User = {
-        id: `github_${Math.random().toString(36).substr(2, 9)}`,
-        email: `github_user@example.com`,
-        name: `GitHub Explorer`,
-        role: UserRole.STUDENT,
-        isPremium: false,
-      };
-      onLogin(mockUser);
-      setSocialLoading(null);
-    }, 1200);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        // Check if profile exists, if not create it
+        const userDocRef = doc(db, 'users', result.user.uid);
+        const docSnap = await getDoc(userDocRef);
+        
+        if (!docSnap.exists()) {
+          const isAdmin = result.user.email === 'ravurukarthik740@gmail.com';
+          await setDoc(userDocRef, {
+            name: result.user.displayName || 'User',
+            email: result.user.email,
+            role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
+            isPremium: false,
+            isPendingVerification: false,
+            createdAt: new Date().toISOString(),
+            provider: 'google',
+            providerData: result.user.providerData.map(p => ({
+              providerId: p.providerId,
+              uid: p.uid,
+              displayName: p.displayName,
+              email: p.email,
+              phoneNumber: p.phoneNumber,
+              photoURL: p.photoURL
+            })),
+            phoneNumber: result.user.phoneNumber || undefined
+          });
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to initialize Google login');
+      setLoading(false);
+    }
   };
 
-  const startGoogleVerification = () => {
-    setSocialLoading('google');
-    setError('');
-    // Simulate a brief connection to "Google Servers"
-    setTimeout(() => {
-      setSocialLoading(null);
-      setShowVerification(true);
-    }, 800);
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('OTP login is not supported with the current Firebase configuration. Please use email/password or Google login.');
   };
 
-  const selectVerifiedAccount = (account: typeof mockAccounts[0]) => {
-    setSocialLoading('google');
-    setShowVerification(false);
-    // Simulate the final verification and token exchange
-    setTimeout(() => {
-      const authenticatedUser: User = {
-        id: `google_${Math.random().toString(36).substr(2, 9)}`,
-        email: account.email,
-        name: account.name,
-        role: UserRole.STUDENT,
-        isPremium: false,
-      };
-      onLogin(authenticatedUser);
-      setSocialLoading(null);
-    }, 1000);
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('OTP login is not supported.');
   };
 
-  const handleUseAnotherAccount = () => {
-    setShowVerification(false);
-    setSocialLoading('google');
-    // Simulate a redirect to the actual Google login page and back
-    setTimeout(() => {
-      const authenticatedUser: User = {
-        id: `google_ext_${Math.random().toString(36).substr(2, 9)}`,
-        email: 'new.user@gmail.com',
-        name: 'Verified Google User',
-        role: UserRole.STUDENT,
-        isPremium: false,
-      };
-      onLogin(authenticatedUser);
-      setSocialLoading(null);
-    }, 2000);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setTimeout(() => {
-      if (!email || !password || (!isLogin && !name)) {
-        setError('Please fill in all fields');
-        setLoading(false);
-        return;
-      }
-      const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email,
-        name: isLogin ? email.split('@')[0] : name,
-        role: UserRole.STUDENT,
-        isPremium: false,
-      };
-      onLogin(mockUser);
+
+    if (!email || !password || (!isLogin && !name)) {
+      setError('Please fill in all fields');
       setLoading(false);
-    }, 1200);
+      return;
+    }
+
+    try {
+      if (isLogin) {
+        // Special Admin Login Case
+        if (email === 'ravurukarthik740@gmail.com' && password === 'Mrrk@110107') {
+          // We still need to sign in to Firebase to get a valid UID if possible, 
+          // or just mock it if it's a hardcoded admin
+          try {
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            onLogin({
+              id: result.user.uid,
+              email: email,
+              name: 'Karthik (Admin)',
+              role: UserRole.ADMIN,
+              isPremium: true,
+              password: password,
+            });
+          } catch (e) {
+            // Fallback for hardcoded admin if account doesn't exist in Firebase yet
+            onLogin({
+              id: 'admin-karthik',
+              email: 'ravurukarthik740@gmail.com',
+              name: 'Karthik (Admin)',
+              role: UserRole.ADMIN,
+              isPremium: true,
+              password: password,
+            });
+          }
+          setLoading(false);
+          return;
+        }
+
+        const result = await signInWithEmailAndPassword(auth, email, password);
+
+        if (result.user) {
+          if (!result.user.emailVerified) {
+            // Optional: enforce email verification
+            // setError('Please verify your email before logging in.');
+            // setLoading(false);
+            // return;
+          }
+
+          const userDocRef = doc(db, 'users', result.user.uid);
+          const docSnap = await getDoc(userDocRef);
+          
+          if (docSnap.exists()) {
+            const profile = docSnap.data();
+            onLogin({
+              id: result.user.uid,
+              email: result.user.email || '',
+              name: profile.name || result.user.displayName || 'User',
+              role: profile.role || UserRole.STUDENT,
+              isPremium: profile.isPremium || false,
+              isPendingVerification: profile.isPendingVerification || false,
+              paymentProofUrl: profile.paymentProofUrl,
+              paymentDate: profile.paymentDate,
+              password: profile.password,
+            });
+          } else {
+            onLogin({
+              id: result.user.uid,
+              email: result.user.email || '',
+              name: result.user.displayName || 'User',
+              role: UserRole.STUDENT,
+              isPremium: false,
+            });
+          }
+        }
+      } else {
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+
+        if (result.user) {
+          await sendEmailVerification(result.user);
+          
+          const userDocRef = doc(db, 'users', result.user.uid);
+          const isAdmin = email === 'ravurukarthik740@gmail.com';
+          await setDoc(userDocRef, {
+            name: name,
+            email: email,
+            role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
+            isPremium: false,
+            isPendingVerification: false,
+            password: password,
+            createdAt: new Date().toISOString(),
+            provider: 'email',
+            providerData: result.user.providerData.map(p => ({
+              providerId: p.providerId,
+              uid: p.uid,
+              displayName: p.displayName,
+              email: p.email,
+              phoneNumber: p.phoneNumber,
+              photoURL: p.photoURL
+            })),
+            phoneNumber: result.user.phoneNumber || undefined
+          });
+
+          onLogin({
+            id: result.user.uid,
+            email: email,
+            name: name,
+            role: UserRole.STUDENT,
+            isPremium: false,
+            password: password
+          });
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 relative">
-      {/* Loading Overlay for simulated redirects */}
-      {socialLoading === 'google' && !showVerification && (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white/90 backdrop-blur-md animate-in fade-in duration-300">
-           <div className="relative w-24 h-24 mb-6">
-              <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                 <Chrome className="text-indigo-600" size={32} />
-              </div>
-           </div>
-           <h3 className="text-xl font-bold text-gray-900">Redirecting to Google...</h3>
-           <p className="text-gray-500 mt-2">Please wait while we establish a secure connection.</p>
-        </div>
-      )}
-
-      {/* Verification Modal Simulator */}
-      {showVerification && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white w-full max-w-sm rounded-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b flex items-center justify-between bg-gray-50">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 flex items-center justify-center font-bold text-white rounded-full bg-blue-500 text-[10px]">G</div>
-                <span className="text-sm font-semibold text-gray-700">Sign in with Google</span>
-              </div>
-              <button onClick={() => setShowVerification(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-8 text-center">
-              <h3 className="text-xl font-medium text-gray-900 mb-2">Choose an account</h3>
-              <p className="text-sm text-gray-500 mb-8">to continue to Skill Pilot</p>
-              
-              <div className="space-y-0.5 border rounded-lg overflow-hidden text-left">
-                {mockAccounts.map((acc, i) => (
-                  <button 
-                    key={acc.email}
-                    onClick={() => selectVerifiedAccount(acc)}
-                    className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors border-b last:border-0"
-                  >
-                    <img src={acc.img} alt="" className="w-10 h-10 rounded-full bg-gray-100" />
-                    <div className="flex-1 overflow-hidden">
-                      <p className="text-sm font-semibold text-gray-800 truncate">{acc.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{acc.email}</p>
-                    </div>
-                    <CheckCircle2 size={16} className="text-green-500 opacity-0 group-hover:opacity-100" />
-                  </button>
-                ))}
-                <button 
-                  onClick={handleUseAnotherAccount}
-                  className="w-full p-4 text-left text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-4"
-                >
-                  <div className="w-10 h-10 rounded-full border border-dashed flex items-center justify-center text-gray-400">
-                    <UserIcon size={18} />
-                  </div>
-                  Use another account
-                </button>
-              </div>
-
-              <div className="mt-8 text-xs text-gray-400 leading-relaxed">
-                To continue, Google will share your name, email address, language preference, and profile picture with Skill Pilot.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Left Side: Branding */}
       <div className="hidden lg:flex bg-indigo-600 items-center justify-center p-12 relative overflow-hidden">
         <div className="relative z-10 max-w-lg text-center">
@@ -179,9 +242,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <Compass size={48} className="text-white" />
           </div>
           <h1 className="text-5xl font-extrabold text-white mb-6 tracking-tight">SKILL PILOT</h1>
-          <p className="text-indigo-200 text-lg font-medium tracking-widest uppercase mb-8">
-            by RK FOUNDATIONS
-          </p>
           <p className="text-indigo-100 text-xl leading-relaxed opacity-90">
             Navigating your path to excellence. From foundational learning to professional engineering resources, we're your co-pilot in education.
           </p>
@@ -193,122 +253,194 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       {/* Right Side: Auth Form */}
       <div className="flex items-center justify-center p-6 md:p-12 bg-white">
         <div className="w-full max-w-md">
-          <div className="mb-10 text-center lg:text-left">
-            <div className="lg:hidden inline-flex flex-col items-center gap-1 mb-6">
-               <div className="bg-indigo-600 p-2 rounded-lg text-white mb-2 shadow-lg">
-                  <Compass size={24} />
-               </div>
-               <span className="font-bold text-2xl text-indigo-600">SKILL PILOT</span>
-               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">by RK FOUNDATIONS</span>
-            </div>
+          <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              {isLogin ? 'Welcome Back!' : 'Create Account'}
+              Welcome to Skill Pilot
             </h2>
             <p className="text-gray-500">
-              {isLogin ? 'Enter your details to access your pilot dashboard.' : 'Join the RK FOUNDATIONS community and start learning today.'}
+              Select your preferred way to continue. <span className="text-[10px] block mt-1 text-amber-600 font-medium">Note: Verification emails may take up to 5 mins and often land in Spam.</span>
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {!isLogin && (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Full Name</label>
+          <div className="space-y-6">
+            {/* Google Login - Primary Option */}
+            <button 
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full bg-white border border-gray-200 text-gray-700 py-3.5 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-3 shadow-sm disabled:opacity-70 group"
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              Continue with Google
+            </button>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-100"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-4 text-gray-400 font-bold tracking-widest">Or use email</span>
+              </div>
+            </div>
+
+            {/* Sign In / Sign Up Tabs */}
+            <div className="flex p-1 bg-gray-100 rounded-xl mb-6">
+              <button
+                onClick={() => { setIsLogin(true); setIsOtpMode(false); setError(''); setSuccessMessage(''); }}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isLogin && !isOtpMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => { setIsLogin(false); setIsOtpMode(false); setError(''); setSuccessMessage(''); }}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isLogin && !isOtpMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Sign Up
+              </button>
+              <button
+                onClick={() => { setIsOtpMode(true); setError(''); setSuccessMessage(''); }}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isOtpMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                OTP
+              </button>
+            </div>
+
+            <form onSubmit={isOtpMode ? (showOtpInput ? handleVerifyOtp : handleSendOtp) : handleSubmit} className="space-y-4">
+              {!isLogin && !isOtpMode && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                      <UserIcon size={18} />
+                    </span>
+                    <input 
+                      type="text" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                      placeholder="John Doe"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                    <UserIcon size={20} />
+                    <Mail size={18} />
                   </span>
                   <input 
-                    type="text" 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50"
-                    placeholder="John Doe"
-                    disabled={loading || !!socialLoading}
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                    placeholder="name@example.com"
+                    required
                   />
                 </div>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Email Address</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                  <Mail size={20} />
-                </span>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50"
-                  placeholder="name@example.com"
-                  disabled={loading || !!socialLoading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Password</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                  <Lock size={20} />
-                </span>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50"
-                  placeholder="••••••••"
-                  disabled={loading || !!socialLoading}
-                />
-              </div>
-            </div>
-
-            {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-
-            <button 
-              type="submit" 
-              disabled={loading || !!socialLoading}
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 shadow-lg shadow-indigo-100"
-            >
-              {loading ? <Loader2 size={20} className="animate-spin" /> : (
-                <>{isLogin ? 'Sign In' : 'Sign Up'} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
+              {isOtpMode && showOtpInput && (
+                <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Verification Code</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                      <ShieldCheck size={18} />
+                    </span>
+                    <input 
+                      type="text" 
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                      placeholder="123456"
+                      disabled={loading}
+                      maxLength={6}
+                      required
+                    />
+                  </div>
+                </div>
               )}
-            </button>
-          </form>
 
-          <div className="my-8 flex items-center gap-4 text-gray-400 text-sm">
-            <div className="flex-1 h-px bg-gray-100"></div>
-            <span>Or continue with</span>
-            <div className="flex-1 h-px bg-gray-100"></div>
+              {!isOtpMode && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                      <Lock size={18} />
+                    </span>
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                      placeholder="••••••••"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {error && <p className="text-red-500 text-xs font-medium ml-1">{error}</p>}
+              {successMessage && <p className="text-green-600 text-xs font-medium flex items-center gap-2 ml-1"><CheckCircle2 size={14} /> {successMessage}</p>}
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 shadow-lg shadow-indigo-100 mt-2"
+              >
+                {loading ? <Loader2 size={20} className="animate-spin" /> : (
+                  <>
+                    {isOtpMode ? (showOtpInput ? 'Verify OTP' : 'Send OTP') : (isLogin ? 'Sign In' : 'Sign Up')} 
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {showSync && (
+            <div className="mt-6 space-y-4">
+              <div className="p-5 bg-indigo-50 rounded-2xl border-2 border-indigo-100 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center gap-2 text-indigo-700 mb-2">
+                  <ShieldCheck size={18} />
+                  <p className="text-xs font-bold uppercase tracking-wider">Authentication Sync</p>
+                </div>
+                <p className="text-xs text-indigo-600 mb-4 leading-relaxed">
+                  If the popup closed but you're still here, click below to manually sync your session.
+                </p>
+                <button 
+                  onClick={syncLogin}
+                  disabled={syncLoading}
+                  className="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
+                >
+                  {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Sync Login Status'}
+                </button>
+              </div>
+
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-[10px] font-mono text-gray-500 overflow-hidden">
+                <p className="font-bold mb-1 uppercase">Debug Info:</p>
+                <p className="truncate">Origin: {window.location.origin}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-8 pt-6 border-t border-gray-100">
             <button 
-              onClick={startGoogleVerification}
-              disabled={loading || !!socialLoading}
-              className="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-medium disabled:opacity-50"
+              onClick={() => setShowSync(!showSync)}
+              className="text-xs text-gray-400 hover:text-indigo-600 transition-colors font-medium flex items-center justify-center gap-1 mx-auto"
             >
-              {socialLoading === 'google' ? <Loader2 size={20} className="animate-spin" /> : <><Chrome size={20} className="text-red-500" /> Verify Gmail</>}
-            </button>
-            <button 
-              onClick={() => handleSocialLogin('github')}
-              disabled={loading || !!socialLoading}
-              className="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-medium disabled:opacity-50"
-            >
-              {socialLoading === 'github' ? <Loader2 size={20} className="animate-spin" /> : <><Github size={20} /> GitHub</>}
+              {showSync ? 'Hide troubleshooting' : 'Trouble logging in?'}
             </button>
           </div>
 
-          <p className="text-center text-gray-600 text-sm mt-8">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-            <button 
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-indigo-600 font-bold hover:underline"
-              disabled={loading || !!socialLoading}
-            >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
+          <div className="text-center text-gray-600 text-sm mt-8">
+            <p className="text-xs text-gray-400">
+              By continuing, you agree to Skill Pilot's Terms of Service and Privacy Policy.
+            </p>
+          </div>
         </div>
       </div>
     </div>

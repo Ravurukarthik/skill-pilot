@@ -24,9 +24,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onHome }) => {
               </span>
             )}
           </div>
-          <span className="text-[10px] font-medium text-gray-400 tracking-widest uppercase">
-            by RK FOUNDATIONS
-          </span>
         </button>
         <div className="relative hidden lg:block">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
@@ -53,11 +50,15 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onHome }) => {
             <UserIcon size={20} />
           </div>
           <button 
-            onClick={onLogout}
-            className="text-gray-400 hover:text-red-500 transition-colors p-2"
+            type="button"
+            onClick={() => {
+              console.log('Logout clicked');
+              onLogout();
+            }}
+            className="text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all p-2 rounded-lg flex items-center justify-center group"
             title="Logout"
           >
-            <LogOut size={20} />
+            <LogOut size={20} className="group-hover:scale-110 transition-transform" />
           </button>
         </div>
       </div>
