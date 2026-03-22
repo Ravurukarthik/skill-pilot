@@ -265,6 +265,8 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         setError('The email address is not valid.');
       } else if (err.code === 'auth/weak-password') {
         setError('The password is too weak. Please use at least 6 characters.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Email/Password sign-in is not enabled in your Firebase Console. Please enable it in the Authentication > Sign-in method tab.');
       } else if (err.message?.includes('permission-denied')) {
         setError('Profile creation failed due to database permissions. Please contact the administrator.');
       } else {
