@@ -66,8 +66,14 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     setError('');
     try {
       const provider = new GoogleAuthProvider();
+      // Force account selection to help with some iframe issues
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
+        // Show sync UI if it takes too long to redirect
+        setShowSync(true);
+        
         // Check if profile exists, if not create it
         const userDocRef = doc(db, 'users', result.user.uid);
         const docSnap = await getDoc(userDocRef);
@@ -95,7 +101,17 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to initialize Google login');
+      console.error('Google Login Error:', err);
+      if (err.code === 'auth/popup-blocked') {
+        setError('The login popup was blocked by your browser. Please allow popups for this site and try again.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError(`This domain (${window.location.hostname}) is not authorized in the Firebase Console. Please add it to the "Authorized Domains" list in your Firebase Authentication settings.`);
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        setError('The login process was cancelled. Please try again.');
+      } else {
+        setError(err.message || 'Failed to initialize Google login. Check your internet connection or browser settings.');
+      }
+      setShowSync(true);
       setLoading(false);
     }
   };
