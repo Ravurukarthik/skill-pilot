@@ -13,8 +13,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
   const [isZoomed, setIsZoomed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // High-quality PhonePe UPI QR code for Ravuru Karthik - Updated to match the provided image data
-  const qrCodeImage = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=upi://pay?pa=ravurukarthik740@ybl&pn=RAVURU%20KARTHIK&mc=0000&mode=02&purpose=00";
+  // High-quality super.money UPI QR code for Ravuru Karthik
+  const qrCodeImage = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=upi://pay?pa=8125399090@superyes&pn=RAVURU%20KARTHIK&am=299&cu=INR";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -47,41 +47,41 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
               <X size={24} /> Close
             </button>
             <div className="bg-white p-6 rounded-[1.5rem] flex flex-col items-center w-full max-w-sm">
-              <div className="w-full bg-black p-8 rounded-3xl flex flex-col items-center">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-[#5f259f] p-2 rounded-xl">
-                    <img src="https://www.phonepe.com/favicon.ico" alt="PhonePe" className="w-8 h-8 invert" />
+              <div className="w-full bg-white p-8 rounded-3xl flex flex-col items-center border border-gray-100 shadow-sm">
+                <div className="flex flex-col items-center mb-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="bg-[#4f46e5] p-1.5 rounded-lg">
+                      <QrCode size={24} className="text-white" />
+                    </div>
+                    <span className="text-gray-900 text-2xl font-black tracking-tighter">super.<span className="text-[#4f46e5]">money</span></span>
                   </div>
-                  <span className="text-white text-2xl font-bold tracking-tight">PhonePe</span>
+                  <p className="text-gray-500 text-[10px] font-medium">Scan and Pay using any UPI app</p>
                 </div>
                 
-                <p className="text-[#9d58ff] font-black text-sm mb-6 tracking-[0.2em] uppercase">ACCEPTED HERE</p>
-                
-                <p className="text-gray-400 text-[10px] mb-6 font-medium">Scan & Pay Using PhonePe App</p>
-                
-                <div className="w-full aspect-square bg-white rounded-2xl p-4 relative flex items-center justify-center">
+                <div className="w-full aspect-square bg-white rounded-2xl p-4 relative flex items-center justify-center border-2 border-gray-50">
                   <img 
                     src={qrCodeImage} 
                     alt="Payment QR" 
                     className="w-full h-full object-contain"
                     loading="eager"
                   />
-                  {/* PhonePe Logo in center of QR */}
+                  {/* super.money Logo in center of QR */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white p-1 rounded-full shadow-md border border-gray-100">
-                      <div className="bg-[#5f259f] p-1.5 rounded-full">
-                        <img src="https://www.phonepe.com/favicon.ico" alt="Pe" className="w-4 h-4 invert" />
+                    <div className="bg-white p-1 rounded-xl shadow-md border border-gray-100">
+                      <div className="bg-[#4f46e5] p-1 rounded-lg">
+                        <QrCode size={16} className="text-white" />
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="mt-8 text-center">
-                  <h3 className="text-lg font-bold text-white tracking-[0.1em] uppercase">RAVURU KARTHIK</h3>
+                <div className="mt-8 text-center space-y-1">
+                  <h3 className="text-sm font-bold text-gray-900 tracking-tight">Pay ₹299.00 to <span className="uppercase">RAVURU KARTHIK</span></h3>
+                  <p className="text-[10px] text-gray-500 font-mono">UPI ID : 8125399090@superyes</p>
                 </div>
                 
-                <div className="mt-12 text-[8px] text-gray-500 text-center leading-tight">
-                  © 2026, All rights reserved, PhonePe Ltd (Formerly known as 'PhonePe Private Ltd')
+                <div className="mt-10 text-[8px] text-gray-400 text-center leading-tight">
+                  All rights reserved by super.money, 2024
                 </div>
               </div>
               <div className="mt-6 text-center">
@@ -105,23 +105,24 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
             <p className="text-indigo-100 text-[10px] opacity-80 uppercase tracking-widest font-bold mb-8">Monthly Subscription</p>
 
             <div 
-              className="bg-black p-6 rounded-3xl w-full shadow-2xl border-2 border-white/10 cursor-pointer group transition-all hover:scale-[1.05] flex flex-col items-center"
+              className="bg-white p-6 rounded-3xl w-full shadow-2xl border-2 border-gray-50 cursor-pointer group transition-all hover:scale-[1.05] flex flex-col items-center"
               onClick={() => setIsZoomed(true)}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-[#5f259f] p-1 rounded-lg">
-                  <img src="https://www.phonepe.com/favicon.ico" alt="PhonePe" className="w-4 h-4 invert" />
+              <div className="flex flex-col items-center mb-4">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <div className="bg-[#4f46e5] p-1 rounded-md">
+                    <QrCode size={14} className="text-white" />
+                  </div>
+                  <span className="text-gray-900 text-sm font-black tracking-tighter">super.<span className="text-[#4f46e5]">money</span></span>
                 </div>
-                <span className="text-white text-sm font-bold tracking-tight">PhonePe</span>
+                <p className="text-gray-400 text-[8px] font-medium">Scan and Pay using any UPI app</p>
               </div>
-              
-              <p className="text-[#9d58ff] font-black text-[8px] mb-3 tracking-[0.2em] uppercase">ACCEPTED HERE</p>
               
               {/* QR Code Container */}
               <div className="bg-white aspect-square rounded-xl flex items-center justify-center mb-4 border border-gray-100 overflow-hidden relative min-h-[160px] p-2">
                  <img 
                    src={qrCodeImage} 
-                   alt="PhonePe QR" 
+                   alt="super.money QR" 
                    className="w-full h-full object-contain"
                    loading="eager"
                    onError={(e) => {
@@ -130,25 +131,26 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
                      console.error("QR Code failed to load");
                    }}
                  />
-                 {/* PhonePe Logo in center of QR */}
+                 {/* super.money Logo in center of QR */}
                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white p-0.5 rounded-full shadow-sm border border-gray-100">
-                      <div className="bg-[#5f259f] p-1 rounded-full">
-                        <img src="https://www.phonepe.com/favicon.ico" alt="Pe" className="w-2.5 h-2.5 invert" />
+                    <div className="bg-white p-0.5 rounded-lg shadow-sm border border-gray-100">
+                      <div className="bg-[#4f46e5] p-0.5 rounded-md">
+                        <QrCode size={10} className="text-white" />
                       </div>
                     </div>
                   </div>
                  {/* Overlay Hint */}
                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
-                    <div className="bg-white text-[#5f259f] p-2.5 rounded-full shadow-lg">
+                    <div className="bg-white text-[#4f46e5] p-2.5 rounded-full shadow-lg">
                       <Maximize2 size={20} />
                     </div>
                  </div>
               </div>
 
-              <div className="text-center">
-                <h3 className="text-[10px] text-white font-bold tracking-widest uppercase truncate">RAVURU KARTHIK</h3>
-                <p className="text-[9px] text-indigo-400 font-medium mt-1">₹299 / Month</p>
+              <div className="text-center space-y-0.5">
+                <h3 className="text-[10px] text-gray-900 font-bold tracking-tight uppercase truncate">RAVURU KARTHIK</h3>
+                <p className="text-[8px] text-gray-400 font-mono">8125399090@superyes</p>
+                <p className="text-[9px] text-indigo-600 font-bold mt-1">₹299 / Month</p>
               </div>
             </div>
             
