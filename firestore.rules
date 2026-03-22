@@ -10,7 +10,7 @@ service cloud.firestore {
     // Fields:
     //   - name: string (required, 1-100 chars)
     //   - email: string (required, valid email format)
-    //   - role: string (required, 'admin' or 'student')
+    //   - role: string (required, 'ADMIN' or 'STUDENT')
     //   - isPremium: bool (optional)
     //   - isPendingVerification: bool (optional)
     //   - paymentProofUrl: string (optional, valid URL)
@@ -39,7 +39,7 @@ service cloud.firestore {
       return isAuthenticated() && 
         (
           (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN') ||
           (request.auth.token.email == "ravurukarthik740@gmail.com" && request.auth.token.email_verified == true)
         );
     }
@@ -56,7 +56,7 @@ service cloud.firestore {
       return data.keys().hasAll(['name', 'email', 'role']) &&
              data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
              isValidEmail(data.email) &&
-             data.role in ['admin', 'student'] &&
+             data.role in ['ADMIN', 'STUDENT'] &&
              (!('isPremium' in data) || data.isPremium is bool) &&
              (!('isPendingVerification' in data) || data.isPendingVerification is bool) &&
              (!('paymentProofUrl' in data) || isValidUrl(data.paymentProofUrl)) &&
@@ -72,9 +72,9 @@ service cloud.firestore {
       // Allow users to read their own profile, or admins to read any profile
       allow read: if isOwner(userId) || isAdmin();
       
-      // Allow users to create their own profile as 'student', or admins to create any profile
+      // Allow users to create their own profile as 'STUDENT', or admins to create any profile
       allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && 
-                    (request.resource.data.role == 'student' || isAdmin());
+                    (request.resource.data.role == 'STUDENT' || isAdmin());
       
       // Allow users to update their own profile (with restrictions), or admins to update anything
       allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) &&

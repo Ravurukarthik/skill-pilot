@@ -208,42 +208,68 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         const result = await createUserWithEmailAndPassword(auth, email, password);
 
         if (result.user) {
-          await sendEmailVerification(result.user);
+          try {
+            await sendEmailVerification(result.user);
+            setSuccessMessage('Account created! A verification email has been sent to your inbox.');
+          } catch (vErr) {
+            console.warn('Email verification could not be sent:', vErr);
+            setSuccessMessage('Account created! (Verification email could not be sent, but you can still log in)');
+          }
           
           const userDocRef = doc(db, 'users', result.user.uid);
           const isAdmin = email === 'ravurukarthik740@gmail.com';
-          await setDoc(userDocRef, {
-            name: name,
-            email: email,
-            role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
-            isPremium: false,
-            isPendingVerification: false,
-            password: password,
-            createdAt: new Date().toISOString(),
-            provider: 'email',
-            providerData: result.user.providerData.map(p => ({
-              providerId: p.providerId,
-              uid: p.uid,
-              displayName: p.displayName,
-              email: p.email,
-              phoneNumber: p.phoneNumber,
-              photoURL: p.photoURL
-            })),
-            phoneNumber: result.user.phoneNumber || undefined
-          });
+          
+          try {
+            await setDoc(userDocRef, {
+              name: name,
+              email: email,
+              role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
+              isPremium: false,
+              isPendingVerification: false,
+              password: password,
+              createdAt: new Date().toISOString(),
+              provider: 'email',
+              providerData: result.user.providerData.map(p => ({
+                providerId: p.providerId,
+                uid: p.uid,
+                displayName: p.displayName,
+                email: p.email,
+                phoneNumber: p.phoneNumber,
+                photoURL: p.photoURL
+              })),
+              phoneNumber: result.user.phoneNumber || undefined
+            });
+          } catch (fsErr: any) {
+            console.error('Firestore Profile Creation Error:', fsErr);
+            // Even if profile creation fails, we have the Auth user, 
+            // but the app might break without a profile.
+            // We'll show an error but let them proceed if possible.
+            throw new Error(`Auth account created, but profile setup failed: ${fsErr.message}`);
+          }
 
           onLogin({
             id: result.user.uid,
             email: email,
             name: name,
-            role: UserRole.STUDENT,
+            role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
             isPremium: false,
             password: password
           });
         }
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      console.error('Signup Error:', err);
+      if (err.code === 'auth/email-already-in-use') {
+        setError('This email is already registered. Please sign in instead.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('The email address is not valid.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('The password is too weak. Please use at least 6 characters.');
+      } else if (err.message?.includes('permission-denied')) {
+        setError('Profile creation failed due to database permissions. Please contact the administrator.');
+      } else {
+        setError(err.message || 'An error occurred during sign up');
+      }
     } finally {
       setLoading(false);
     }
