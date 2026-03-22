@@ -71,16 +71,28 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
-        // Show sync UI if it takes too long to redirect
-        setShowSync(true);
-        
         // Check if profile exists, if not create it
         const userDocRef = doc(db, 'users', result.user.uid);
         const docSnap = await getDoc(userDocRef);
         
-        if (!docSnap.exists()) {
+        let userData: User;
+
+        if (docSnap.exists()) {
+          const profile = docSnap.data();
+          userData = {
+            id: result.user.uid,
+            email: result.user.email || '',
+            name: profile.name || result.user.displayName || 'User',
+            role: profile.role || (result.user.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT),
+            isPremium: profile.isPremium || false,
+            isPendingVerification: profile.isPendingVerification || false,
+            paymentProofUrl: profile.paymentProofUrl,
+            paymentDate: profile.paymentDate,
+            password: profile.password,
+          };
+        } else {
           const isAdmin = result.user.email === 'ravurukarthik740@gmail.com';
-          await setDoc(userDocRef, {
+          const newProfile = {
             name: result.user.displayName || 'User',
             email: result.user.email,
             role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
@@ -97,8 +109,21 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               photoURL: p.photoURL
             })),
             phoneNumber: result.user.phoneNumber || undefined
-          });
+          };
+          
+          await setDoc(userDocRef, newProfile);
+          
+          userData = {
+            id: result.user.uid,
+            email: result.user.email || '',
+            name: newProfile.name,
+            role: newProfile.role as UserRole,
+            isPremium: false,
+          };
         }
+
+        // Explicitly call onLogin to ensure the UI updates immediately
+        onLogin(userData);
       }
     } catch (err: any) {
       console.error('Google Login Error:', err);
@@ -108,10 +133,15 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         setError(`This domain (${window.location.hostname}) is not authorized in the Firebase Console. Please add it to the "Authorized Domains" list in your Firebase Authentication settings.`);
       } else if (err.code === 'auth/cancelled-popup-request') {
         setError('The login process was cancelled. Please try again.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Google login is not enabled in your Firebase Console. Please enable it in the Authentication > Sign-in method tab.');
+      } else if (err.code === 'auth/internal-error' || err.message?.includes('network')) {
+        setError('A network error occurred. If you are using the app inside a preview window, try opening it in a new tab.');
       } else {
         setError(err.message || 'Failed to initialize Google login. Check your internet connection or browser settings.');
       }
       setShowSync(true);
+    } finally {
       setLoading(false);
     }
   };
@@ -447,21 +477,28 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
           {showSync && (
             <div className="mt-6 space-y-4">
-              <div className="p-5 bg-indigo-50 rounded-2xl border-2 border-indigo-100 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex items-center gap-2 text-indigo-700 mb-2">
-                  <ShieldCheck size={18} />
-                  <p className="text-xs font-bold uppercase tracking-wider">Authentication Sync</p>
+              <div className="p-5 bg-amber-50 rounded-2xl border-2 border-amber-100 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center gap-2 text-amber-700 mb-2">
+                  <AlertTriangle size={18} />
+                  <p className="text-xs font-bold uppercase tracking-wider">Troubleshooting Login</p>
                 </div>
-                <p className="text-xs text-indigo-600 mb-4 leading-relaxed">
-                  If the popup closed but you're still here, click below to manually sync your session.
-                </p>
-                <button 
-                  onClick={syncLogin}
-                  disabled={syncLoading}
-                  className="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
-                >
-                  {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Sync Login Status'}
-                </button>
+                <div className="space-y-3">
+                  <p className="text-xs text-amber-800 leading-relaxed">
+                    Google Login can sometimes fail inside an iframe (like this preview). Try these steps:
+                  </p>
+                  <ul className="text-[11px] text-amber-700 list-disc ml-4 space-y-1">
+                    <li><strong>Open in New Tab:</strong> Click the "Open in new tab" icon in the top right of this window.</li>
+                    <li><strong>Enable Cookies:</strong> Ensure "Third-party cookies" are allowed in your browser settings.</li>
+                    <li><strong>Authorized Domains:</strong> Ensure <code>{window.location.hostname}</code> is added to your Firebase Console.</li>
+                  </ul>
+                  <button 
+                    onClick={syncLogin}
+                    disabled={syncLoading}
+                    className="w-full bg-amber-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-100 flex items-center justify-center gap-2 mt-2"
+                  >
+                    {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Sync Login Status'}
+                  </button>
+                </div>
               </div>
 
               <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-[10px] font-mono text-gray-500 overflow-hidden">
