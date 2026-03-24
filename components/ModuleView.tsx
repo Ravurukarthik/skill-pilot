@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
-import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK } from '../constants';
+import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, COMPILER_LINKS } from '../constants';
 import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
@@ -545,7 +545,21 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
               </div>
               <div>
                 <h4 className={`font-bold ${selectedSubject === lang ? 'text-white' : 'text-slate-100'}`}>{lang}</h4>
-                <p className={`text-xs ${selectedSubject === lang ? 'text-emerald-100' : 'text-slate-400'}`}>Learn & Practice</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className={`text-xs ${selectedSubject === lang ? 'text-emerald-100' : 'text-slate-400'}`}>Learn & Practice</p>
+                  {COMPILER_LINKS[lang] && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleExternalRedirect(COMPILER_LINKS[lang]);
+                      }}
+                      className={`p-1.5 rounded-lg transition-all ${selectedSubject === lang ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-600 hover:text-white'}`}
+                      title="Open Online Compiler"
+                    >
+                      <ExternalLink size={14} />
+                    </button>
+                  )}
+                </div>
               </div>
             </button>
           ))}
@@ -553,9 +567,20 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
 
         {(isAiLoading || aiContent) && (
           <div className="mt-10 bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-8 animate-in zoom-in-95 duration-300">
-            <div className="flex items-center gap-2 mb-6 text-emerald-400 font-bold border-b border-slate-700 pb-4">
-              <Terminal size={20} />
-              Coding Assistant: {selectedSubject}
+            <div className="flex items-center justify-between mb-6 border-b border-slate-700 pb-4">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                <Terminal size={20} />
+                Coding Assistant: {selectedSubject}
+              </div>
+              {selectedSubject && COMPILER_LINKS[selectedSubject] && (
+                <button
+                  onClick={() => handleExternalRedirect(COMPILER_LINKS[selectedSubject])}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"
+                >
+                  <ExternalLink size={14} />
+                  Open {selectedSubject} Compiler
+                </button>
+              )}
             </div>
             
             {isAiLoading ? (

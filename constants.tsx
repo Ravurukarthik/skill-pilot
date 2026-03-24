@@ -153,6 +153,19 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
   'other-gov-exams': ['Railway Recruitment (RRB)', 'Post Office Exams', 'Police Recruitment'],
 };
 
+export const COMPILER_LINKS: Record<string, string> = {
+  'C': 'https://www.programiz.com/c-programming/online-compiler/',
+  'C++': 'https://www.programiz.com/cpp-programming/online-compiler/',
+  'C#': 'https://www.programiz.com/csharp-programming/online-compiler/',
+  'Python': 'https://www.programiz.com/python-programming/online-compiler/',
+  'Java': 'https://www.programiz.com/java-programming/online-compiler/',
+  'JavaScript': 'https://playcode.io/javascript',
+  'React': 'https://codesandbox.io/s/new',
+  'Node.js': 'https://replit.com/languages/nodejs',
+  'SQL': 'https://www.programiz.com/sql/online-compiler/',
+  'MERN Stack': 'https://codesandbox.io/s/mern-starter-68y9v'
+};
+
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
     id: 'paytm-fellowship', 
