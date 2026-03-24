@@ -173,6 +173,17 @@ export const INTERNSHIP_MOCK: Internship[] = [
     link: 'https://surveys.infosysapps.com/r/a/Si41PRd2gAG5',
     description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n🐍 Python Technology\n☕ Java Tech Stack\n📊 Data Visualization'
   },
+  { 
+    id: 'wipro-presales-solutions', 
+    title: 'Presales & Solutions Design', 
+    company: 'Wipro', 
+    stipend: '₹ 40,000 - 40,001 /month', 
+    duration: '6 Months', 
+    location: 'Bangalore', 
+    type: 'paid', 
+    link: 'https://internshala.com/internship/detail/presales-solutions-design-internship-in-bangalore-at-wipro1772638351',
+    description: 'Starts immediately\nLast date: 3 Apr\' 26'
+  },
 ];
 
 export const JOBS_MOCK: Job[] = [
@@ -196,6 +207,17 @@ export const JOBS_MOCK: Job[] = [
     location: 'Bangalore, India (Hybrid)',
     description: 'HPE Off Campus Recruitment 2026 Details\nRole: Systems/Software Engineer I\nCategory: IT Jobs\nQualification: B.E / B.Tech / B.Sc / M.E / M.Tech / M.Sc\nExperience: 0 – 2 Years\nSalary: As per industry standards\nWork Mode: Hybrid (approx. 2 days/week in office)\nLast Date: Apply at the earliest\n\nEligibility Criteria:\n- Hold a Bachelor’s or Master’s degree in Computer Science, Information Systems, or a related field\n- Have 0 to 2 years of experience (freshers are eligible)',
     link: 'https://careers.hpe.com/us/en/job/1204760/Systems-Software-Engineer-I-Entry-Level',
+    type: 'Full Time'
+  },
+  {
+    id: 'wipro-cyber-security-analyst',
+    title: 'Cyber Security Analyst',
+    company: 'Wipro',
+    postedAt: 'Just now',
+    applicants: 'Be the first to apply',
+    location: 'Bengaluru, India',
+    description: 'Wipro Hiring Jobs 2026 Details:\nRole: Cyber Security Analyst\nCategory: IT Jobs\nQualification: B.E / B.Tech\nExperience: Freshers\nSalary: As per industry standards\nJob Location: Bengaluru\nLast Date: Apply at the earliest\n\nEligibility Criteria:\n- Have a B.E / B.Tech degree\n- Possess knowledge of Trend Micro Antivirus – Deep Security (mandatory skill)\n\nKey Responsibilities:\nAs a Cyber Security Analyst at Wipro, you will be responsible for Security Monitoring & Analysis',
+    link: 'https://careers.wipro.com/job/Bengaluru-CYBER-SECURITY-ANALYST-L1-IND-560035/151190-en_US/',
     type: 'Full Time'
   }
 ];

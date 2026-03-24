@@ -491,7 +491,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                   <FileText size={16} className="text-indigo-400" />
                   Brief Overview
                 </h5>
-                <p className="text-slate-300 text-sm leading-relaxed">
+                <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                   {job.description}
                 </p>
               </div>
