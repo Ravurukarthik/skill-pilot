@@ -155,6 +155,28 @@ const App: React.FC = () => {
             paymentProofUrl: proofUrl,
             paymentDate: paymentDate
           });
+          
+          // Send email notification to admin
+          const formData = new FormData();
+          formData.append('proof', file);
+          formData.append('userEmail', user.email);
+          formData.append('userId', user.id);
+          formData.append('paymentDate', paymentDate);
+          
+          try {
+            const response = await fetch('/api/send-payment-notification', {
+              method: 'POST',
+              body: formData,
+            });
+            const data = await response.json();
+            if (data.success) {
+              console.log('Admin notification sent successfully');
+            } else {
+              console.warn('Admin notification failed:', data.error);
+            }
+          } catch (emailErr) {
+            console.error('Failed to send admin notification:', emailErr);
+          }
         } catch (err) {
           handleFirestoreError(err, OperationType.UPDATE, `users/${user.id}`);
         }
