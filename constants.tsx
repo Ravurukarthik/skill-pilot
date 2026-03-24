@@ -184,6 +184,17 @@ export const INTERNSHIP_MOCK: Internship[] = [
     link: 'https://internshala.com/internship/detail/presales-solutions-design-internship-in-bangalore-at-wipro1772638351',
     description: 'Starts immediately\nLast date: 3 Apr\' 26'
   },
+  { 
+    id: 'microsoft-data-science', 
+    title: 'Data Science Internship', 
+    company: 'Microsoft', 
+    stipend: 'Industry Standard', 
+    duration: 'Program Duration', 
+    location: 'Pan India / Virtual', 
+    type: 'paid', 
+    link: 'https://apply.careers.microsoft.com/careers/job?pid=1970393556625290&utm_source=Data_Science_Internship_unstop&utm_medium=listing&utm_campaign=unstop',
+    description: 'Eligibility:\nEngineering Students\nPostgraduate\nUndergraduate'
+  },
 ];
 
 export const JOBS_MOCK: Job[] = [
