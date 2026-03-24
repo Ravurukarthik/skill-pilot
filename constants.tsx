@@ -8,7 +8,8 @@ import {
   Download, 
   Layers,
   Award,
-  Users
+  Users,
+  Code
 } from 'lucide-react';
 import { ModuleType, BTechCourse, Internship, Job } from './types';
 
@@ -21,7 +22,8 @@ export const MODULES_DATA = [
   { type: ModuleType.COMPETITIVE_EXAMS, icon: <Award className="w-8 h-8 text-yellow-500" />, description: "GATE, CAT, UPSC and other exam materials." },
   { type: ModuleType.INTERNSHIPS, icon: <Users className="w-8 h-8 text-green-500" />, description: "Explore latest internship opportunities." },
   { type: ModuleType.JOBS, icon: <Briefcase className="w-8 h-8 text-orange-500" />, description: "Find and apply for top tech and non-tech jobs." },
-  { type: ModuleType.CERTIFICATIONS, icon: <Award className="w-8 h-8 text-red-500" />, description: "Boost your resume with professional certificates." }
+  { type: ModuleType.CERTIFICATIONS, icon: <Award className="w-8 h-8 text-red-500" />, description: "Boost your resume with professional certificates." },
+  { type: ModuleType.CODING_SESSION, icon: <Code className="w-8 h-8 text-emerald-500" />, description: "Practice coding and master programming languages." }
 ];
 
 export const SUB_MODULES_GENERAL = [
@@ -132,6 +134,7 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
   'mba-2nd': ['Strategic Management', 'Entrepreneurship', 'Business Ethics', 'International Business'],
   'M.Tech Guide': ['Advanced Mathematics', 'Research Methodology', 'Specialization Elective I', 'Specialization Elective II'],
   'MBA Guide': ['Marketing Management', 'Financial Accounting', 'Organizational Behavior', 'Business Analytics'],
+  'Coding Session': ['C', 'C++', 'C#', 'Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'MERN Stack'],
   'Competitive Exams': [
     'Engineering & Technology Exams', 
     'Medical Exams', 

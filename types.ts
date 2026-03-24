@@ -18,6 +18,9 @@ export interface User {
   provider?: string;
   providerData?: any[];
   phoneNumber?: string;
+  dailyGoalMinutes?: number;
+  studyStats?: { [moduleName: string]: number };
+  lastStudyDate?: string;
 }
 
 export enum ModuleType {
@@ -29,7 +32,8 @@ export enum ModuleType {
   COMPETITIVE_EXAMS = 'Competitive Exams',
   INTERNSHIPS = 'Internships',
   JOBS = 'Job Applications',
-  CERTIFICATIONS = 'Certification Courses'
+  CERTIFICATIONS = 'Certification Courses',
+  CODING_SESSION = 'Coding Session'
 }
 
 export interface SubModule {

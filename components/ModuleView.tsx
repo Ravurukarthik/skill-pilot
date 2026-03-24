@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
 import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK } from '../constants';
-import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
 interface ModuleViewProps {
@@ -514,6 +514,68 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
     );
   };
 
+  const renderCodingSession = () => {
+    const languages = SUBJECTS_MOCK['Coding Session'] || [];
+    
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+        <div className="bg-emerald-900/20 border border-emerald-500/20 p-6 rounded-3xl flex flex-col md:flex-row items-center gap-6 mb-4">
+          <div className="w-16 h-16 bg-emerald-600/20 rounded-2xl flex items-center justify-center text-emerald-400">
+            <Terminal size={32} />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <h3 className="text-xl font-bold text-emerald-100 mb-1">Interactive Coding Environment</h3>
+            <p className="text-emerald-400/70 text-sm">Master the art of programming with expert-guided practice sessions and real-time feedback.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-emerald-600/10 px-4 py-2 rounded-full border border-emerald-500/20">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Compiler Ready</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {languages.map((lang) => (
+            <button
+              key={lang}
+              onClick={() => handleTutorialRequest(lang)}
+              className={`p-6 rounded-2xl border transition-all text-left flex flex-col gap-4 group ${selectedSubject === lang ? 'bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-900/20' : 'bg-slate-800 border-slate-700 hover:border-emerald-500'}`}
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedSubject === lang ? 'bg-emerald-500 text-white' : 'bg-emerald-900/30 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white'}`}>
+                <Code size={24} />
+              </div>
+              <div>
+                <h4 className={`font-bold ${selectedSubject === lang ? 'text-white' : 'text-slate-100'}`}>{lang}</h4>
+                <p className={`text-xs ${selectedSubject === lang ? 'text-emerald-100' : 'text-slate-400'}`}>Learn & Practice</p>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {(isAiLoading || aiContent) && (
+          <div className="mt-10 bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-8 animate-in zoom-in-95 duration-300">
+            <div className="flex items-center gap-2 mb-6 text-emerald-400 font-bold border-b border-slate-700 pb-4">
+              <Terminal size={20} />
+              Coding Assistant: {selectedSubject}
+            </div>
+            
+            {isAiLoading ? (
+              <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                <Loader2 className="animate-spin mb-4" size={32} />
+                <p>Analyzing your coding request...</p>
+              </div>
+            ) : (
+              <div className="prose prose-invert prose-emerald max-w-none">
+                <div className="whitespace-pre-wrap text-slate-300 leading-relaxed font-mono text-sm bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
+                  {aiContent}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderGeneralSubModules = () => {
     const filteredSubModules = hasBranches 
       ? SUB_MODULES_GENERAL.filter(sub => sub.id === 'tutorials')
@@ -549,6 +611,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   const isMBA = type === ModuleType.MBA;
   const isCompetitiveExams = type === ModuleType.COMPETITIVE_EXAMS;
   const isInternship = type === ModuleType.INTERNSHIPS;
+  const isCodingSession = type === ModuleType.CODING_SESSION;
   const hasBranches = isBTech || isMTech || isMBA || isCompetitiveExams;
 
   const handleBack = () => {
@@ -583,6 +646,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
           </h1>
           <p className="text-slate-400">
             {isInternship ? 'Kickstart your professional journey with handpicked opportunities.' :
+             isCodingSession ? 'Master programming languages with interactive expert-guided sessions and real-time coding practice.' :
              activeSubTab === 'papers' ? `Viewing previous year examination papers for ${type}.` : 
              activeSubTab === 'tutorials' ? `Explore comprehensive AI-powered tutorials for ${type}. (Subject-wise tutorials coming soon for all categories!)` :
              hasBranches 
@@ -600,7 +664,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
 
       {type === ModuleType.JOBS && renderJobs()}
 
-      {!hasBranches && !isInternship && type !== ModuleType.JOBS && (
+      {type === ModuleType.CODING_SESSION && renderCodingSession()}
+
+      {!hasBranches && !isInternship && type !== ModuleType.JOBS && type !== ModuleType.CODING_SESSION && (
         <>
           {renderGeneralSubModules()}
           

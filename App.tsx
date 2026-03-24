@@ -25,6 +25,38 @@ const App: React.FC = () => {
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
+  // Study Time Tracker
+  useEffect(() => {
+    if (!user || currentView !== 'module' || !selectedModule) return;
+
+    const interval = setInterval(async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const userDocRef = doc(db, 'users', user.id);
+      
+      let newStats = { ...(user.studyStats || {}) };
+      
+      // Reset if it's a new day
+      if (user.lastStudyDate !== today) {
+        newStats = {};
+      }
+
+      const moduleName = selectedModule;
+      newStats[moduleName] = (newStats[moduleName] || 0) + 1; // add 1 minute
+
+      try {
+        await setDoc(userDocRef, {
+          studyStats: newStats,
+          lastStudyDate: today,
+          dailyGoalMinutes: user.dailyGoalMinutes || 60 // Default 1 hour goal
+        }, { merge: true });
+      } catch (err) {
+        console.error('Failed to update study stats:', err);
+      }
+    }, 60000); // Every 1 minute
+
+    return () => clearInterval(interval);
+  }, [user?.id, user?.lastStudyDate, user?.studyStats, user?.dailyGoalMinutes, currentView, selectedModule]);
+
   useEffect(() => {
     // Test Firestore connection
     const testConnection = async () => {

@@ -10,6 +10,15 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user }) => {
+  const studyStats = user.studyStats || {};
+  const totalMinutes = Number(Object.values(studyStats).reduce((acc: number, curr: any) => acc + (Number(curr) || 0), 0));
+  const goalMinutes = Number(user.dailyGoalMinutes || 60);
+  const progressPercent = Math.min(Math.round((totalMinutes / goalMinutes) * 100), 100);
+
+  // Find module with most time spent
+  const topModule = Object.entries(studyStats).sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0] as ModuleType | undefined;
+  const suggestedModule = topModule ? MODULES_DATA.find(m => m.type === topModule) : MODULES_DATA[0];
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {!user.isPremium && (
@@ -105,37 +114,55 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-sm">
-          <h3 className="text-xl font-bold mb-6 text-slate-100">Recent Activities</h3>
+          <h3 className="text-xl font-bold mb-6 text-slate-100">AI Suggestions</h3>
           <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-4">
-                <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex-shrink-0 flex items-center justify-center text-blue-400">
-                  <ArrowRight size={20} />
+            {suggestedModule && (
+              <div 
+                onClick={() => onSelectModule(suggestedModule.type)}
+                className="flex gap-4 p-4 bg-slate-800/50 rounded-2xl border border-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group"
+              >
+                <div className="w-12 h-12 bg-indigo-900/20 rounded-lg flex-shrink-0 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-900/40 transition-colors">
+                  {suggestedModule.icon}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-200">Mathematics Tutorial - Algebra 101</h4>
-                  <p className="text-sm text-slate-400">You completed 60% of this course. Continue learning?</p>
+                  <h4 className="font-semibold text-slate-200">Continue Learning: {suggestedModule.type}</h4>
+                  <p className="text-sm text-slate-400">Based on your recent activity, we suggest you continue with this module to stay on track.</p>
                 </div>
-                <div className="ml-auto text-xs text-slate-500">2h ago</div>
+                <div className="ml-auto self-center">
+                  <ArrowRight size={20} className="text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+                </div>
               </div>
-            ))}
+            )}
+            <div className="flex gap-4 p-4 bg-slate-800/50 rounded-2xl border border-slate-800">
+              <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex-shrink-0 flex items-center justify-center text-blue-400">
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-200">Explore New: Certification Courses</h4>
+                <p className="text-sm text-slate-400">Boost your resume with professional certifications in trending technologies.</p>
+              </div>
+              <div className="ml-auto self-center">
+                <ArrowRight size={20} className="text-slate-600" />
+              </div>
+            </div>
           </div>
         </div>
         <div className="bg-gradient-to-br from-indigo-900 to-indigo-700 p-8 rounded-3xl text-white">
           <h3 className="text-xl font-bold mb-4">Daily Study Goal</h3>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-indigo-200">2.5 / 4 hours</span>
-            <span className="font-bold">62%</span>
+            <span className="text-indigo-200">{Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m / {Math.floor(goalMinutes / 60)}h</span>
+            <span className="font-bold">{progressPercent}%</span>
           </div>
           <div className="w-full bg-indigo-800 h-3 rounded-full overflow-hidden mb-8">
-            <div className="bg-indigo-400 h-full w-[62%]"></div>
+            <div className="bg-indigo-400 h-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
           </div>
-          <p className="text-sm text-indigo-100 opacity-80 mb-6">
+          <p className="text-sm text-indigo-100 opacity-80 mb-6 italic">
             "Education is the most powerful weapon which you can use to change the world."
           </p>
-          <button className="w-full bg-white/10 hover:bg-white/20 border border-white/20 py-3 rounded-xl font-bold transition-all">
-            Set New Goal
-          </button>
+          <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-200 mb-1">Top Module Today</p>
+            <p className="font-bold">{topModule || 'No activity yet'}</p>
+          </div>
         </div>
       </div>
     </div>

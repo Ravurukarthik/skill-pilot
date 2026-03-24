@@ -56,6 +56,18 @@
         "phoneNumber": {
           "type": "string",
           "description": "The user's phone number."
+        },
+        "dailyGoalMinutes": {
+          "type": "integer",
+          "description": "The user's daily study goal in minutes."
+        },
+        "studyStats": {
+          "type": "object",
+          "description": "Map of module names to minutes spent studying them."
+        },
+        "lastStudyDate": {
+          "type": "string",
+          "description": "The last date the user studied (used for daily resets)."
         }
       },
       "required": ["name", "email", "role"]
