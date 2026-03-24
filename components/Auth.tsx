@@ -20,6 +20,7 @@ interface AuthProps {
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isOtpMode, setIsOtpMode] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [email, setEmail] = useState('');
@@ -58,6 +59,33 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       console.error('Sync error:', err);
     } finally {
       setSyncLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your email address first.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setSuccessMessage('');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setSuccessMessage('Password reset email sent! Please check your inbox (and spam folder).');
+      setIsForgotPassword(false);
+    } catch (err: any) {
+      console.error('Password Reset Error:', err);
+      if (err.code === 'auth/user-not-found') {
+        setError('No account found with this email address.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address.');
+      } else {
+        setError(err.message || 'Failed to send reset email. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,8 +159,8 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         setError('The login popup was blocked by your browser. Please allow popups for this site and try again.');
       } else if (err.code === 'auth/unauthorized-domain') {
         setError(`This domain (${window.location.hostname}) is not authorized in the Firebase Console. Please add it to the "Authorized Domains" list in your Firebase Authentication settings.`);
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        setError('The login process was cancelled. Please try again.');
+      } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
+        setError('The login process was cancelled or the window was closed. Please try again.');
       } else if (err.code === 'auth/operation-not-allowed') {
         setError('Google login is not enabled in your Firebase Console. Please enable it in the Authentication > Sign-in method tab.');
       } else if (err.code === 'auth/internal-error' || err.message?.includes('network')) {
@@ -325,14 +353,14 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       </div>
 
       {/* Right Side: Auth Form */}
-      <div className="flex items-center justify-center p-6 md:p-12 bg-white">
+      <div className="flex items-center justify-center p-6 md:p-12 bg-slate-950">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-slate-100 mb-2">
               Welcome to Skill Pilot
             </h2>
-            <p className="text-gray-500">
-              Select your preferred way to continue. <span className="text-[10px] block mt-1 text-amber-600 font-medium">Note: Verification emails may take up to 5 mins and often land in Spam.</span>
+            <p className="text-slate-400">
+              Select your preferred way to continue. <span className="text-[10px] block mt-1 text-amber-500 font-medium">Note: Verification emails may take up to 5 mins and often land in Spam.</span>
             </p>
           </div>
 
@@ -342,7 +370,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               type="button"
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full bg-white border border-gray-200 text-gray-700 py-3.5 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-3 shadow-sm disabled:opacity-70 group"
+              className="w-full bg-slate-900 border border-slate-800 text-slate-200 py-3.5 rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-3 shadow-sm disabled:opacity-70 group"
             >
               <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 group-hover:scale-110 transition-transform" />
               Continue with Google
@@ -350,48 +378,63 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100"></div>
+                <div className="w-full border-t border-slate-800"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-4 text-gray-400 font-bold tracking-widest">Or use email</span>
+                <span className="bg-slate-950 px-4 text-slate-500 font-bold tracking-widest">Or use email</span>
               </div>
             </div>
 
             {/* Sign In / Sign Up Tabs */}
-            <div className="flex p-1 bg-gray-100 rounded-xl mb-6">
-              <button
-                onClick={() => { setIsLogin(true); setIsOtpMode(false); setError(''); setSuccessMessage(''); }}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isLogin && !isOtpMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => { setIsLogin(false); setIsOtpMode(false); setError(''); setSuccessMessage(''); }}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isLogin && !isOtpMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Sign Up
-              </button>
-              <button
-                onClick={() => { setIsOtpMode(true); setError(''); setSuccessMessage(''); }}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isOtpMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                OTP
-              </button>
-            </div>
+            {!isForgotPassword && (
+              <div className="flex p-1 bg-slate-900 rounded-xl mb-6">
+                <button
+                  onClick={() => { setIsLogin(true); setIsOtpMode(false); setIsForgotPassword(false); setError(''); setSuccessMessage(''); }}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isLogin && !isOtpMode ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => { setIsLogin(false); setIsOtpMode(false); setIsForgotPassword(false); setError(''); setSuccessMessage(''); }}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isLogin && !isOtpMode ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                >
+                  Sign Up
+                </button>
+                <button
+                  onClick={() => { setIsOtpMode(true); setIsForgotPassword(false); setError(''); setSuccessMessage(''); }}
+                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isOtpMode ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                >
+                  OTP
+                </button>
+              </div>
+            )}
 
-            <form onSubmit={isOtpMode ? (showOtpInput ? handleVerifyOtp : handleSendOtp) : handleSubmit} className="space-y-4">
+            {isForgotPassword && (
+              <div className="mb-6">
+                <button 
+                  onClick={() => { setIsForgotPassword(false); setError(''); setSuccessMessage(''); }}
+                  className="text-xs font-bold text-indigo-400 hover:underline flex items-center gap-1"
+                >
+                  <ArrowRight size={14} className="rotate-180" /> Back to Sign In
+                </button>
+                <h3 className="text-xl font-bold text-slate-100 mt-4">Reset Password</h3>
+                <p className="text-xs text-slate-400 mt-1">Enter your email and we'll send you a link to reset your password.</p>
+              </div>
+            )}
+
+            <form onSubmit={isForgotPassword ? handleForgotPassword : (isOtpMode ? (showOtpInput ? handleVerifyOtp : handleSendOtp) : handleSubmit)} className="space-y-4">
               {!isLogin && !isOtpMode && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Full Name</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                       <UserIcon size={18} />
                     </span>
                     <input 
                       type="text" 
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                      className="w-full pl-10 pr-4 py-3 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-900 text-slate-100 text-sm"
                       placeholder="John Doe"
                       required
                     />
@@ -400,16 +443,16 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Email Address</label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                     <Mail size={18} />
                   </span>
                   <input 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                    className="w-full pl-10 pr-4 py-3 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-900 text-slate-100 text-sm"
                     placeholder="name@example.com"
                     required
                   />
@@ -418,16 +461,16 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
               {isOtpMode && showOtpInput && (
                 <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Verification Code</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Verification Code</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                       <ShieldCheck size={18} />
                     </span>
                     <input 
                       type="text" 
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                      className="w-full pl-10 pr-4 py-3 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-900 text-slate-100 text-sm"
                       placeholder="123456"
                       disabled={loading}
                       maxLength={6}
@@ -437,18 +480,29 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 </div>
               )}
 
-              {!isOtpMode && (
+              {!isOtpMode && !isForgotPassword && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
+                    {isLogin && (
+                      <button 
+                        type="button"
+                        onClick={() => { setIsForgotPassword(true); setError(''); setSuccessMessage(''); }}
+                        className="text-[10px] font-bold text-indigo-400 hover:underline"
+                      >
+                        Forgot Password?
+                      </button>
+                    )}
+                  </div>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                       <Lock size={18} />
                     </span>
                     <input 
                       type="password" 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 text-sm"
+                      className="w-full pl-10 pr-4 py-3 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-900 text-slate-100 text-sm"
                       placeholder="••••••••"
                       disabled={loading}
                       required
@@ -457,17 +511,17 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 </div>
               )}
 
-              {error && <p className="text-red-500 text-xs font-medium ml-1">{error}</p>}
-              {successMessage && <p className="text-green-600 text-xs font-medium flex items-center gap-2 ml-1"><CheckCircle2 size={14} /> {successMessage}</p>}
+              {error && <p className="text-red-400 text-xs font-medium ml-1">{error}</p>}
+              {successMessage && <p className="text-green-400 text-xs font-medium flex items-center gap-2 ml-1"><CheckCircle2 size={14} /> {successMessage}</p>}
 
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 shadow-lg shadow-indigo-100 mt-2"
+                className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 shadow-lg shadow-indigo-900/20 mt-2"
               >
                 {loading ? <Loader2 size={20} className="animate-spin" /> : (
                   <>
-                    {isOtpMode ? (showOtpInput ? 'Verify OTP' : 'Send OTP') : (isLogin ? 'Sign In' : 'Sign Up')} 
+                    {isForgotPassword ? 'Send Reset Link' : (isOtpMode ? (showOtpInput ? 'Verify OTP' : 'Send OTP') : (isLogin ? 'Sign In' : 'Sign Up'))} 
                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -477,16 +531,16 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
           {showSync && (
             <div className="mt-6 space-y-4">
-              <div className="p-5 bg-amber-50 rounded-2xl border-2 border-amber-100 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex items-center gap-2 text-amber-700 mb-2">
+              <div className="p-5 bg-amber-900/20 rounded-2xl border-2 border-amber-900/30 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center gap-2 text-amber-500 mb-2">
                   <AlertTriangle size={18} />
                   <p className="text-xs font-bold uppercase tracking-wider">Troubleshooting Login</p>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-xs text-amber-800 leading-relaxed">
+                  <p className="text-xs text-amber-200/70 leading-relaxed">
                     Google Login can sometimes fail inside an iframe (like this preview). Try these steps:
                   </p>
-                  <ul className="text-[11px] text-amber-700 list-disc ml-4 space-y-1">
+                  <ul className="text-[11px] text-amber-400/80 list-disc ml-4 space-y-1">
                     <li><strong>Open in New Tab:</strong> Click the "Open in new tab" icon in the top right of this window.</li>
                     <li><strong>Enable Cookies:</strong> Ensure "Third-party cookies" are allowed in your browser settings.</li>
                     <li><strong>Authorized Domains:</strong> Ensure <code>{window.location.hostname}</code> is added to your Firebase Console.</li>
@@ -494,31 +548,31 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   <button 
                     onClick={syncLogin}
                     disabled={syncLoading}
-                    className="w-full bg-amber-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-100 flex items-center justify-center gap-2 mt-2"
+                    className="w-full bg-amber-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2 mt-2"
                   >
                     {syncLoading ? <Loader2 size={18} className="animate-spin" /> : 'Sync Login Status'}
                   </button>
                 </div>
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-[10px] font-mono text-gray-500 overflow-hidden">
+              <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-500 overflow-hidden">
                 <p className="font-bold mb-1 uppercase">Debug Info:</p>
                 <p className="truncate">Origin: {window.location.origin}</p>
               </div>
             </div>
           )}
 
-          <div className="mt-8 pt-6 border-t border-gray-100">
+          <div className="mt-8 pt-6 border-t border-slate-800">
             <button 
               onClick={() => setShowSync(!showSync)}
-              className="text-xs text-gray-400 hover:text-indigo-600 transition-colors font-medium flex items-center justify-center gap-1 mx-auto"
+              className="text-xs text-slate-500 hover:text-indigo-400 transition-colors font-medium flex items-center justify-center gap-1 mx-auto"
             >
               {showSync ? 'Hide troubleshooting' : 'Trouble logging in?'}
             </button>
           </div>
 
-          <div className="text-center text-gray-600 text-sm mt-8">
-            <p className="text-xs text-gray-400">
+          <div className="text-center text-slate-500 text-sm mt-8">
+            <p className="text-xs text-slate-600">
               By continuing, you agree to Skill Pilot's Terms of Service and Privacy Policy.
             </p>
           </div>

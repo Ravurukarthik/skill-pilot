@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'dashboard' | 'module' | 'admin'>('dashboard');
   const [selectedModule, setSelectedModule] = useState<ModuleType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
@@ -49,13 +50,23 @@ const App: React.FC = () => {
     }
 
     // 2. Listen for auth changes with Firebase
+    let unsubscribeProfile: (() => void) | null = null;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setIsAuthInitialized(true);
+      
+      // Cleanup previous profile listener if any
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+
       if (firebaseUser) {
         // Fetch profile from Firestore
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         
         // Use onSnapshot for real-time profile updates (e.g. when admin verifies payment)
-        const unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
+        unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             const profile = docSnap.data();
             const userData: User = {
@@ -88,11 +99,12 @@ const App: React.FC = () => {
           }
           setLoading(false);
         }, (err) => {
-          handleFirestoreError(err, OperationType.GET, `users/${firebaseUser.uid}`);
+          // Only report error if user is still logged in
+          if (auth.currentUser) {
+            handleFirestoreError(err, OperationType.GET, `users/${firebaseUser.uid}`);
+          }
           setLoading(false);
         });
-
-        return () => unsubscribeProfile();
       } else {
         setUser(null);
         localStorage.removeItem('skillpilot_user');
@@ -100,7 +112,10 @@ const App: React.FC = () => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
   }, []);
 
   const handleLogin = (userData: User) => {
@@ -181,10 +196,10 @@ const App: React.FC = () => {
     setSelectedModule(null);
   };
 
-  if (loading) {
+  if (loading || !isAuthInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
       </div>
     );
   }
@@ -195,7 +210,7 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen flex bg-gray-50">
+      <div className="min-h-screen flex bg-slate-950 text-slate-100">
         <Sidebar 
           activeModule={selectedModule} 
           onNavigate={navigateToModule} 
@@ -213,13 +228,13 @@ const App: React.FC = () => {
           
           <main className="flex-1 p-6 md:p-10 overflow-auto">
             {dbError && (
-          <div className="fixed bottom-4 right-4 z-[100] bg-red-50 border border-red-200 p-4 rounded-xl shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-4">
-            <AlertTriangle className="text-red-500" size={20} />
+          <div className="fixed bottom-4 right-4 z-[100] bg-red-950 border border-red-900 p-4 rounded-xl shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-4">
+            <AlertTriangle className="text-red-400" size={20} />
             <div>
-              <p className="text-sm font-bold text-red-800">System Warning</p>
-              <p className="text-xs text-red-600">{dbError}</p>
+              <p className="text-sm font-bold text-red-100">System Warning</p>
+              <p className="text-xs text-red-300">{dbError}</p>
             </div>
-            <button onClick={() => setDbError(null)} className="ml-2 text-red-400 hover:text-red-600">
+            <button onClick={() => setDbError(null)} className="ml-2 text-red-500 hover:text-red-300">
               <X size={16} />
             </button>
           </div>
@@ -228,13 +243,13 @@ const App: React.FC = () => {
         {currentView === 'dashboard' ? (
               <Dashboard onSelectModule={navigateToModule} user={user} />
             ) : currentView === 'admin' ? (
-              <AdminPanel onBack={navigateHome} />
+              <AdminPanel onBack={navigateHome} user={user} />
             ) : (
               selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} />
             )}
           </main>
 
-          <footer className="bg-white border-t p-4 text-center text-gray-500 text-sm">
+          <footer className="bg-slate-900 border-t border-slate-800 p-4 text-center text-slate-500 text-sm">
             &copy; {new Date().getFullYear()} SKILL PILOT. All rights reserved.
           </footer>
         </div>

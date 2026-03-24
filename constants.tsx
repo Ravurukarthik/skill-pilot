@@ -152,15 +152,26 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
 
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
-    id: 'tcs-internship', 
-    title: 'TCS Internship Program', 
-    company: 'Tata Consultancy Services (TCS)', 
+    id: 'paytm-fellowship', 
+    title: 'Paytm X Campus Fellowship Program', 
+    company: 'Paytm', 
+    stipend: 'Fellowship Benefits', 
+    duration: 'Program Duration', 
+    location: 'Pan India / Virtual', 
+    type: 'paid', 
+    link: 'https://unstop.com/workshops-webinars/paytm-x-campus-fellowship-program-paytm-1663937?lb=krHMyqHr&utm_medium=Share&utm_source=workshops&utm_campaign=Ysatyam610',
+    description: 'Paytm X Campus Fellowship Program / workshops\n\nEligibility:\nEngineering Students\nPostgraduate\nUndergraduate\nManagement\nArts, Commerce, Sciences & Others'
+  },
+  { 
+    id: 'infosys-springboard-7', 
+    title: 'Infosys Springboard Internship 7.0', 
+    company: 'Infosys Springboard', 
     stipend: null, 
-    duration: '8-12 Weeks', 
-    location: 'Pan India / Remote', 
+    duration: '8 Weeks', 
+    location: '100% Virtual', 
     type: 'unpaid', 
-    link: 'https://www.tcs.com/careers/india/internship',
-    description: 'Accelerate your career with TCS internships'
+    link: 'https://surveys.infosysapps.com/r/a/Si41PRd2gAG5',
+    description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n🐍 Python Technology\n☕ Java Tech Stack\n📊 Data Visualization'
   },
 ];
 
@@ -175,5 +186,16 @@ export const JOBS_MOCK: Job[] = [
     description: 'Ensure an uninterrupted supply of materials to support production and sales. Work to resolve materials issues while achieving and maintaining inventory business metrics. Roles: Material ordering, scheduling, Oracle expert, inventory accuracy, rescheduling, root cause investigation.',
     link: 'https://www.foundit.in/seeker-profile/single-page-registration?jobid=143011155&spl=IN_paid_display_direct_acq_affiliate_Asterix_FO2011_Multiple_Apr25&utm_source=Asterix&utm_medium=affiliate&utm_campaign=IN_paid_display_direct_acq_affiliate_Asterix_FO2011_Multiple_Apr25',
     type: 'Permanent Job'
+  },
+  {
+    id: 'hpe-software-engineer-1',
+    title: 'Systems/Software Engineer I',
+    company: 'HPE (Hewlett Packard Enterprise)',
+    postedAt: 'Just now',
+    applicants: 'Be the first to apply',
+    location: 'Bangalore, India (Hybrid)',
+    description: 'HPE Off Campus Recruitment 2026 Details\nRole: Systems/Software Engineer I\nCategory: IT Jobs\nQualification: B.E / B.Tech / B.Sc / M.E / M.Tech / M.Sc\nExperience: 0 – 2 Years\nSalary: As per industry standards\nWork Mode: Hybrid (approx. 2 days/week in office)\nLast Date: Apply at the earliest\n\nEligibility Criteria:\n- Hold a Bachelor’s or Master’s degree in Computer Science, Information Systems, or a related field\n- Have 0 to 2 years of experience (freshers are eligible)',
+    link: 'https://careers.hpe.com/us/en/job/1204760/Systems-Software-Engineer-I-Entry-Level',
+    type: 'Full Time'
   }
 ];

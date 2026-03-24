@@ -16,7 +16,7 @@
         },
         "role": {
           "type": "string",
-          "enum": ["admin", "student"],
+          "enum": ["ADMIN", "STUDENT"],
           "description": "User role."
         },
         "isPremium": {

@@ -22,15 +22,21 @@ import {
 
 interface AdminPanelProps {
   onBack: () => void;
+  user: User;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'premium' | 'pending' | 'student'>('all');
 
   useEffect(() => {
+    if (user.role !== UserRole.ADMIN) {
+      setLoading(false);
+      return;
+    }
+
     const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
     
     const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
@@ -105,48 +111,48 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="flex items-center justify-between mb-8">
+    <div className="animate-in fade-in slide-in-from-right-4 duration-500 bg-slate-950 min-h-screen p-4 md:p-8">
+      <div className="flex items-center justify-between mb-10 max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
           <button 
             onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+            className="p-2 hover:bg-slate-900 rounded-full transition-colors text-slate-500"
           >
             <ArrowLeft size={24} />
           </button>
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
-              <ShieldCheck className="text-indigo-600" size={32} />
+            <h1 className="text-3xl font-black text-slate-100 flex items-center gap-3 tracking-tight">
+              <ShieldCheck className="text-indigo-400" size={32} />
               Admin Management
             </h1>
-            <p className="text-gray-500">Manage user accounts, verify payments, and monitor system activity.</p>
+            <p className="text-slate-400 text-sm font-medium">Manage user accounts, verify payments, and monitor system activity.</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-indigo-50 px-4 py-2 rounded-xl">
-          <Users size={20} className="text-indigo-600" />
-          <span className="text-sm font-bold text-indigo-700">{users.length} Total Users</span>
+        <div className="flex items-center gap-3 bg-indigo-900/20 px-5 py-2.5 rounded-2xl border border-indigo-900/30 shadow-lg shadow-indigo-900/10">
+          <Users size={20} className="text-indigo-400" />
+          <span className="text-sm font-black text-indigo-400 uppercase tracking-widest">{users.length} Total Users</span>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-50/50">
+      <div className="bg-slate-900 rounded-[2rem] border border-slate-800 shadow-2xl overflow-hidden max-w-7xl mx-auto">
+        <div className="p-6 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950/50">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input 
               type="text" 
               placeholder="Search by name, email or UID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+              className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm text-slate-100 placeholder:text-slate-600 shadow-inner"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter size={18} className="text-gray-400 mr-1" />
+            <Filter size={18} className="text-slate-500 mr-1" />
             {(['all', 'premium', 'pending', 'student'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${filter === f ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'}`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${filter === f ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-950 text-slate-500 hover:bg-slate-800 border border-slate-800'}`}
               >
                 {f}
               </button>
@@ -157,117 +163,121 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 text-[10px] uppercase tracking-widest font-bold text-gray-400 border-b border-gray-100">
-                <th className="px-6 py-4">UID</th>
-                <th className="px-6 py-4">Display Name</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">Phone</th>
-                <th className="px-6 py-4">Providers</th>
-                <th className="px-6 py-4">Provider Type</th>
-                <th className="px-6 py-4">Created At</th>
-                <th className="px-6 py-4">Password</th>
-                <th className="px-6 py-4">Prime Joined</th>
-                <th className="px-6 py-4">Actions</th>
+              <tr className="bg-slate-950/80 text-[10px] uppercase tracking-widest font-black text-slate-500 border-b border-slate-800">
+                <th className="px-6 py-5">UID</th>
+                <th className="px-6 py-5">Display Name</th>
+                <th className="px-6 py-5">Email</th>
+                <th className="px-6 py-5">Phone</th>
+                <th className="px-6 py-5">Providers</th>
+                <th className="px-6 py-5">Provider Type</th>
+                <th className="px-6 py-5">Created At</th>
+                <th className="px-6 py-5">Password</th>
+                <th className="px-6 py-5">Prime Joined</th>
+                <th className="px-6 py-5">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center gap-3 text-gray-400">
-                      <Loader2 className="animate-spin" size={32} />
-                      <p className="font-medium">Loading user database...</p>
+                  <td colSpan={10} className="px-6 py-32 text-center">
+                    <div className="flex flex-col items-center gap-4 text-slate-600">
+                      <Loader2 className="animate-spin text-indigo-500" size={48} />
+                      <p className="font-black uppercase tracking-widest text-xs">Loading user database...</p>
                     </div>
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center gap-3 text-gray-400">
-                      <Search size={32} />
-                      <p className="font-medium">No users found matching your criteria.</p>
+                  <td colSpan={10} className="px-6 py-32 text-center">
+                    <div className="flex flex-col items-center gap-4 text-slate-600">
+                      <Search size={48} className="opacity-20" />
+                      <p className="font-black uppercase tracking-widest text-xs">No users found matching your criteria.</p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <span className="text-[10px] font-mono text-gray-400" title={user.id}>
+                  <tr key={user.id} className="hover:bg-slate-800/40 transition-colors group">
+                    <td className="px-6 py-5">
+                      <span className="text-[10px] font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800" title={user.id}>
                         {user.id.substring(0, 8)}...
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-xs">
-                          {user.name.charAt(0)}
+                        <div className="w-9 h-9 bg-slate-950 rounded-xl flex items-center justify-center text-indigo-400 font-black text-xs border border-slate-800 shadow-inner">
+                          {user.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-bold text-gray-900 text-sm">{user.name}</span>
+                        <span className="font-bold text-slate-100 text-sm whitespace-nowrap">{user.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs text-gray-600">{user.email}</span>
+                    <td className="px-6 py-5">
+                      <span className="text-xs text-slate-400 font-medium">{user.email}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs text-gray-600">{user.phoneNumber || '—'}</span>
+                    <td className="px-6 py-5">
+                      <span className="text-xs text-slate-500 font-mono">{user.phoneNumber || '—'}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
+                    <td className="px-6 py-5">
+                      <div className="flex flex-wrap gap-1.5">
                         {user.providerData ? user.providerData.map((p: any, idx: number) => (
-                          <span key={idx} className="px-1.5 py-0.5 bg-gray-100 rounded text-[9px] font-bold uppercase text-gray-500">
+                          <span key={idx} className="px-2 py-0.5 bg-slate-950 border border-slate-800 rounded text-[9px] font-black uppercase text-slate-400">
                             {p.providerId}
                           </span>
                         )) : (
-                          <span className="px-1.5 py-0.5 bg-gray-100 rounded text-[9px] font-bold uppercase text-gray-500">
+                          <span key={user.id} className="px-2 py-0.5 bg-slate-950 border border-slate-800 rounded text-[9px] font-black uppercase text-slate-400">
                             {user.provider || 'N/A'}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs text-gray-500 font-medium">
+                    <td className="px-6 py-5">
+                      <span className="text-[10px] text-slate-500 font-black uppercase tracking-tighter">
                         {user.provider === 'google' ? 'Google OAuth' : 'Email/Password'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                        <Calendar size={10} /> {formatDate(user.createdAt)}
+                    <td className="px-6 py-5">
+                      <span className="text-[10px] text-slate-500 flex items-center gap-1.5 font-medium">
+                        <Calendar size={12} className="text-slate-600" /> {formatDate(user.createdAt)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="bg-amber-50 px-2 py-1 rounded border border-amber-100 flex items-center gap-1.5 w-fit">
-                        <Lock size={12} className="text-amber-600" />
-                        <span className="text-xs font-mono text-amber-700 font-bold">
+                    <td className="px-6 py-5">
+                      <div className="bg-amber-900/10 px-3 py-1.5 rounded-xl border border-amber-900/30 flex items-center gap-2 w-fit">
+                        <Lock size={12} className="text-amber-500" />
+                        <span className="text-xs font-mono text-amber-500/80 font-bold">
                           {user.password || '••••••••'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs text-gray-600 font-medium">
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-xs text-slate-400 font-bold">
                           {user.isPremium ? formatDate(user.paymentDate) : '—'}
                         </span>
                         {user.isPremium ? (
-                          <span className="text-[9px] font-bold text-green-600 uppercase">Active</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-900/20 text-green-400 text-[8px] font-black uppercase tracking-widest border border-green-900/30">
+                            <CheckCircle2 size={10} /> Active
+                          </span>
                         ) : user.isPendingVerification ? (
-                          <span className="text-[9px] font-bold text-amber-600 uppercase animate-pulse">Pending</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-900/20 text-amber-400 text-[8px] font-black uppercase tracking-widest border border-amber-900/30 animate-pulse">
+                            <Clock size={10} /> Pending
+                          </span>
                         ) : null}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2.5">
                         {user.isPendingVerification && (
                           <>
                             <button 
                               onClick={() => handleVerifyUser(user.id, true)}
-                              className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                              className="p-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all shadow-lg shadow-green-900/20"
                               title="Approve Payment"
                             >
                               <CheckCircle2 size={18} />
                             </button>
                             <button 
                               onClick={() => handleVerifyUser(user.id, false)}
-                              className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                              className="p-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-900/20"
                               title="Reject Payment"
                             >
                               <XCircle size={18} />
@@ -275,7 +285,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                             {user.paymentProofUrl && (
                               <button 
                                 onClick={() => window.open(user.paymentProofUrl, '_blank')}
-                                className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-900/20"
                                 title="View Proof"
                               >
                                 <ExternalLink size={18} />
@@ -286,7 +296,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                         {!user.isPendingVerification && !user.isPremium && (
                            <button 
                             onClick={() => handleVerifyUser(user.id, true)}
-                            className="text-[10px] font-bold text-indigo-600 hover:underline"
+                            className="text-[10px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest bg-indigo-900/20 px-3 py-2 rounded-xl border border-indigo-900/30 transition-all"
                            >
                              Grant Pro
                            </button>
@@ -294,7 +304,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                         {user.isPremium && (
                            <button 
                             onClick={() => handleVerifyUser(user.id, false)}
-                            className="text-[10px] font-bold text-red-400 hover:text-red-600 hover:underline"
+                            className="text-[10px] font-black text-red-400 hover:text-red-300 uppercase tracking-widest bg-red-900/20 px-3 py-2 rounded-xl border border-red-900/30 transition-all"
                            >
                              Revoke Pro
                            </button>
