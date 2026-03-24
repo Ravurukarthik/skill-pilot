@@ -145,7 +145,7 @@ const App: React.FC = () => {
     
     try {
       if (user) {
-        const proofUrl = `https://placeholder.com/proof/${user.id}/${file.name}`;
+        const proofUrl = `https://placeholder.com/proof/${user.id}/${encodeURIComponent(file.name)}`;
         const paymentDate = new Date().toISOString();
 
         const userDocRef = doc(db, 'users', user.id);

@@ -78,9 +78,11 @@ service cloud.firestore {
       
       // Allow users to update their own profile (with restrictions), or admins to update anything
       allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) &&
-                    (isAdmin() || (request.resource.data.role == resource.data.role && 
-                                   request.resource.data.isPremium == resource.data.isPremium &&
-                                   request.resource.data.email == resource.data.email));
+                    (isAdmin() || (
+                      request.resource.data.get('role', 'STUDENT') == resource.data.get('role', 'STUDENT') && 
+                      request.resource.data.get('isPremium', false) == resource.data.get('isPremium', false) &&
+                      request.resource.data.get('email', '') == resource.data.get('email', '')
+                    ));
       
       allow delete: if isAdmin();
     }
