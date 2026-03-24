@@ -132,12 +132,12 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             providerData: result.user.providerData.map(p => ({
               providerId: p.providerId,
               uid: p.uid,
-              displayName: p.displayName,
-              email: p.email,
-              phoneNumber: p.phoneNumber,
-              photoURL: p.photoURL
+              displayName: p.displayName || null,
+              email: p.email || null,
+              phoneNumber: p.phoneNumber || null,
+              photoURL: p.photoURL || null
             })),
-            phoneNumber: result.user.phoneNumber || undefined
+            phoneNumber: result.user.phoneNumber || null
           };
           
           await setDoc(userDocRef, newProfile);
@@ -310,12 +310,12 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               providerData: result.user.providerData.map(p => ({
                 providerId: p.providerId,
                 uid: p.uid,
-                displayName: p.displayName,
-                email: p.email,
-                phoneNumber: p.phoneNumber,
-                photoURL: p.photoURL
+                displayName: p.displayName || null,
+                email: p.email || null,
+                phoneNumber: p.phoneNumber || null,
+                photoURL: p.photoURL || null
               })),
-              phoneNumber: result.user.phoneNumber || undefined
+              phoneNumber: result.user.phoneNumber || null
             });
           } catch (fsErr: any) {
             console.error('Firestore Profile Creation Error:', fsErr);

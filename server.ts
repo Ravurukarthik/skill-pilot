@@ -38,18 +38,40 @@ async function startServer() {
         },
       });
 
+      const adminUrl = `${process.env.APP_URL || 'https://ais-dev-4q2xmnqridiifrkuxaeylc-17136732183.asia-northeast1.run.app'}`;
+      const approveUrl = `${adminUrl}/?userId=${userId}&action=approve`;
+      const rejectUrl = `${adminUrl}/?userId=${userId}&action=reject`;
+      
       const mailOptions = {
         from: process.env.SMTP_USER,
         to: "ravurukarthik740@gmail.com",
         subject: `New Payment Proof Submission - ${userEmail}`,
-        text: `
-          A new payment proof has been submitted for review.
-          
-          User Email: ${userEmail}
-          User ID: ${userId}
-          Payment Date: ${paymentDate}
-          
-          Please review the attached file.
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 16px;">
+            <h2 style="color: #4f46e5; margin-bottom: 20px;">New Payment Proof Submitted</h2>
+            <p>A new payment proof has been submitted for review by <strong>${userEmail}</strong>.</p>
+            
+            <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #f3f4f6;">
+              <p style="margin: 5px 0;"><strong>User Email:</strong> ${userEmail}</p>
+              <p style="margin: 5px 0;"><strong>User ID:</strong> ${userId}</p>
+              <p style="margin: 5px 0;"><strong>Payment Date:</strong> ${paymentDate}</p>
+            </div>
+            
+            <p style="margin-bottom: 25px;">Please review the attached file and take action below:</p>
+            
+            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+              <a href="${approveUrl}" style="background: #10b981; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-right: 10px;">Accept & Upgrade</a>
+              <a href="${rejectUrl}" style="background: #ef4444; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Reject Request</a>
+            </div>
+            
+            <div style="border-top: 1px solid #f3f4f6; padding-top: 20px; margin-top: 20px;">
+              <p style="font-size: 14px;">Alternatively, you can manage all requests in the <a href="${adminUrl}" style="color: #4f46e5; font-weight: bold;">Admin Panel</a>.</p>
+            </div>
+            
+            <p style="margin-top: 30px; font-size: 11px; color: #9ca3af; text-align: center;">
+              Note: You must be logged in as an admin (ravurukarthik740@gmail.com) for these links to work.
+            </p>
+          </div>
         `,
         attachments: [
           {

@@ -110,6 +110,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
     }
   };
 
+  if (user.role !== UserRole.ADMIN) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
+        <div className="bg-red-900/20 p-6 rounded-full mb-6 border border-red-900/50">
+          <Lock className="text-red-500" size={48} />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-100 mb-2 tracking-tight">Access Denied</h2>
+        <p className="text-slate-400 max-w-md mb-8">You do not have the required permissions to access the Admin Management panel. Please contact the system administrator if you believe this is an error.</p>
+        <button 
+          onClick={onBack}
+          className="bg-slate-900 hover:bg-slate-800 text-slate-100 px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2"
+        >
+          <ArrowLeft size={20} />
+          Return to Dashboard
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500 bg-slate-950 min-h-screen p-4 md:p-8">
       <div className="flex items-center justify-between mb-10 max-w-7xl mx-auto">

@@ -25,6 +25,36 @@ const App: React.FC = () => {
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
+  // Admin Action Handler from Email Links
+  useEffect(() => {
+    const handleAdminAction = async () => {
+      if (!user || user.role !== UserRole.ADMIN) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const userId = params.get('userId');
+      const action = params.get('action');
+      
+      if (userId && action) {
+        const approve = action === 'approve';
+        try {
+          const userDocRef = doc(db, 'users', userId);
+          await updateDoc(userDocRef, {
+            isPremium: approve,
+            isPendingVerification: false
+          });
+          alert(approve ? `User ${userId} upgraded to Premium!` : `Verification for user ${userId} rejected.`);
+          // Clear params from URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (err) {
+          console.error("Admin action failed:", err);
+          handleFirestoreError(err, OperationType.UPDATE, `users/${userId}`);
+        }
+      }
+    };
+    
+    handleAdminAction();
+  }, [user?.role, user?.id]);
+
   // Study Time Tracker
   useEffect(() => {
     if (!user || currentView !== 'module' || !selectedModule) return;
@@ -213,21 +243,11 @@ const App: React.FC = () => {
           handleFirestoreError(err, OperationType.UPDATE, `users/${user.id}`);
         }
 
-        // Simulate admin verification process for demo purposes
-        setTimeout(async () => {
-          try {
-            await updateDoc(userDocRef, {
-              isPremium: true,
-              isPendingVerification: false
-            });
-          } catch (err) {
-            console.error("Verification update failed", err);
-          }
-
-          setIsVerifyingPayment(false);
-          setShowPaymentModal(false);
-          alert("Receipt Verified! Your Pro Account is now active. Enjoy premium features!");
-        }, 3000);
+        // No longer simulating automatic verification.
+        // Admin must verify manually via Admin Panel.
+        setIsVerifyingPayment(false);
+        setShowPaymentModal(false);
+        alert("Payment proof submitted successfully! Admin will verify your payment shortly (usually within 5-10 mins).");
       }
     } catch (err: any) {
       alert(err.message || "Failed to upload receipt");
@@ -246,8 +266,10 @@ const App: React.FC = () => {
   };
 
   const navigateToAdmin = () => {
-    setCurrentView('admin');
-    setSelectedModule(null);
+    if (user?.role === UserRole.ADMIN) {
+      setCurrentView('admin');
+      setSelectedModule(null);
+    }
   };
 
   if (loading || !isAuthInitialized) {
@@ -296,7 +318,7 @@ const App: React.FC = () => {
 
         {currentView === 'dashboard' ? (
               <Dashboard onSelectModule={navigateToModule} user={user} />
-            ) : currentView === 'admin' ? (
+            ) : (currentView === 'admin' && user.role === UserRole.ADMIN) ? (
               <AdminPanel onBack={navigateHome} user={user} />
             ) : (
               selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} />
