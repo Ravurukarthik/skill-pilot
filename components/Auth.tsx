@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole } from '../types';
-import { Mail, Lock, User as UserIcon, ArrowRight, Compass, Loader2, CheckCircle2, X, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, Compass, Loader2, CheckCircle2, X, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react';
 import { auth, db } from '../services/firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
+  signInWithRedirect,
   GoogleAuthProvider,
   sendPasswordResetEmail,
   sendEmailVerification
@@ -156,7 +157,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     } catch (err: any) {
       console.error('Google Login Error:', err);
       if (err.code === 'auth/popup-blocked') {
-        setError('The login popup was blocked by your browser. Please allow popups for this site and try again.');
+        setError('The login popup was blocked by your browser. This often happens inside an iframe. Please click "Open in New Tab" below or allow popups in your browser settings.');
       } else if (err.code === 'auth/unauthorized-domain') {
         setError(`This domain (${window.location.hostname}) is not authorized in the Firebase Console. Please add it to the "Authorized Domains" list in your Firebase Authentication settings.`);
       } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
@@ -169,6 +170,25 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         setError(err.message || 'Failed to initialize Google login. Check your internet connection or browser settings.');
       }
       setShowSync(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openInNewTab = () => {
+    window.open(window.location.href, '_blank');
+  };
+
+  const handleGoogleRedirect = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      await signInWithRedirect(auth, provider);
+    } catch (err: any) {
+      console.error('Redirect error:', err);
+      setError('Redirect login failed. This might be due to unauthorized domain or iframe restrictions.');
     } finally {
       setLoading(false);
     }
@@ -540,11 +560,29 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   <p className="text-xs text-amber-200/70 leading-relaxed">
                     Google Login can sometimes fail inside an iframe (like this preview). Try these steps:
                   </p>
-                  <ul className="text-[11px] text-amber-400/80 list-disc ml-4 space-y-1">
-                    <li><strong>Open in New Tab:</strong> Click the "Open in new tab" icon in the top right of this window.</li>
-                    <li><strong>Enable Cookies:</strong> Ensure "Third-party cookies" are allowed in your browser settings.</li>
-                    <li><strong>Authorized Domains:</strong> Ensure <code>{window.location.hostname}</code> is added to your Firebase Console.</li>
+                  
+                  <div className="grid grid-cols-1 gap-2 mt-2">
+                    <button 
+                      onClick={openInNewTab}
+                      className="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <ExternalLink size={18} /> Open in New Tab
+                    </button>
+                    
+                    <button 
+                      onClick={handleGoogleRedirect}
+                      className="w-full bg-slate-800 text-white py-3 rounded-xl text-sm font-bold hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw size={18} /> Try Redirect Login
+                    </button>
+                  </div>
+
+                  <ul className="text-[11px] text-amber-400/80 list-disc ml-4 space-y-1 mt-4">
+                    <li><strong>Allow Popups:</strong> Check your browser address bar for a "Popup blocked" icon.</li>
+                    <li><strong>Enable Cookies:</strong> Ensure "Third-party cookies" are allowed.</li>
+                    <li><strong>Authorized Domains:</strong> Ensure <code>{window.location.hostname}</code> is added to Firebase.</li>
                   </ul>
+                  
                   <button 
                     onClick={syncLogin}
                     disabled={syncLoading}

@@ -11,7 +11,7 @@ import PaymentModal from './components/PaymentModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, updateDoc, onSnapshot, getDocFromServer } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, onSnapshot, getDocFromServer, setDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from './services/firestoreUtils';
 import { AlertTriangle, ExternalLink, Settings, X, RefreshCw } from 'lucide-react';
 
@@ -150,11 +150,11 @@ const App: React.FC = () => {
 
         const userDocRef = doc(db, 'users', user.id);
         try {
-          await updateDoc(userDocRef, {
+          await setDoc(userDocRef, {
             isPendingVerification: true,
             paymentProofUrl: proofUrl,
             paymentDate: paymentDate
-          });
+          }, { merge: true });
           
           // Send email notification to admin
           const formData = new FormData();

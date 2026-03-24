@@ -2,28 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: users
-    // Document ID: {userId} (Firebase Auth UID)
-    // Fields:
-    //   - name: string (required, 1-100 chars)
-    //   - email: string (required, valid email format)
-    //   - role: string (required, 'ADMIN' or 'STUDENT')
-    //   - isPremium: bool (optional)
-    //   - isPendingVerification: bool (optional)
-    //   - paymentProofUrl: string (optional, valid URL)
-    //   - paymentDate: string (optional)
-    //   - password: string (optional)
-    //   - createdAt: string (optional)
-    //   - provider: string (optional)
-    //   - providerData: list (optional)
-    //   - phoneNumber: string (optional)
-    //
-    // ===============================================================
-
-    // ===============================================================
     // Helper Functions
     // ===============================================================
     
@@ -44,45 +22,20 @@ service cloud.firestore {
         );
     }
 
-    function isValidEmail(email) {
-      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
-    }
-
-    function isValidUrl(url) {
-      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
-    }
-
-    function isValidUser(data) {
-      return data.keys().hasAll(['name', 'email', 'role']) &&
-             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
-             isValidEmail(data.email) &&
-             data.role in ['ADMIN', 'STUDENT'] &&
-             (!('isPremium' in data) || data.isPremium is bool) &&
-             (!('isPendingVerification' in data) || data.isPendingVerification is bool) &&
-             (!('paymentProofUrl' in data) || isValidUrl(data.paymentProofUrl)) &&
-             (!('paymentDate' in data) || data.paymentDate is string) &&
-             (!('password' in data) || data.password is string) &&
-             (!('createdAt' in data) || data.createdAt is string) &&
-             (!('provider' in data) || data.provider is string) &&
-             (!('providerData' in data) || data.providerData is list) &&
-             (!('phoneNumber' in data) || data.phoneNumber is string);
-    }
+    // ===============================================================
+    // Rules
+    // ===============================================================
 
     match /users/{userId} {
       // Allow users to read their own profile, or admins to read any profile
       allow read: if isOwner(userId) || isAdmin();
       
-      // Allow users to create their own profile as 'STUDENT', or admins to create any profile
-      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && 
-                    (request.resource.data.role == 'STUDENT' || isAdmin());
+      // Allow users to create their own profile
+      allow create: if isAuthenticated() && isOwner(userId);
       
-      // Allow users to update their own profile (with restrictions), or admins to update anything
-      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) &&
-                    (isAdmin() || (
-                      request.resource.data.get('role', 'STUDENT') == resource.data.get('role', 'STUDENT') && 
-                      request.resource.data.get('isPremium', false) == resource.data.get('isPremium', false) &&
-                      request.resource.data.get('email', '') == resource.data.get('email', '')
-                    ));
+      // Allow users to update their own profile, or admins to update anything
+      // We allow updates if the user owns the document or is an admin
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
       
       allow delete: if isAdmin();
     }
