@@ -25,8 +25,19 @@ const App: React.FC = () => {
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
-  const handleLogout = async () => {
+  const handleLogout = async (isForced = false) => {
     try {
+      if (user && !isForced) {
+        // Only clear the active device ID if it's a manual logout from the active device
+        const userDocRef = doc(db, 'users', user.id);
+        const currentDeviceId = localStorage.getItem('skillpilot_device_id');
+        
+        // Double check that we are still the active device before clearing
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists() && docSnap.data().activeDeviceId === currentDeviceId) {
+          await updateDoc(userDocRef, { activeDeviceId: null });
+        }
+      }
       await signOut(auth);
     } catch (err) {
       console.error('Logout error:', err);
@@ -155,8 +166,11 @@ const App: React.FC = () => {
             // Single Device Login Check
             const currentDeviceId = localStorage.getItem('skillpilot_device_id');
             if (profile.activeDeviceId && currentDeviceId && profile.activeDeviceId !== currentDeviceId) {
-              alert("You have been logged out because your account is being used on another device.");
-              handleLogout();
+              // Use a small delay to ensure the alert is seen and the state is stable
+              setTimeout(() => {
+                alert("You have been logged out because your account is being used on another device.");
+                handleLogout(true); // Pass true to avoid clearing the new device's ID
+              }, 100);
               return;
             }
 
