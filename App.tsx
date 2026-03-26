@@ -127,7 +127,7 @@ const App: React.FC = () => {
     // Ensure device ID exists for single device login tracking
     let deviceId = localStorage.getItem('skillpilot_device_id');
     if (!deviceId) {
-      deviceId = crypto.randomUUID();
+      deviceId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem('skillpilot_device_id', deviceId);
     }
 

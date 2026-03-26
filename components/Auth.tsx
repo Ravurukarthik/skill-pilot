@@ -18,6 +18,15 @@ interface AuthProps {
   onLogin: (user: User) => void;
 }
 
+const getDeviceId = () => {
+  let id = localStorage.getItem('skillpilot_device_id');
+  if (!id) {
+    id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('skillpilot_device_id', id);
+  }
+  return id;
+};
+
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isOtpMode, setIsOtpMode] = useState(false);
@@ -32,6 +41,11 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [showSync, setShowSync] = useState(false);
   const [syncLoading, setSyncLoading] = useState(false);
+  const [isIframe, setIsIframe] = useState(false);
+
+  useEffect(() => {
+    setIsIframe(window.self !== window.top);
+  }, []);
 
   const syncLogin = async () => {
     setSyncLoading(true);
@@ -39,6 +53,11 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       const firebaseUser = auth.currentUser;
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
+        
+        // Claim this device as active during sync
+        const deviceId = getDeviceId();
+        await setDoc(userDocRef, { activeDeviceId: deviceId }, { merge: true });
+
         const docSnap = await getDoc(userDocRef);
         
         if (docSnap.exists()) {
@@ -101,11 +120,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
         // Generate or get device ID for single device login
-        let deviceId = localStorage.getItem('skillpilot_device_id');
-        if (!deviceId) {
-          deviceId = crypto.randomUUID();
-          localStorage.setItem('skillpilot_device_id', deviceId);
-        }
+        const deviceId = getDeviceId();
 
         // Check if profile exists, if not create it
         const userDocRef = doc(db, 'users', result.user.uid);
@@ -175,7 +190,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       } else if (err.code === 'auth/unauthorized-domain') {
         setError(`This domain (${window.location.hostname}) is not authorized in the Firebase Console. Please add it to the "Authorized Domains" list in your Firebase Authentication settings.`);
       } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
-        setError('The login process was cancelled or the window was closed. Please try again.');
+        setError('The login window was closed. This often happens in preview windows or due to popup blockers. Please try "Open in New Tab" if this persists.');
       } else if (err.code === 'auth/operation-not-allowed') {
         setError('Google login is not enabled in your Firebase Console. Please enable it in the Authentication > Sign-in method tab.');
       } else if (err.code === 'auth/internal-error' || err.message?.includes('network')) {
@@ -264,11 +279,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
         if (result.user) {
           // Generate or get device ID for single device login
-          let deviceId = localStorage.getItem('skillpilot_device_id');
-          if (!deviceId) {
-            deviceId = crypto.randomUUID();
-            localStorage.setItem('skillpilot_device_id', deviceId);
-          }
+          const deviceId = getDeviceId();
 
           const userDocRef = doc(db, 'users', result.user.uid);
           
@@ -316,11 +327,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           const isAdmin = email === 'ravurukarthik740@gmail.com';
 
           // Generate or get device ID for single device login
-          let deviceId = localStorage.getItem('skillpilot_device_id');
-          if (!deviceId) {
-            deviceId = crypto.randomUUID();
-            localStorage.setItem('skillpilot_device_id', deviceId);
-          }
+          const deviceId = getDeviceId();
           
           try {
             await setDoc(userDocRef, {
@@ -411,6 +418,15 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           </div>
 
           <div className="space-y-6">
+            {isIframe && (
+              <div className="p-3 bg-amber-900/20 border border-amber-900/30 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={16} />
+                <p className="text-[10px] text-amber-200/70 leading-tight">
+                  You are viewing Skill Pilot in a preview window. Google Login may be restricted. For a seamless experience, <button onClick={openInNewTab} className="text-amber-400 underline font-bold hover:text-amber-300">Open in a New Tab</button>.
+                </p>
+              </div>
+            )}
+
             {/* Google Login - Primary Option */}
             <button 
               type="button"
