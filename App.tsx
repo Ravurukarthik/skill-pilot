@@ -25,6 +25,19 @@ const App: React.FC = () => {
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('skillpilot_user');
+      setCurrentView('dashboard');
+      setSelectedModule(null);
+    }
+  };
+
   // Admin Action Handler from Email Links
   useEffect(() => {
     const handleAdminAction = async () => {
@@ -100,6 +113,13 @@ const App: React.FC = () => {
     };
     testConnection();
 
+    // Ensure device ID exists for single device login tracking
+    let deviceId = localStorage.getItem('skillpilot_device_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem('skillpilot_device_id', deviceId);
+    }
+
     // 1. Immediate load from localStorage for perceived speed
     const cachedUser = localStorage.getItem('skillpilot_user');
     if (cachedUser) {
@@ -131,6 +151,15 @@ const App: React.FC = () => {
         unsubscribeProfile = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
             const profile = docSnap.data();
+            
+            // Single Device Login Check
+            const currentDeviceId = localStorage.getItem('skillpilot_device_id');
+            if (profile.activeDeviceId && currentDeviceId && profile.activeDeviceId !== currentDeviceId) {
+              alert("You have been logged out because your account is being used on another device.");
+              handleLogout();
+              return;
+            }
+
             const userData: User = {
               id: firebaseUser.uid,
               email: firebaseUser.email || '',
@@ -183,19 +212,6 @@ const App: React.FC = () => {
   const handleLogin = (userData: User) => {
     setUser(userData);
     localStorage.setItem('skillpilot_user', JSON.stringify(userData));
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.error('Logout error:', err);
-    } finally {
-      setUser(null);
-      localStorage.removeItem('skillpilot_user');
-      setCurrentView('dashboard');
-      setSelectedModule(null);
-    }
   };
 
   const handleStartUpgrade = () => {

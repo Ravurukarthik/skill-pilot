@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
 import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, COMPILER_LINKS } from '../constants';
-import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
 interface ModuleViewProps {
@@ -25,6 +25,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [aiContent, setAiContent] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [selectedCompiler, setSelectedCompiler] = useState<string | null>(null);
 
   const handleTutorialRequest = async (subject: string, subSubject?: string, lesson?: string) => {
     if (!user.isPremium) return;
@@ -535,10 +536,18 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {languages.map((lang) => (
-            <button
+            <div
               key={lang}
               onClick={() => handleTutorialRequest(lang)}
-              className={`p-6 rounded-2xl border transition-all text-left flex flex-col gap-4 group ${selectedSubject === lang ? 'bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-900/20' : 'bg-slate-800 border-slate-700 hover:border-emerald-500'}`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleTutorialRequest(lang);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              className={`p-6 rounded-2xl border transition-all text-left flex flex-col gap-4 group cursor-pointer ${selectedSubject === lang ? 'bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-900/20' : 'bg-slate-800 border-slate-700 hover:border-emerald-500'}`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedSubject === lang ? 'bg-emerald-500 text-white' : 'bg-emerald-900/30 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white'}`}>
                 <Code size={24} />
@@ -551,17 +560,17 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleExternalRedirect(COMPILER_LINKS[lang]);
+                        setSelectedCompiler(COMPILER_LINKS[lang]);
                       }}
                       className={`p-1.5 rounded-lg transition-all ${selectedSubject === lang ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-600 hover:text-white'}`}
                       title="Open Online Compiler"
                     >
-                      <ExternalLink size={14} />
+                      <Terminal size={14} />
                     </button>
                   )}
                 </div>
               </div>
-            </button>
+            </div>
           ))}
         </div>
 
@@ -574,10 +583,10 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
               </div>
               {selectedSubject && COMPILER_LINKS[selectedSubject] && (
                 <button
-                  onClick={() => handleExternalRedirect(COMPILER_LINKS[selectedSubject])}
+                  onClick={() => setSelectedCompiler(COMPILER_LINKS[selectedSubject])}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"
                 >
-                  <ExternalLink size={14} />
+                  <Terminal size={14} />
                   Open {selectedSubject} Compiler
                 </button>
               )}
@@ -640,7 +649,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   const hasBranches = isBTech || isMTech || isMBA || isCompetitiveExams;
 
   const handleBack = () => {
-    if (activeSubTab) {
+    if (selectedCompiler) {
+      setSelectedCompiler(null);
+    } else if (activeSubTab) {
       setActiveSubTab(null);
       setSelectedSubject(null);
       setSelectedSubSubject(null);
@@ -690,6 +701,40 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
       {type === ModuleType.JOBS && renderJobs()}
 
       {type === ModuleType.CODING_SESSION && renderCodingSession()}
+
+      {selectedCompiler && (
+        <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-in fade-in zoom-in-95 duration-300">
+          <div className="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-600/20 rounded-xl flex items-center justify-center text-emerald-400">
+                <Terminal size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-100">Interactive Compiler</h2>
+                <p className="text-xs text-slate-400">Master your code in real-time</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setSelectedCompiler(null)}
+              className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-all group"
+              title="Close Compiler"
+            >
+              <X size={28} className="group-hover:rotate-90 transition-transform duration-300" />
+            </button>
+          </div>
+          <div className="flex-1 bg-slate-900 relative">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <Loader2 className="animate-spin text-emerald-600/20" size={64} />
+            </div>
+            <iframe 
+              src={selectedCompiler}
+              className="w-full h-full border-none relative z-10"
+              title="Embedded Compiler"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          </div>
+        </div>
+      )}
 
       {!hasBranches && !isInternship && type !== ModuleType.JOBS && type !== ModuleType.CODING_SESSION && (
         <>

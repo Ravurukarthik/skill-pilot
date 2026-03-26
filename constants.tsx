@@ -154,19 +154,30 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
 };
 
 export const COMPILER_LINKS: Record<string, string> = {
-  'C': 'https://www.programiz.com/c-programming/online-compiler/',
-  'C++': 'https://www.programiz.com/cpp-programming/online-compiler/',
-  'C#': 'https://www.programiz.com/csharp-programming/online-compiler/',
-  'Python': 'https://www.programiz.com/python-programming/online-compiler/',
-  'Java': 'https://www.programiz.com/java-programming/online-compiler/',
-  'JavaScript': 'https://playcode.io/javascript',
-  'React': 'https://codesandbox.io/s/new',
-  'Node.js': 'https://replit.com/languages/nodejs',
-  'SQL': 'https://www.programiz.com/sql/online-compiler/',
-  'MERN Stack': 'https://codesandbox.io/s/mern-starter-68y9v'
+  'C': 'https://onecompiler.com/embed/c?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'C++': 'https://onecompiler.com/embed/cpp?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'C#': 'https://onecompiler.com/embed/csharp?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'Python': 'https://onecompiler.com/embed/python?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'Java': 'https://onecompiler.com/embed/java?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'JavaScript': 'https://onecompiler.com/embed/javascript?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'React': 'https://codesandbox.io/embed/new?codemirror=1&fontsize=14&hidenavigation=1&theme=dark',
+  'Node.js': 'https://onecompiler.com/embed/nodejs?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'SQL': 'https://onecompiler.com/embed/mysql?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'MERN Stack': 'https://codesandbox.io/embed/mern-starter-68y9v?fontsize=14&hidenavigation=1&theme=dark'
 };
 
 export const INTERNSHIP_MOCK: Internship[] = [
+  { 
+    id: 'ge-aerospace-btech-intern', 
+    title: 'B.Tech Intern', 
+    company: 'GE Aerospace', 
+    stipend: 'Paid / Co-op', 
+    duration: 'Program Duration', 
+    location: 'Bengaluru, Karnātaka, India', 
+    type: 'paid', 
+    link: 'https://careers.geaerospace.com/global/en/apply?jobSeqNo=GAOGAYGLOBALR5031124EXTERNALENGLOBAL&step=1&stepname=personalInformation',
+    description: 'Business Segment: Aviation T&O Integrated Design & Build\nCategory: Engineering / Technology\nJob ID: R5031124\nPosted Date: 03/23/2026\nRelocation Assistance: Yes'
+  },
   { 
     id: 'paytm-fellowship', 
     title: 'Paytm X Campus Fellowship Program', 

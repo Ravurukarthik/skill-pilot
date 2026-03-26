@@ -100,6 +100,13 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
+        // Generate or get device ID for single device login
+        let deviceId = localStorage.getItem('skillpilot_device_id');
+        if (!deviceId) {
+          deviceId = crypto.randomUUID();
+          localStorage.setItem('skillpilot_device_id', deviceId);
+        }
+
         // Check if profile exists, if not create it
         const userDocRef = doc(db, 'users', result.user.uid);
         const docSnap = await getDoc(userDocRef);
@@ -108,6 +115,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
         if (docSnap.exists()) {
           const profile = docSnap.data();
+          
+          // Update active device ID on login
+          await setDoc(userDocRef, { activeDeviceId: deviceId }, { merge: true });
+
           userData = {
             id: result.user.uid,
             email: result.user.email || '',
@@ -121,14 +132,17 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           };
         } else {
           const isAdmin = result.user.email === 'ravurukarthik740@gmail.com';
+          const isPaceDomain = result.user.email?.endsWith('@pace.ac.in');
+          
           const newProfile = {
             name: result.user.displayName || 'User',
             email: result.user.email,
             role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
-            isPremium: false,
+            isPremium: isPaceDomain ? true : false, // Free premium for pace.ac.in
             isPendingVerification: false,
             createdAt: new Date().toISOString(),
             provider: 'google',
+            activeDeviceId: deviceId, // Store device ID
             providerData: result.user.providerData.map(p => ({
               providerId: p.providerId,
               uid: p.uid,
@@ -147,7 +161,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             email: result.user.email || '',
             name: newProfile.name,
             role: newProfile.role as UserRole,
-            isPremium: false,
+            isPremium: newProfile.isPremium,
           };
         }
 
@@ -249,14 +263,18 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         const result = await signInWithEmailAndPassword(auth, email, password);
 
         if (result.user) {
-          if (!result.user.emailVerified) {
-            // Optional: enforce email verification
-            // setError('Please verify your email before logging in.');
-            // setLoading(false);
-            // return;
+          // Generate or get device ID for single device login
+          let deviceId = localStorage.getItem('skillpilot_device_id');
+          if (!deviceId) {
+            deviceId = crypto.randomUUID();
+            localStorage.setItem('skillpilot_device_id', deviceId);
           }
 
           const userDocRef = doc(db, 'users', result.user.uid);
+          
+          // Update active device ID on login
+          await setDoc(userDocRef, { activeDeviceId: deviceId }, { merge: true });
+
           const docSnap = await getDoc(userDocRef);
           
           if (docSnap.exists()) {
@@ -296,17 +314,25 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           
           const userDocRef = doc(db, 'users', result.user.uid);
           const isAdmin = email === 'ravurukarthik740@gmail.com';
+
+          // Generate or get device ID for single device login
+          let deviceId = localStorage.getItem('skillpilot_device_id');
+          if (!deviceId) {
+            deviceId = crypto.randomUUID();
+            localStorage.setItem('skillpilot_device_id', deviceId);
+          }
           
           try {
             await setDoc(userDocRef, {
               name: name,
               email: email,
               role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
-              isPremium: false,
+              isPremium: false, // Premium only via Google for pace.ac.in
               isPendingVerification: false,
               password: password,
               createdAt: new Date().toISOString(),
               provider: 'email',
+              activeDeviceId: deviceId, // Store device ID
               providerData: result.user.providerData.map(p => ({
                 providerId: p.providerId,
                 uid: p.uid,
