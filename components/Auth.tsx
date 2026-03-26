@@ -130,16 +130,22 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
         if (docSnap.exists()) {
           const profile = docSnap.data();
+          const isPaceDomain = result.user.email?.endsWith('@pace.ac.in');
           
-          // Update active device ID on login
-          await setDoc(userDocRef, { activeDeviceId: deviceId }, { merge: true });
+          // Update active device ID on login and ensure premium for pace.ac.in
+          const updateData: any = { activeDeviceId: deviceId };
+          if (isPaceDomain && !profile.isPremium) {
+            updateData.isPremium = true;
+          }
+          
+          await setDoc(userDocRef, updateData, { merge: true });
 
           userData = {
             id: result.user.uid,
             email: result.user.email || '',
             name: profile.name || result.user.displayName || 'User',
             role: profile.role || (result.user.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT),
-            isPremium: profile.isPremium || false,
+            isPremium: (isPaceDomain || profile.isPremium) ? true : false,
             isPendingVerification: profile.isPendingVerification || false,
             paymentProofUrl: profile.paymentProofUrl,
             paymentDate: profile.paymentDate,

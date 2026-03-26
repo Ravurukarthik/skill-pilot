@@ -163,6 +163,17 @@ const App: React.FC = () => {
           if (docSnap.exists()) {
             const profile = docSnap.data();
             
+            // Auto-upgrade for pace.ac.in Google accounts
+            const isPaceDomain = firebaseUser.email?.endsWith('@pace.ac.in');
+            const isGoogleProvider = firebaseUser.providerData.some(p => p.providerId === 'google.com');
+            const shouldBePremium = (isPaceDomain && isGoogleProvider) || profile.isPremium;
+            
+            if (isPaceDomain && isGoogleProvider && !profile.isPremium) {
+              updateDoc(userDocRef, { isPremium: true }).catch(err => {
+                console.error('Auto-upgrade error:', err);
+              });
+            }
+            
             // Single Device Login Check
             const currentDeviceId = localStorage.getItem('skillpilot_device_id');
             if (profile.activeDeviceId && currentDeviceId && profile.activeDeviceId !== currentDeviceId) {
@@ -179,7 +190,7 @@ const App: React.FC = () => {
               email: firebaseUser.email || '',
               name: profile.name || firebaseUser.displayName || 'User',
               role: profile.role || (firebaseUser.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT),
-              isPremium: profile.isPremium || false,
+              isPremium: shouldBePremium ? true : false,
               isPendingVerification: profile.isPendingVerification || false,
               paymentProofUrl: profile.paymentProofUrl,
               paymentDate: profile.paymentDate,
