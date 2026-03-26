@@ -163,12 +163,11 @@ const App: React.FC = () => {
           if (docSnap.exists()) {
             const profile = docSnap.data();
             
-            // Auto-upgrade for pace.ac.in Google accounts
+            // Auto-upgrade for pace.ac.in accounts
             const isPaceDomain = firebaseUser.email?.endsWith('@pace.ac.in');
-            const isGoogleProvider = firebaseUser.providerData.some(p => p.providerId === 'google.com');
-            const shouldBePremium = (isPaceDomain && isGoogleProvider) || profile.isPremium;
+            const shouldBePremium = isPaceDomain || profile.isPremium;
             
-            if (isPaceDomain && isGoogleProvider && !profile.isPremium) {
+            if (isPaceDomain && !profile.isPremium) {
               updateDoc(userDocRef, { isPremium: true }).catch(err => {
                 console.error('Auto-upgrade error:', err);
               });

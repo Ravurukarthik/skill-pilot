@@ -331,6 +331,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           
           const userDocRef = doc(db, 'users', result.user.uid);
           const isAdmin = email === 'ravurukarthik740@gmail.com';
+          const isPaceDomain = email.endsWith('@pace.ac.in');
 
           // Generate or get device ID for single device login
           const deviceId = getDeviceId();
@@ -340,7 +341,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               name: name,
               email: email,
               role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
-              isPremium: false, // Premium only via Google for pace.ac.in
+              isPremium: isPaceDomain ? true : false, // Free premium for pace.ac.in
               isPendingVerification: false,
               password: password,
               createdAt: new Date().toISOString(),
