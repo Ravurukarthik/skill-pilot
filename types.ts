@@ -65,6 +65,7 @@ export interface Internship {
   location: string;
   type: 'paid' | 'unpaid';
   link: string;
+  postedAt: string;
   description?: string;
 }
 

@@ -351,7 +351,15 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   };
 
   const renderInternships = () => {
-    const filteredInternships = INTERNSHIP_MOCK.filter(i => i.type === internshipTab);
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const filteredInternships = INTERNSHIP_MOCK.filter(i => {
+      const isCorrectType = i.type === internshipTab;
+      const postedDate = new Date(i.postedAt);
+      const isRecent = postedDate >= oneMonthAgo;
+      return isCorrectType && isRecent;
+    });
 
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
@@ -431,6 +439,10 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                     <Calendar size={16} className="text-slate-500" />
                     {intern.duration}
                   </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-500 font-bold uppercase tracking-wider">
+                    <Calendar size={16} />
+                    Posted: {new Date(intern.postedAt).toLocaleDateString()}
+                  </div>
                   {intern.stipend && (
                     <div className="flex items-center gap-3 text-sm font-bold text-green-400">
                       <Banknote size={16} />
@@ -454,10 +466,18 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   };
 
   const renderJobs = () => {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const filteredJobs = JOBS_MOCK.filter(job => {
+      const postedDate = new Date(job.postedAt);
+      return postedDate >= oneMonthAgo;
+    });
+
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
         <div className="grid grid-cols-1 gap-6">
-          {JOBS_MOCK.map((job) => (
+          {filteredJobs.map((job) => (
             <div key={job.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-8 hover:shadow-xl transition-all group">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
                 <div className="flex items-start gap-6">
@@ -472,7 +492,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                         <MapPin size={14} /> {job.location}
                       </span>
                       <span className="flex items-center gap-1.5 text-xs text-slate-500 font-bold uppercase tracking-wider">
-                        <Calendar size={14} /> {job.postedAt}
+                        <Calendar size={14} /> {new Date(job.postedAt).toLocaleDateString()}
                       </span>
                       <span className="flex items-center gap-1.5 text-xs text-slate-500 font-bold uppercase tracking-wider">
                         <Users size={14} /> {job.applicants}

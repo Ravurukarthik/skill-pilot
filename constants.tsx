@@ -176,6 +176,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Bengaluru, Karnātaka, India', 
     type: 'paid', 
     link: 'https://careers.geaerospace.com/global/en/apply?jobSeqNo=GAOGAYGLOBALR5031124EXTERNALENGLOBAL&step=1&stepname=personalInformation',
+    postedAt: '2026-03-23',
     description: 'Business Segment: Aviation T&O Integrated Design & Build\nCategory: Engineering / Technology\nJob ID: R5031124\nPosted Date: 03/23/2026\nRelocation Assistance: Yes'
   },
   { 
@@ -187,6 +188,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Pan India / Virtual', 
     type: 'paid', 
     link: 'https://unstop.com/workshops-webinars/paytm-x-campus-fellowship-program-paytm-1663937?lb=krHMyqHr&utm_medium=Share&utm_source=workshops&utm_campaign=Ysatyam610',
+    postedAt: '2026-03-20',
     description: 'Paytm X Campus Fellowship Program / workshops\n\nEligibility:\nEngineering Students\nPostgraduate\nUndergraduate\nManagement\nArts, Commerce, Sciences & Others'
   },
   { 
@@ -198,6 +200,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: '100% Virtual', 
     type: 'unpaid', 
     link: 'https://surveys.infosysapps.com/r/a/Si41PRd2gAG5',
+    postedAt: '2026-03-15',
     description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n🐍 Python Technology\n☕ Java Tech Stack\n📊 Data Visualization'
   },
   { 
@@ -209,6 +212,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Bangalore', 
     type: 'paid', 
     link: 'https://internshala.com/internship/detail/presales-solutions-design-internship-in-bangalore-at-wipro1772638351',
+    postedAt: '2026-03-25',
     description: 'Starts immediately\nLast date: 3 Apr\' 26'
   },
   { 
@@ -220,6 +224,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Pan India / Virtual', 
     type: 'paid', 
     link: 'https://apply.careers.microsoft.com/careers/job?pid=1970393556625290&utm_source=Data_Science_Internship_unstop&utm_medium=listing&utm_campaign=unstop',
+    postedAt: '2026-03-10',
     description: 'Eligibility:\nEngineering Students\nPostgraduate\nUndergraduate'
   },
 ];
@@ -229,7 +234,7 @@ export const JOBS_MOCK: Job[] = [
     id: 'ge-hc-get',
     title: 'Graduate Engineer Trainee',
     company: 'GE HealthCare',
-    postedAt: '6 days ago',
+    postedAt: '2026-03-20',
     applicants: 'Over 300 applicants',
     location: 'Bengaluru, India',
     description: 'Ensure an uninterrupted supply of materials to support production and sales. Work to resolve materials issues while achieving and maintaining inventory business metrics. Roles: Material ordering, scheduling, Oracle expert, inventory accuracy, rescheduling, root cause investigation.',
@@ -240,7 +245,7 @@ export const JOBS_MOCK: Job[] = [
     id: 'hpe-software-engineer-1',
     title: 'Systems/Software Engineer I',
     company: 'HPE (Hewlett Packard Enterprise)',
-    postedAt: 'Just now',
+    postedAt: '2026-03-26',
     applicants: 'Be the first to apply',
     location: 'Bangalore, India (Hybrid)',
     description: 'HPE Off Campus Recruitment 2026 Details\nRole: Systems/Software Engineer I\nCategory: IT Jobs\nQualification: B.E / B.Tech / B.Sc / M.E / M.Tech / M.Sc\nExperience: 0 – 2 Years\nSalary: As per industry standards\nWork Mode: Hybrid (approx. 2 days/week in office)\nLast Date: Apply at the earliest\n\nEligibility Criteria:\n- Hold a Bachelor’s or Master’s degree in Computer Science, Information Systems, or a related field\n- Have 0 to 2 years of experience (freshers are eligible)',
@@ -251,11 +256,44 @@ export const JOBS_MOCK: Job[] = [
     id: 'wipro-cyber-security-analyst',
     title: 'Cyber Security Analyst',
     company: 'Wipro',
-    postedAt: 'Just now',
+    postedAt: '2026-03-26',
     applicants: 'Be the first to apply',
     location: 'Bengaluru, India',
     description: 'Wipro Hiring Jobs 2026 Details:\nRole: Cyber Security Analyst\nCategory: IT Jobs\nQualification: B.E / B.Tech\nExperience: Freshers\nSalary: As per industry standards\nJob Location: Bengaluru\nLast Date: Apply at the earliest\n\nEligibility Criteria:\n- Have a B.E / B.Tech degree\n- Possess knowledge of Trend Micro Antivirus – Deep Security (mandatory skill)\n\nKey Responsibilities:\nAs a Cyber Security Analyst at Wipro, you will be responsible for Security Monitoring & Analysis',
     link: 'https://careers.wipro.com/job/Bengaluru-CYBER-SECURITY-ANALYST-L1-IND-560035/151190-en_US/',
+    type: 'Full Time'
+  },
+  {
+    id: 'genpact-backend-java',
+    title: 'Technical Associate – Backend Developer (Java)',
+    company: 'Genpact',
+    postedAt: '2026-03-26',
+    applicants: 'Be the first to apply',
+    location: 'India',
+    description: 'Genpact Job Recruitment 2026 Details\nRole: Technical Associate – Backend Developer (Java)\nQualification: B.E / B.Tech / MCA / M.Tech\n\nEligibility Criteria:\n- Have a degree in Computer Science, IT, or a related field\n- Maintain at least 60% or equivalent CGPA throughout academics\n- Have no active backlogs\n- Possess good problem-solving and communication skills',
+    link: 'https://genpact.taleo.net/careersection/application.jss?lang=en&type=1&csNo=10460&portal=44100025334&reqNo=1681077&isOnLogoutPage=true&state=RELAY_STATE%3Dde1afd51-74c5-4a55-936f-e0248c2fd198%26RETURN_TO_URL%3Dhttps%3A%2F%2Fgenpact.taleo.net%2Fcareersection%2Fapplication.jss%3Flang%3Den%26type%3D1%26csNo%3D10460%26portal%3D44100025334%26reqNo%3D1681077%26isOnLogoutPage%3Dtrue&iss=https%3A%2F%2Faccounts.google.com&code=4%2F0Aci98E8ms8fPkWRxeenoYky7c3KrRvmq4kvJdTu_xUFRCJRsMAdiHBFa76LSUQVpWdQHWA&scope=email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=0&prompt=consent',
+    type: 'Full Time'
+  },
+  {
+    id: 'accenture-llm-fullstack',
+    title: 'LLM Full Stack Engineer',
+    company: 'Accenture',
+    postedAt: '2026-03-26',
+    applicants: 'Be the first to apply',
+    location: 'Bengaluru, India',
+    description: 'Accenture Hiring Freshers 2026 Details\nRole: LLM Full Stack Engineer\nCategory: IT Jobs\nQualification: B.E / B.Tech\nExperience: 0 – 2 Years\nSalary: As per industry standards\nLast Date: Apply at the earliest',
+    link: 'https://www.accenture.com/in-en/careers/jobdetails?id=ATCI-5451335-S2003960_en',
+    type: 'Full Time'
+  },
+  {
+    id: 'reliance-get-2026',
+    title: 'Graduate Engineer Trainee (GET)',
+    company: 'Reliance Industries',
+    postedAt: '2026-03-26',
+    applicants: 'Be the first to apply',
+    location: 'Across India',
+    description: 'Reliance Industries Hiring 2026 Details\nRole: Graduate Engineer Trainee (GET)\nCategory: Off-Campus Drive\nQualification: B.E / B.Tech\nBatch: 2026 (and other eligible batches)\nExperience: 0 – 5 Years\nSalary: As per industry standards\nLast Date: 29 March 2026',
+    link: 'https://unstop.com/jobs/reliance-industries-all-india-hiring-freshers-and-1-5-years-of-experience-reliance-industries-limited-ril-1660783?utm_source=Jobs&utm_medium=Affiliates&utm_campaign=trackier_2386&click_id=69c55e1274e49d03580e2436&ref=AffFreshersopening',
     type: 'Full Time'
   }
 ];
