@@ -25,16 +25,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onHome }) => {
             )}
           </div>
         </button>
-        <div className="relative hidden lg:block">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-            <Search size={18} />
-          </span>
-          <input 
-            type="text" 
-            placeholder="Search materials..." 
-            className="pl-10 pr-4 py-1.5 border border-slate-700 rounded-full bg-slate-800 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64 transition-all"
-          />
-        </div>
       </div>
 
       <div className="flex items-center gap-6">

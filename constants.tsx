@@ -23,7 +23,7 @@ export const MODULES_DATA = [
   { type: ModuleType.INTERNSHIPS, icon: <Users className="w-8 h-8 text-green-500" />, description: "Explore latest internship opportunities." },
   { type: ModuleType.JOBS, icon: <Briefcase className="w-8 h-8 text-orange-500" />, description: "Find and apply for top tech and non-tech jobs." },
   { type: ModuleType.CERTIFICATIONS, icon: <Award className="w-8 h-8 text-red-500" />, description: "Boost your resume with professional certificates." },
-  { type: ModuleType.CODING_SESSION, icon: <Code className="w-8 h-8 text-emerald-500" />, description: "Practice coding and master programming languages." }
+  { type: ModuleType.CODING_SESSION, icon: <Code className="w-8 h-8 text-emerald-500" />, description: "Access all coding compilers and IDEs in one place." }
 ];
 
 export const SUB_MODULES_GENERAL = [
@@ -134,7 +134,7 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
   'mba-2nd': ['Strategic Management', 'Entrepreneurship', 'Business Ethics', 'International Business'],
   'M.Tech Guide': ['Advanced Mathematics', 'Research Methodology', 'Specialization Elective I', 'Specialization Elective II'],
   'MBA Guide': ['Marketing Management', 'Financial Accounting', 'Organizational Behavior', 'Business Analytics'],
-  'Coding Session': ['C', 'C++', 'C#', 'Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'MERN Stack'],
+  'Coding Compilers & IDE': ['Universal IDE', 'C', 'C++', 'C#', 'Python', 'Java', 'JavaScript', 'TypeScript', 'PHP', 'Ruby', 'Go', 'Swift', 'Rust', 'Kotlin', 'HTML/CSS/JS', 'React', 'Node.js', 'SQL', 'MongoDB', 'MERN Stack'],
   'Competitive Exams': [
     'Engineering & Technology Exams', 
     'Medical Exams', 
@@ -154,15 +154,25 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
 };
 
 export const COMPILER_LINKS: Record<string, string> = {
+  'Universal IDE': 'https://onecompiler.com/embed/?hideLanguageSelection=false&hideHistory=true&theme=dark',
   'C': 'https://onecompiler.com/embed/c?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'C++': 'https://onecompiler.com/embed/cpp?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'C#': 'https://onecompiler.com/embed/csharp?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'Python': 'https://onecompiler.com/embed/python?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'Java': 'https://onecompiler.com/embed/java?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'JavaScript': 'https://onecompiler.com/embed/javascript?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'TypeScript': 'https://onecompiler.com/embed/typescript?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'PHP': 'https://onecompiler.com/embed/php?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'Ruby': 'https://onecompiler.com/embed/ruby?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'Go': 'https://onecompiler.com/embed/go?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'Swift': 'https://onecompiler.com/embed/swift?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'Rust': 'https://onecompiler.com/embed/rust?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'Kotlin': 'https://onecompiler.com/embed/kotlin?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'HTML/CSS/JS': 'https://onecompiler.com/embed/html?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'React': 'https://codesandbox.io/embed/new?codemirror=1&fontsize=14&hidenavigation=1&theme=dark',
   'Node.js': 'https://onecompiler.com/embed/nodejs?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'SQL': 'https://onecompiler.com/embed/mysql?hideLanguageSelection=true&hideHistory=true&theme=dark',
+  'MongoDB': 'https://onecompiler.com/embed/mongodb?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'MERN Stack': 'https://codesandbox.io/embed/mern-starter-68y9v?fontsize=14&hidenavigation=1&theme=dark'
 };
 
@@ -294,6 +304,17 @@ export const JOBS_MOCK: Job[] = [
     location: 'Across India',
     description: 'Reliance Industries Hiring 2026 Details\nRole: Graduate Engineer Trainee (GET)\nCategory: Off-Campus Drive\nQualification: B.E / B.Tech\nBatch: 2026 (and other eligible batches)\nExperience: 0 – 5 Years\nSalary: As per industry standards\nLast Date: 29 March 2026',
     link: 'https://unstop.com/jobs/reliance-industries-all-india-hiring-freshers-and-1-5-years-of-experience-reliance-industries-limited-ril-1660783?utm_source=Jobs&utm_medium=Affiliates&utm_campaign=trackier_2386&click_id=69c55e1274e49d03580e2436&ref=AffFreshersopening',
+    type: 'Full Time'
+  },
+  {
+    id: 'cognizant-analyst-trainee-2026',
+    title: 'Analyst Trainee',
+    company: 'Cognizant',
+    postedAt: '2026-03-27',
+    applicants: 'Be the first to apply',
+    location: 'India',
+    description: 'Cognizant fresher hiring for Analyst Trainee (Three-year full-time degree: 2024 or 2025 graduates)\nJob Function(s): Customer/Technical Support, Information Technology\nSalary: Detailed upon advancement\nApplication Deadline: 31 March 2026 11:59 PM',
+    link: 'https://app.joinsuperset.com/join/#/signup/student/jobprofiles/65ac431a-2d60-417a-b1f6-6b0f455a1d33',
     type: 'Full Time'
   }
 ];

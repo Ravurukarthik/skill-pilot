@@ -33,7 +33,7 @@ export enum ModuleType {
   INTERNSHIPS = 'Internships',
   JOBS = 'Job Applications',
   CERTIFICATIONS = 'Certification Courses',
-  CODING_SESSION = 'Coding Session'
+  CODING_SESSION = 'Coding Compilers & IDE'
 }
 
 export interface SubModule {

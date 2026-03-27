@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
 import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, COMPILER_LINKS } from '../constants';
-import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
 interface ModuleViewProps {
@@ -26,6 +26,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   const [aiContent, setAiContent] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [selectedCompiler, setSelectedCompiler] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleTutorialRequest = async (subject: string, subSubject?: string, lesson?: string) => {
     if (!user.isPremium) return;
@@ -56,6 +57,12 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
 
     if (lesson === 'రామాయణం') {
       setVideoUrl('https://www.youtube-nocookie.com/embed/f-WPzbNi-Eg');
+      return;
+    }
+
+    if (subject === 'Universal IDE') {
+      setIsAiLoading(false);
+      setAiContent("Welcome to the Universal IDE. You can select any programming language from the dropdown menu in the editor below to start coding. This environment supports 50+ languages with real-time compilation.");
       return;
     }
 
@@ -358,27 +365,43 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
       const isCorrectType = i.type === internshipTab;
       const postedDate = new Date(i.postedAt);
       const isRecent = postedDate >= oneMonthAgo;
-      return isCorrectType && isRecent;
-    });
+      const matchesSearch = i.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           i.company.toLowerCase().includes(searchQuery.toLowerCase());
+      return isCorrectType && isRecent && matchesSearch;
+    }).sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
-        {/* Classification Tabs */}
-        <div className="flex flex-wrap gap-4 p-1 bg-slate-800 rounded-2xl w-fit border border-slate-700">
-          <button 
-            onClick={() => setInternshipTab('paid')}
-            className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${internshipTab === 'paid' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-700'}`}
-          >
-            <Banknote size={18} />
-            Level 1: With Stipend
-          </button>
-          <button 
-            onClick={() => setInternshipTab('unpaid')}
-            className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${internshipTab === 'unpaid' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-700'}`}
-          >
-            <Zap size={18} />
-            Level 2: Skill Focus (Unpaid)
-          </button>
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          {/* Classification Tabs */}
+          <div className="flex flex-wrap gap-4 p-1 bg-slate-800 rounded-2xl w-fit border border-slate-700">
+            <button 
+              onClick={() => setInternshipTab('paid')}
+              className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${internshipTab === 'paid' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-700'}`}
+            >
+              <Banknote size={18} />
+              Level 1: With Stipend
+            </button>
+            <button 
+              onClick={() => setInternshipTab('unpaid')}
+              className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${internshipTab === 'unpaid' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-700'}`}
+            >
+              <Zap size={18} />
+              Level 2: Skill Focus (Unpaid)
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <input
+              type="text"
+              placeholder="Search company or role..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-slate-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+            />
+          </div>
         </div>
 
         {internshipTab === 'paid' && !user.isPremium ? (
@@ -471,11 +494,24 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
 
     const filteredJobs = JOBS_MOCK.filter(job => {
       const postedDate = new Date(job.postedAt);
-      return postedDate >= oneMonthAgo;
-    });
+      const isRecent = postedDate >= oneMonthAgo;
+      const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           job.company.toLowerCase().includes(searchQuery.toLowerCase());
+      return isRecent && matchesSearch;
+    }).sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+        <div className="relative max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <input
+            type="text"
+            placeholder="Search company or job title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-slate-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+          />
+        </div>
         <div className="grid grid-cols-1 gap-6">
           {filteredJobs.map((job) => (
             <div key={job.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-8 hover:shadow-xl transition-all group">
@@ -536,7 +572,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
   };
 
   const renderCodingSession = () => {
-    const languages = SUBJECTS_MOCK['Coding Session'] || [];
+    const languages = SUBJECTS_MOCK['Coding Compilers & IDE'] || [];
     
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
@@ -595,32 +631,74 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
         </div>
 
         {(isAiLoading || aiContent) && (
-          <div className="mt-10 bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-8 animate-in zoom-in-95 duration-300">
-            <div className="flex items-center justify-between mb-6 border-b border-slate-700 pb-4">
-              <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                <Terminal size={20} />
-                Coding Assistant: {selectedSubject}
+          <div className="mt-10 space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-8">
+              <div className="flex items-center justify-between mb-6 border-b border-slate-700 pb-4">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                  <Terminal size={20} />
+                  Coding Assistant: {selectedSubject}
+                </div>
+                {selectedSubject && COMPILER_LINKS[selectedSubject] && (
+                  <button
+                    onClick={() => setSelectedCompiler(COMPILER_LINKS[selectedSubject])}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"
+                  >
+                    <Terminal size={14} />
+                    Maximize Compiler
+                  </button>
+                )}
               </div>
-              {selectedSubject && COMPILER_LINKS[selectedSubject] && (
-                <button
-                  onClick={() => setSelectedCompiler(COMPILER_LINKS[selectedSubject])}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"
-                >
-                  <Terminal size={14} />
-                  Open {selectedSubject} Compiler
-                </button>
+              
+              {isAiLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                  <Loader2 className="animate-spin mb-4" size={32} />
+                  <p>Analyzing your coding request...</p>
+                </div>
+              ) : (
+                <div className="prose prose-invert prose-emerald max-w-none">
+                  <div className="whitespace-pre-wrap text-slate-300 leading-relaxed font-mono text-sm bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
+                    {aiContent}
+                  </div>
+                </div>
               )}
             </div>
-            
-            {isAiLoading ? (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-                <Loader2 className="animate-spin mb-4" size={32} />
-                <p>Analyzing your coding request...</p>
-              </div>
-            ) : (
-              <div className="prose prose-invert prose-emerald max-w-none">
-                <div className="whitespace-pre-wrap text-slate-300 leading-relaxed font-mono text-sm bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
-                  {aiContent}
+
+            {selectedSubject && COMPILER_LINKS[selectedSubject] && (
+              <div className="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm overflow-hidden flex flex-col h-[600px]">
+                <div className="bg-slate-900 border-b border-slate-700 p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => {
+                        setSelectedSubject(null);
+                        setAiContent(null);
+                        onBack();
+                      }}
+                      className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 font-medium transition-colors group px-2 py-1 hover:bg-slate-800 rounded-lg text-xs"
+                    >
+                      <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                      <span>Back to Dashboard</span>
+                    </button>
+                    <div className="h-4 w-px bg-slate-700"></div>
+                    <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                      <Code size={18} />
+                      Live {selectedSubject} Editor
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">In-Browser Compiler</span>
+                  </div>
+                </div>
+                <div className="flex-1 relative bg-slate-950">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <Loader2 className="animate-spin text-emerald-600/10" size={48} />
+                  </div>
+                  <iframe 
+                    src={COMPILER_LINKS[selectedSubject]}
+                    className="w-full h-full border-none relative z-10"
+                    title={`${selectedSubject} Compiler`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
                 </div>
               </div>
             )}
@@ -678,9 +756,11 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
       setSelectedLesson(null);
       setAiContent(null);
       setVideoUrl(null);
+      setSearchQuery('');
     } else if (selectedCourse) {
       setSelectedCourse(null);
     } else {
+      setSearchQuery('');
       onBack();
     }
   };
@@ -725,13 +805,26 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
       {selectedCompiler && (
         <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-in fade-in zoom-in-95 duration-300">
           <div className="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-600/20 rounded-xl flex items-center justify-center text-emerald-400">
-                <Terminal size={24} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-100">Interactive Compiler</h2>
-                <p className="text-xs text-slate-400">Master your code in real-time</p>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => {
+                  setSelectedCompiler(null);
+                  onBack();
+                }}
+                className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 font-medium transition-colors group px-3 py-1.5 hover:bg-slate-800 rounded-lg"
+              >
+                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="hidden sm:inline">Back to Dashboard</span>
+              </button>
+              <div className="h-6 w-px bg-slate-800 hidden sm:block"></div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-emerald-600/20 rounded-xl flex items-center justify-center text-emerald-400">
+                  <Terminal size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-100">Interactive Compiler</h2>
+                  <p className="text-xs text-slate-400">Master your code in real-time</p>
+                </div>
               </div>
             </div>
             <button 
