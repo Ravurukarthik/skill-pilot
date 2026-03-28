@@ -231,7 +231,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <span className="text-xs text-slate-400 font-medium">{user.email}</span>
+                      <span className="text-xs text-slate-400 font-medium truncate block max-w-[200px]" title={user.email}>{user.email}</span>
                     </td>
                     <td className="px-6 py-5">
                       <span className="text-xs text-slate-500 font-mono">{user.phoneNumber || '—'}</span>

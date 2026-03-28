@@ -28,22 +28,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user }) => {
             <h2 className="text-lg font-bold">Free Tier Account Details</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-2xl">
-              <div className="bg-slate-700 p-2 rounded-lg text-slate-400 shadow-sm">
+            <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-2xl min-w-0">
+              <div className="bg-slate-700 p-2 rounded-lg text-slate-400 shadow-sm flex-shrink-0">
                 <UserIcon size={18} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Full Name</p>
-                <p className="text-sm font-semibold text-slate-200">{user.name}</p>
+                <p className="text-sm font-semibold text-slate-200 truncate" title={user.name}>{user.name}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-2xl">
-              <div className="bg-slate-700 p-2 rounded-lg text-slate-400 shadow-sm">
+            <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-2xl min-w-0">
+              <div className="bg-slate-700 p-2 rounded-lg text-slate-400 shadow-sm flex-shrink-0">
                 <Mail size={18} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Email ID</p>
-                <p className="text-sm font-semibold text-slate-200">{user.email}</p>
+                <p className="text-sm font-semibold text-slate-200 truncate" title={user.email}>{user.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-2xl">
