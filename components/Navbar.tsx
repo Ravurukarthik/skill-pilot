@@ -1,20 +1,28 @@
 
 import React from 'react';
 import { User } from '../types';
-import { LogOut, User as UserIcon, Bell, Search, ShieldCheck, Mail } from 'lucide-react';
+import { LogOut, User as UserIcon, Bell, Search, ShieldCheck, Mail, Menu } from 'lucide-react';
 
 interface NavbarProps {
   user: User;
   onLogout: () => void;
   onHome: () => void;
+  onToggleSidebar?: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onHome }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onHome, onToggleSidebar }) => {
   const [showProfile, setShowProfile] = React.useState(false);
 
   return (
     <header className="bg-slate-900 border-b border-slate-800 h-16 flex items-center justify-between px-6 sticky top-0 z-10 shadow-sm">
       <div className="flex items-center gap-4">
+        <button 
+          onClick={onToggleSidebar}
+          className="p-2 -ml-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg md:hidden transition-colors"
+          title="Toggle Menu"
+        >
+          <Menu size={24} />
+        </button>
         <button onClick={onHome} className="flex flex-col items-start text-left leading-tight group">
           <div className="flex items-center gap-2">
             <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">

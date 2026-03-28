@@ -25,6 +25,8 @@ const App: React.FC = () => {
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const handleLogout = async (isForced = false) => {
     try {
       if (user && !isForced) {
@@ -312,6 +314,8 @@ const App: React.FC = () => {
     }
   };
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   if (loading || !isAuthInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -329,18 +333,34 @@ const App: React.FC = () => {
       <div className="min-h-screen flex bg-slate-950 text-slate-100">
         <Sidebar 
           activeModule={selectedModule} 
-          onNavigate={navigateToModule} 
-          onHome={navigateHome} 
-          onAdmin={navigateToAdmin}
+          onNavigate={(module) => {
+            navigateToModule(module);
+            setIsSidebarOpen(false); // Close sidebar on mobile after navigation
+          }} 
+          onHome={() => {
+            navigateHome();
+            setIsSidebarOpen(false);
+          }} 
+          onAdmin={() => {
+            navigateToAdmin();
+            setIsSidebarOpen(false);
+          }}
           isPremium={user.isPremium}
           isPending={user.isPendingVerification}
           onUpgrade={handleStartUpgrade}
           userRole={user.role}
           isAdminView={currentView === 'admin'}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
         
         <div className="flex-1 flex flex-col min-h-screen">
-          <Navbar user={user} onLogout={handleLogout} onHome={navigateHome} />
+          <Navbar 
+            user={user} 
+            onLogout={handleLogout} 
+            onHome={navigateHome} 
+            onToggleSidebar={toggleSidebar}
+          />
           
           <main className="flex-1 p-6 md:p-10 overflow-auto">
             {dbError && (
