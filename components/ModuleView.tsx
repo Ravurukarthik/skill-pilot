@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
-import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, COMPILER_LINKS } from '../constants';
+import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS } from '../constants';
 import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
@@ -439,8 +439,17 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
             {filteredInternships.map((intern) => (
               <div key={intern.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col">
                 <div className="flex items-start justify-between mb-6">
-                  <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center text-indigo-400 font-bold text-xl group-hover:bg-indigo-900/50 transition-colors">
-                    {intern.company.charAt(0)}
+                  <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center text-indigo-400 font-bold text-xl group-hover:bg-indigo-900/50 transition-colors overflow-hidden">
+                    {intern.logo ? (
+                      <img 
+                        src={intern.logo} 
+                        alt={intern.company} 
+                        className="w-full h-full object-contain p-2" 
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      intern.company.charAt(0)
+                    )}
                   </div>
                   <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${intern.type === 'paid' ? 'bg-green-900/30 text-green-400 border border-green-500/20' : 'bg-blue-900/30 text-blue-400 border border-blue-500/20'}`}>
                     {intern.type === 'paid' ? 'Stipend Available' : 'Certificate Included'}
@@ -564,6 +573,81 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                   Save for Later
                 </button>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCertifications = () => {
+    const filteredCerts = CERTIFICATIONS_MOCK.filter(cert => {
+      const matchesSearch = cert.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           cert.company.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    }).sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+        <div className="relative max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <input
+            type="text"
+            placeholder="Search certifications..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-slate-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCerts.map((cert) => (
+            <div key={cert.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center text-indigo-400 font-bold text-xl group-hover:bg-indigo-900/50 transition-colors overflow-hidden">
+                  {cert.logo ? (
+                    <img 
+                      src={cert.logo} 
+                      alt={cert.company} 
+                      className="w-full h-full object-contain p-2" 
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    cert.company.charAt(0)
+                  )}
+                </div>
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-900/30 text-indigo-400 border border-indigo-500/20">
+                  Certification
+                </span>
+              </div>
+              
+              <h4 className="text-xl font-bold text-slate-100 mb-1 group-hover:text-indigo-400 transition-colors">{cert.title}</h4>
+              <p className="text-slate-400 text-sm mb-2">{cert.company}</p>
+              {cert.description && (
+                <p className="text-xs text-indigo-400 font-medium mb-4 italic whitespace-pre-wrap">"{cert.description}"</p>
+              )}
+              
+              <div className="space-y-3 mb-8 flex-1">
+                <div className="flex items-center gap-3 text-sm text-slate-300">
+                  <MapPin size={16} className="text-slate-500" />
+                  {cert.location}
+                </div>
+                <div className="flex items-center gap-3 text-sm text-slate-300">
+                  <Calendar size={16} className="text-slate-500" />
+                  {cert.duration}
+                </div>
+                <div className="flex items-center gap-3 text-sm text-slate-500 font-bold uppercase tracking-wider">
+                  <Calendar size={16} />
+                  Posted: {new Date(cert.postedAt).toLocaleDateString()}
+                </div>
+              </div>
+
+              <button 
+                onClick={() => handleExternalRedirect(cert.link)}
+                className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
+              >
+                Enroll Now <ExternalLink size={18} />
+              </button>
             </div>
           ))}
         </div>
@@ -1031,22 +1115,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
         </div>
       )}
 
-      {type === ModuleType.CERTIFICATIONS && (
-        <div className="bg-slate-800 p-12 rounded-3xl border border-dashed border-slate-700 text-center">
-          <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-500">
-              <FileSearch size={32} />
-            </div>
-            <h3 className="text-xl font-bold mb-3 text-slate-100">Fetching Live Opportunities</h3>
-            <p className="text-slate-400 mb-8">We are scanning top portals (LinkedIn, Indeed, Internshala) for the latest openings tailored for your profile.</p>
-            <div className="flex gap-4">
-              <div className="flex-1 bg-slate-700 h-2 rounded-full overflow-hidden">
-                <div className="bg-indigo-600 h-full w-[45%] animate-[progress_2s_ease-in-out_infinite]"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {type === ModuleType.CERTIFICATIONS && renderCertifications()}
     </div>
   );
 };

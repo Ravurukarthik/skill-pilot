@@ -178,6 +178,45 @@ export const COMPILER_LINKS: Record<string, string> = {
 
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
+    id: 'deloitte-cyber-security', 
+    title: 'Cyber Security', 
+    company: 'Deloitte', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Virtual', 
+    type: 'unpaid', 
+    link: 'https://www.theforage.com/simulations/Deloitte%20Australia/cyber-c1e3',
+    postedAt: '2026-03-28',
+    description: 'Work with our cyber team to deliver Deloitte expertise to our clients. 78150+ 5 Star Reviews',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Deloitte.svg/1200px-Deloitte.svg.png'
+  },
+  { 
+    id: 'deloitte-data-analytics', 
+    title: 'Data Analytics Virtual Internship', 
+    company: 'Deloitte', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Virtual', 
+    type: 'unpaid', 
+    link: 'https://www.theforage.com/simulations/Deloitte%20Australia/data-analytics-s5zy',
+    postedAt: '2026-03-28',
+    description: 'Gain practical experience in data analytics and visualization with Deloitte Australia.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Deloitte.svg/1200px-Deloitte.svg.png'
+  },
+  { 
+    id: 'deloitte-technology', 
+    title: 'Technology Virtual Internship', 
+    company: 'Deloitte', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Virtual', 
+    type: 'unpaid', 
+    link: 'https://www.theforage.com/simulations/Deloitte%20Australia/technology-fz0w',
+    postedAt: '2026-03-28',
+    description: 'Explore the intersection of business and technology with Deloitte Australia.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Deloitte.svg/1200px-Deloitte.svg.png'
+  },
+  { 
     id: 'ge-aerospace-btech-intern', 
     title: 'B.Tech Intern', 
     company: 'GE Aerospace', 
@@ -187,7 +226,8 @@ export const INTERNSHIP_MOCK: Internship[] = [
     type: 'paid', 
     link: 'https://careers.geaerospace.com/global/en/apply?jobSeqNo=GAOGAYGLOBALR5031124EXTERNALENGLOBAL&step=1&stepname=personalInformation',
     postedAt: '2026-03-23',
-    description: 'Business Segment: Aviation T&O Integrated Design & Build\nCategory: Engineering / Technology\nJob ID: R5031124\nPosted Date: 03/23/2026\nRelocation Assistance: Yes'
+    description: 'Business Segment: Aviation T&O Integrated Design & Build\nCategory: Engineering / Technology\nJob ID: R5031124\nPosted Date: 03/23/2026\nRelocation Assistance: Yes',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/General_Electric_logo.svg/1200px-General_Electric_logo.svg.png'
   },
   { 
     id: 'paytm-fellowship', 
@@ -199,7 +239,8 @@ export const INTERNSHIP_MOCK: Internship[] = [
     type: 'paid', 
     link: 'https://unstop.com/workshops-webinars/paytm-x-campus-fellowship-program-paytm-1663937?lb=krHMyqHr&utm_medium=Share&utm_source=workshops&utm_campaign=Ysatyam610',
     postedAt: '2026-03-20',
-    description: 'Paytm X Campus Fellowship Program / workshops\n\nEligibility:\nEngineering Students\nPostgraduate\nUndergraduate\nManagement\nArts, Commerce, Sciences & Others'
+    description: 'Paytm X Campus Fellowship Program / workshops\n\nEligibility:\nEngineering Students\nPostgraduate\nUndergraduate\nManagement\nArts, Commerce, Sciences & Others',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/1200px-Paytm_Logo_%28standalone%29.svg.png'
   },
   { 
     id: 'infosys-springboard-7', 
@@ -211,7 +252,8 @@ export const INTERNSHIP_MOCK: Internship[] = [
     type: 'unpaid', 
     link: 'https://surveys.infosysapps.com/r/a/Si41PRd2gAG5',
     postedAt: '2026-03-15',
-    description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n🐍 Python Technology\n☕ Java Tech Stack\n📊 Data Visualization'
+    description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n🐍 Python Technology\n☕ Java Tech Stack\n📊 Data Visualization',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Infosys_logo.svg/1280px-Infosys_logo.svg.png'
   },
   { 
     id: 'wipro-presales-solutions', 
@@ -223,7 +265,8 @@ export const INTERNSHIP_MOCK: Internship[] = [
     type: 'paid', 
     link: 'https://internshala.com/internship/detail/presales-solutions-design-internship-in-bangalore-at-wipro1772638351',
     postedAt: '2026-03-25',
-    description: 'Starts immediately\nLast date: 3 Apr\' 26'
+    description: 'Starts immediately\nLast date: 3 Apr\' 26',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Wipro_Primary_Logo_Color_RGB.svg/1200px-Wipro_Primary_Logo_Color_RGB.svg.png'
   },
   { 
     id: 'microsoft-data-science', 
@@ -235,7 +278,8 @@ export const INTERNSHIP_MOCK: Internship[] = [
     type: 'paid', 
     link: 'https://apply.careers.microsoft.com/careers/job?pid=1970393556625290&utm_source=Data_Science_Internship_unstop&utm_medium=listing&utm_campaign=unstop',
     postedAt: '2026-03-10',
-    description: 'Eligibility:\nEngineering Students\nPostgraduate\nUndergraduate'
+    description: 'Eligibility:\nEngineering Students\nPostgraduate\nUndergraduate',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png'
   },
 ];
 
@@ -316,5 +360,47 @@ export const JOBS_MOCK: Job[] = [
     description: 'Cognizant fresher hiring for Analyst Trainee (Three-year full-time degree: 2024 or 2025 graduates)\nJob Function(s): Customer/Technical Support, Information Technology\nSalary: Detailed upon advancement\nApplication Deadline: 31 March 2026 11:59 PM',
     link: 'https://app.joinsuperset.com/join/#/signup/student/jobprofiles/65ac431a-2d60-417a-b1f6-6b0f455a1d33',
     type: 'Full Time'
+  }
+];
+
+export const CERTIFICATIONS_MOCK: Internship[] = [
+  { 
+    id: 'chatgpt-productivity-specialization', 
+    title: 'ChatGPT: Master Free AI Tools to Supercharge Productivity Specialization', 
+    company: 'Coursera', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://www.coursera.org/specializations/chatgpt-free-ai-tools-to-excel',
+    postedAt: '2026-03-28',
+    description: 'Learn to leverage ChatGPT and free AI tools to enhance productivity and excel in your tasks.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Coursera-logo_v2.svg/1200px-Coursera-logo_v2.svg.png'
+  },
+  { 
+    id: 'aws-solutions-architect-intro', 
+    title: 'AWS Certified Solutions Architect Associate Introduction', 
+    company: 'Udemy', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://www.udemy.com/course/aws-certified-solutions-architect-associate-in-30-days/',
+    postedAt: '2026-03-28',
+    description: 'Master the fundamentals of AWS and prepare for the Solutions Architect Associate certification with this comprehensive introductory course.',
+    logo: 'https://www.vectorlogo.zone/logos/udemy/udemy-icon.svg'
+  },
+  { 
+    id: 'learn-salesforce-easy-steps', 
+    title: 'Learn Salesforce in easy steps and get certified!', 
+    company: 'Udemy', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://www.udemy.com/course/learn-salesforce-in-easy-steps-and-get-certified/',
+    postedAt: '2026-03-28',
+    description: 'Master Salesforce fundamentals with this easy-to-follow course and prepare for your certification.',
+    logo: 'https://www.vectorlogo.zone/logos/udemy/udemy-icon.svg'
   }
 ];

@@ -67,6 +67,7 @@ export interface Internship {
   link: string;
   postedAt: string;
   description?: string;
+  logo?: string;
 }
 
 export interface Job {
