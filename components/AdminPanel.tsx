@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { db } from '../services/firebase';
-import { collection, onSnapshot, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, updateDoc, limit, getCountFromServer } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../services/firestoreUtils';
 import { 
   Users, 
@@ -17,7 +17,9 @@ import {
   CheckCircle2, 
   XCircle,
   ExternalLink,
-  Clock
+  Clock,
+  RefreshCw,
+  ChevronDown
 } from 'lucide-react';
 
 interface AdminPanelProps {
@@ -30,6 +32,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'premium' | 'pending' | 'student'>('all');
+  const [pageSize, setPageSize] = useState(20);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (user.role !== UserRole.ADMIN) return;
+
+    const fetchTotalCount = async () => {
+      try {
+        const coll = collection(db, 'users');
+        const snapshot = await getCountFromServer(coll);
+        setTotalUsers(snapshot.data().count);
+      } catch (err) {
+        console.error("Failed to fetch total count:", err);
+      }
+    };
+    fetchTotalCount();
+  }, [user.id]);
 
   useEffect(() => {
     if (user.role !== UserRole.ADMIN) {
@@ -37,7 +57,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
       return;
     }
 
-    const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    setLoading(true);
+    const usersQuery = query(
+      collection(db, 'users'), 
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
     
     const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
       const usersData: User[] = [];
@@ -61,13 +86,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
       });
       setUsers(usersData);
       setLoading(false);
+      setIsRefreshing(false);
     }, (err) => {
-      handleFirestoreError(err, OperationType.LIST, 'users');
+      // Only report error if user is still logged in and is admin
+      if (user.role === UserRole.ADMIN) {
+        handleFirestoreError(err, OperationType.LIST, 'users');
+      }
       setLoading(false);
+      setIsRefreshing(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user.id, pageSize]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // The onSnapshot will automatically update, but we can re-fetch the count
+    try {
+      const coll = collection(db, 'users');
+      const snapshot = await getCountFromServer(coll);
+      setTotalUsers(snapshot.data().count);
+    } catch (err) {
+      console.error("Refresh count failed:", err);
+    }
+  };
+
+  const handleLoadMore = () => {
+    setPageSize(prev => prev + 20);
+  };
 
   const handleVerifyUser = async (userId: string, approve: boolean) => {
     try {
@@ -147,9 +193,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
             <p className="text-slate-400 text-sm font-medium">Manage user accounts, verify payments, and monitor system activity.</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-indigo-900/20 px-5 py-2.5 rounded-2xl border border-indigo-900/30 shadow-lg shadow-indigo-900/10">
-          <Users size={20} className="text-indigo-400" />
-          <span className="text-sm font-black text-indigo-400 uppercase tracking-widest">{users.length} Total Users</span>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={`p-2.5 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded-xl border border-slate-800 transition-all ${isRefreshing && 'animate-spin'}`}
+            title="Refresh Data"
+          >
+            <RefreshCw size={20} />
+          </button>
+          <div className="flex items-center gap-3 bg-indigo-900/20 px-5 py-2.5 rounded-2xl border border-indigo-900/30 shadow-lg shadow-indigo-900/10">
+            <Users size={20} className="text-indigo-400" />
+            <span className="text-sm font-black text-indigo-400 uppercase tracking-widest">
+              {users.length} / {totalUsers} Users
+            </span>
+          </div>
         </div>
       </div>
 
@@ -336,6 +394,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
             </tbody>
           </table>
         </div>
+        
+        {users.length < totalUsers && !loading && (
+          <div className="p-8 border-t border-slate-800 bg-slate-950/30 flex justify-center">
+            <button 
+              onClick={handleLoadMore}
+              className="flex items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-indigo-900/20 hover:scale-105 active:scale-95"
+            >
+              <ChevronDown size={18} />
+              Load More Users
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

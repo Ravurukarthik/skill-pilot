@@ -66,7 +66,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
             name: profile.name || firebaseUser.displayName || 'User',
-            role: profile.role || UserRole.STUDENT,
+            role: profile.role || (firebaseUser.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT),
             isPremium: profile.isPremium || false,
             isPendingVerification: profile.isPendingVerification || false,
             paymentProofUrl: profile.paymentProofUrl,
@@ -254,8 +254,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       if (isLogin) {
         // Special Admin Login Case
         if (email === 'ravurukarthik740@gmail.com' && password === 'Mrrk@110107') {
-          // We still need to sign in to Firebase to get a valid UID if possible, 
-          // or just mock it if it's a hardcoded admin
           try {
             const result = await signInWithEmailAndPassword(auth, email, password);
             onLogin({
@@ -266,16 +264,56 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               isPremium: true,
               password: password,
             });
-          } catch (e) {
-            // Fallback for hardcoded admin if account doesn't exist in Firebase yet
-            onLogin({
-              id: 'admin-karthik',
-              email: 'ravurukarthik740@gmail.com',
-              name: 'Karthik (Admin)',
-              role: UserRole.ADMIN,
-              isPremium: true,
-              password: password,
-            });
+          } catch (e: any) {
+            console.error('Admin login attempt failed:', e);
+            
+            const isInvalidCred = e.code === 'auth/invalid-credential' || e.code === 'invalid-credential';
+            const isUserNotFound = e.code === 'auth/user-not-found' || e.code === 'user-not-found';
+            const isOpNotAllowed = e.code === 'auth/operation-not-allowed' || e.code === 'operation-not-allowed';
+
+            if (isOpNotAllowed) {
+              setError("Admin login failed: 'Email/Password' sign-in is disabled in your Firebase Console. Please enable it in Authentication > Sign-in method.");
+            } else if (isInvalidCred || isUserNotFound) {
+              // If login fails because user doesn't exist, try to create it automatically for the admin
+              try {
+                console.log('Attempting to auto-create admin account...');
+                const signupResult = await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Create profile
+                const userDocRef = doc(db, 'users', signupResult.user.uid);
+                await setDoc(userDocRef, {
+                  name: 'Karthik (Admin)',
+                  email: email,
+                  role: UserRole.ADMIN,
+                  isPremium: true,
+                  password: password,
+                  createdAt: new Date().toISOString(),
+                  provider: 'email',
+                  activeDeviceId: getDeviceId()
+                });
+
+                onLogin({
+                  id: signupResult.user.uid,
+                  email: email,
+                  name: 'Karthik (Admin)',
+                  role: UserRole.ADMIN,
+                  isPremium: true,
+                  password: password,
+                });
+                return;
+              } catch (signupErr: any) {
+                console.error('Admin auto-creation failed:', signupErr);
+                if (signupErr.code === 'auth/operation-not-allowed' || signupErr.code === 'auth/invalid-credential') {
+                  setError("Admin login failed. This usually means 'Email/Password' sign-in is disabled in your Firebase Console. Please enable it or use Google Login.");
+                } else {
+                  setError(`Admin login failed: ${signupErr.message}. Try using Google Login with this email.`);
+                }
+              }
+            } else if (e.code === 'auth/wrong-password') {
+              setError('Incorrect admin password.');
+            } else {
+              setError(`Admin login failed: ${e.message}. Please ensure Email/Password is enabled in Firebase.`);
+            }
           }
           setLoading(false);
           return;
@@ -376,7 +414,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         }
       }
     } catch (err: any) {
-      console.error('Signup Error:', err);
+      console.error('Signup/Login Error:', err);
       if (err.code === 'auth/email-already-in-use') {
         setError('This email is already registered. Please sign in instead.');
       } else if (err.code === 'auth/invalid-email') {
@@ -385,10 +423,12 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         setError('The password is too weak. Please use at least 6 characters.');
       } else if (err.code === 'auth/operation-not-allowed') {
         setError('Email/Password sign-in is not enabled in your Firebase Console. Please enable it in the Authentication > Sign-in method tab.');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError('Invalid credentials. If you are signing up, this might mean Email/Password registration is disabled in the Firebase Console.');
       } else if (err.message?.includes('permission-denied')) {
         setError('Profile creation failed due to database permissions. Please contact the administrator.');
       } else {
-        setError(err.message || 'An error occurred during sign up');
+        setError(err.message || 'An error occurred during authentication');
       }
     } finally {
       setLoading(false);

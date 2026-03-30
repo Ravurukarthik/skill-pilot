@@ -209,7 +209,7 @@ const App: React.FC = () => {
               id: firebaseUser.uid,
               email: firebaseUser.email || '',
               name: firebaseUser.displayName || 'User',
-              role: UserRole.STUDENT,
+              role: firebaseUser.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT,
               isPremium: false,
             };
             setUser(userData);

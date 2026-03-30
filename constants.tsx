@@ -178,6 +178,19 @@ export const COMPILER_LINKS: Record<string, string> = {
 
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
+    id: 'amazon-tax-intern-2026', 
+    title: 'Tax Intern (Tax Reporting)', 
+    company: 'Amazon (ADCI)', 
+    stipend: 'Paid Internship', 
+    duration: 'Program Duration', 
+    location: 'Hyderabad, Bangalore, Pune', 
+    type: 'unpaid', 
+    link: 'https://www.amazon.jobs/en/jobs/3165346/tax-intern-tax-reporting',
+    postedAt: '2026-03-30',
+    description: 'Job ID: 3165346\nTeam: Global Direct Tax Reporting & Compliance\nWork Area: Finance, Taxation, Accounting',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1200px-Amazon_logo.svg.png'
+  },
+  { 
     id: 'deloitte-cyber-security', 
     title: 'Cyber Security', 
     company: 'Deloitte', 
