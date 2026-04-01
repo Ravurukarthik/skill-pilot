@@ -253,16 +253,42 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     try {
       if (isLogin) {
         // Special Admin Login Case
-        if (email === 'ravurukarthik740@gmail.com' && password === 'Mrrk@110107') {
+        if (email === 'ravurukarthik740@gmail.com' && (password === 'Mrrk@130307' || password === 'Mrrk@110107')) {
+          const newPassword = 'Mrrk@130307';
+          const oldPassword = 'Mrrk@110107';
+          
           try {
-            const result = await signInWithEmailAndPassword(auth, email, password);
+            // Try signing in with the provided password
+            let result = await signInWithEmailAndPassword(auth, email, password);
+            
+            // If they used the old password, update it to the new one
+            if (password === oldPassword) {
+              try {
+                const { updatePassword } = await import('firebase/auth');
+                await updatePassword(result.user, newPassword);
+                console.log('Admin password updated to new version');
+              } catch (upErr) {
+                console.warn('Failed to update admin password in Auth, but login succeeded:', upErr);
+              }
+            }
+
+            // Generate or get device ID for single device login
+            const deviceId = getDeviceId();
+            const userDocRef = doc(db, 'users', result.user.uid);
+            
+            // Update active device ID on login - this logs out all other devices
+            await setDoc(userDocRef, { 
+              activeDeviceId: deviceId,
+              password: newPassword // Update stored password in Firestore
+            }, { merge: true });
+
             onLogin({
               id: result.user.uid,
               email: email,
               name: 'Karthik (Admin)',
               role: UserRole.ADMIN,
               isPremium: true,
-              password: password,
+              password: newPassword,
             });
           } catch (e: any) {
             console.error('Admin login attempt failed:', e);
@@ -277,7 +303,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               // If login fails because user doesn't exist, try to create it automatically for the admin
               try {
                 console.log('Attempting to auto-create admin account...');
-                const signupResult = await createUserWithEmailAndPassword(auth, email, password);
+                const signupResult = await createUserWithEmailAndPassword(auth, email, newPassword);
                 
                 // Create profile
                 const userDocRef = doc(db, 'users', signupResult.user.uid);
@@ -286,7 +312,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   email: email,
                   role: UserRole.ADMIN,
                   isPremium: true,
-                  password: password,
+                  password: newPassword,
                   createdAt: new Date().toISOString(),
                   provider: 'email',
                   activeDeviceId: getDeviceId()
@@ -298,19 +324,21 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   name: 'Karthik (Admin)',
                   role: UserRole.ADMIN,
                   isPremium: true,
-                  password: password,
+                  password: newPassword,
                 });
                 return;
               } catch (signupErr: any) {
                 console.error('Admin auto-creation failed:', signupErr);
-                if (signupErr.code === 'auth/operation-not-allowed' || signupErr.code === 'auth/invalid-credential') {
+                if (signupErr.code === 'auth/email-already-in-use') {
+                  setError("Admin account already exists, but the password provided is incorrect. If you've forgotten your password, please use the 'Forgot Password?' link below to reset your password to Mrrk@130307.");
+                } else if (signupErr.code === 'auth/operation-not-allowed' || signupErr.code === 'auth/invalid-credential') {
                   setError("Admin login failed. This usually means 'Email/Password' sign-in is disabled in your Firebase Console. Please enable it or use Google Login.");
                 } else {
                   setError(`Admin login failed: ${signupErr.message}. Try using Google Login with this email.`);
                 }
               }
             } else if (e.code === 'auth/wrong-password') {
-              setError('Incorrect admin password.');
+              setError('Incorrect admin password. Please use the new password Mrrk@130307.');
             } else {
               setError(`Admin login failed: ${e.message}. Please ensure Email/Password is enabled in Firebase.`);
             }

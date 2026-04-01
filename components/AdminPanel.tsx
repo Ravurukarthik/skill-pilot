@@ -19,7 +19,9 @@ import {
   ExternalLink,
   Clock,
   RefreshCw,
-  ChevronDown
+  ChevronDown,
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 interface AdminPanelProps {
@@ -35,6 +37,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
   const [pageSize, setPageSize] = useState(20);
   const [totalUsers, setTotalUsers] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user.role !== UserRole.ADMIN) return;
@@ -42,6 +45,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
     const fetchTotalCount = async () => {
       try {
         const coll = collection(db, 'users');
+        console.log('Fetching total count from DB:', (db as any)._databaseId?.database || 'default');
         const snapshot = await getCountFromServer(coll);
         setTotalUsers(snapshot.data().count);
       } catch (err) {
@@ -90,6 +94,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
     }, (err) => {
       // Only report error if user is still logged in and is admin
       if (user.role === UserRole.ADMIN) {
+        console.error("AdminPanel Firestore Error:", err);
+        setLocalError("Permission denied: You do not have access to the user list. Please check your admin status.");
         handleFirestoreError(err, OperationType.LIST, 'users');
       }
       setLoading(false);
@@ -177,7 +183,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500 bg-slate-950 min-h-screen p-4 md:p-8">
-      <div className="flex items-center justify-between mb-10 max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto">
+        {localError && (
+          <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-xl text-red-200 text-sm flex items-center gap-3">
+            <AlertCircle size={18} className="shrink-0" />
+            <p>{localError}</p>
+            <button 
+              onClick={() => setLocalError(null)}
+              className="ml-auto text-red-200/50 hover:text-red-200"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+        
+        <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           <button 
             onClick={onBack}
@@ -408,7 +428,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
         )}
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 const Loader2 = ({ size, className }: { size: number, className?: string }) => (

@@ -436,61 +436,83 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredInternships.map((intern) => (
-              <div key={intern.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center text-indigo-400 font-bold text-xl group-hover:bg-indigo-900/50 transition-colors overflow-hidden">
-                    {intern.logo ? (
-                      <img 
-                        src={intern.logo} 
-                        alt={intern.company} 
-                        className="w-full h-full object-contain p-2" 
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      intern.company.charAt(0)
-                    )}
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${intern.type === 'paid' ? 'bg-green-900/30 text-green-400 border border-green-500/20' : 'bg-blue-900/30 text-blue-400 border border-blue-500/20'}`}>
-                    {intern.type === 'paid' ? 'Stipend Available' : 'Certificate Included'}
-                  </span>
-                </div>
-                
-                <h4 className="text-xl font-bold text-slate-100 mb-1 group-hover:text-indigo-400 transition-colors">{intern.title}</h4>
-                <p className="text-slate-400 text-sm mb-2">{intern.company}</p>
-                {intern.description && (
-                  <p className="text-xs text-indigo-400 font-medium mb-4 italic whitespace-pre-wrap">"{intern.description}"</p>
-                )}
-                
-                <div className="space-y-3 mb-8 flex-1">
-                  <div className="flex items-center gap-3 text-sm text-slate-300">
-                    <MapPin size={16} className="text-slate-500" />
-                    {intern.location}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-slate-300">
-                    <Calendar size={16} className="text-slate-500" />
-                    {intern.duration}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-slate-500 font-bold uppercase tracking-wider">
-                    <Calendar size={16} />
-                    Posted: {new Date(intern.postedAt).toLocaleDateString()}
-                  </div>
-                  {intern.stipend && (
-                    <div className="flex items-center gap-3 text-sm font-bold text-green-400">
-                      <Banknote size={16} />
-                      {intern.stipend}
+            {filteredInternships.map((intern) => {
+              const isNew = new Date(intern.postedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+              return (
+                <div key={intern.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col relative overflow-hidden">
+                  {isNew && (
+                    <div className="absolute top-0 right-0">
+                      <div className="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-widest shadow-lg">
+                        New
+                      </div>
                     </div>
                   )}
-                </div>
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-xl group-hover:scale-110 transition-transform overflow-hidden shadow-inner border border-slate-700">
+                      {intern.logo ? (
+                        <img 
+                          src={intern.logo} 
+                          alt={intern.company} 
+                          className="w-full h-full object-contain p-2" 
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        intern.company.charAt(0)
+                      )}
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${intern.type === 'paid' ? 'bg-green-900/30 text-green-400 border border-green-500/20' : 'bg-blue-900/30 text-blue-400 border border-blue-500/20'}`}>
+                      {intern.type === 'paid' ? 'Stipend Available' : 'Certificate Included'}
+                    </span>
+                  </div>
+                  
+                  <h4 className="text-xl font-bold text-slate-100 mb-1 group-hover:text-indigo-400 transition-colors line-clamp-2 min-h-[3.5rem]">{intern.title}</h4>
+                  <p className="text-slate-400 text-sm mb-4 font-medium">{intern.company}</p>
+                  
+                  {intern.description && (
+                    <div className="bg-slate-900/50 p-3 rounded-xl mb-4 border border-slate-700/50 flex-1">
+                      <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-3 italic">
+                        "{intern.description}"
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-3 text-xs text-slate-300">
+                      <div className="w-6 h-6 bg-slate-700 rounded-lg flex items-center justify-center text-slate-400">
+                        <MapPin size={12} />
+                      </div>
+                      {intern.location}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-slate-300">
+                      <div className="w-6 h-6 bg-slate-700 rounded-lg flex items-center justify-center text-slate-400">
+                        <Calendar size={12} />
+                      </div>
+                      {intern.duration}
+                    </div>
+                    {intern.stipend && (
+                      <div className="flex items-center gap-3 text-xs font-bold text-green-400">
+                        <div className="w-6 h-6 bg-green-900/20 rounded-lg flex items-center justify-center text-green-500">
+                          <Banknote size={12} />
+                        </div>
+                        {intern.stipend}
+                      </div>
+                    )}
+                  </div>
 
-                <button 
-                  onClick={() => handleExternalRedirect(intern.link)}
-                  className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
-                >
-                  Apply Now <ArrowLeft size={18} className="rotate-180" />
-                </button>
-              </div>
-            ))}
+                  <div className="pt-4 border-t border-slate-700 flex items-center justify-between gap-4">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                      Posted {new Date(intern.postedAt).toLocaleDateString()}
+                    </div>
+                    <button 
+                      onClick={() => handleExternalRedirect(intern.link)}
+                      className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"
+                    >
+                      Apply <ArrowLeft size={16} className="rotate-180" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

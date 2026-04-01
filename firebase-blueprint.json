@@ -77,6 +77,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Collection of user profiles indexed by their Firebase Auth UID."
+    },
+    "/test/{docId}": {
+      "schema": { "type": "object" },
+      "description": "Collection used for connection health checks."
     }
   }
 }

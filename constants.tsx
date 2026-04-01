@@ -178,6 +178,19 @@ export const COMPILER_LINKS: Record<string, string> = {
 
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
+    id: 'tata-data-visualisation', 
+    title: 'Data Visualisation: Empowering Business with Effective Insights', 
+    company: 'Tata Group', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Virtual', 
+    type: 'unpaid', 
+    link: 'https://www.theforage.com/simulations/tata/data-visualisation-p5xo',
+    postedAt: '2026-03-31',
+    description: 'Gain insights into leveraging data visualisations as a tool for making informed business decisions.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tata_logo.svg/1200px-Tata_logo.svg.png'
+  },
+  { 
     id: 'amazon-tax-intern-2026', 
     title: 'Tax Intern (Tax Reporting)', 
     company: 'Amazon (ADCI)', 
@@ -265,7 +278,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     type: 'unpaid', 
     link: 'https://surveys.infosysapps.com/r/a/Si41PRd2gAG5',
     postedAt: '2026-03-15',
-    description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n🐍 Python Technology\n☕ Java Tech Stack\n📊 Data Visualization',
+    description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n⚡ Python Technology\n⚡ Java Tech Stack\n⚡ Data Visualization',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Infosys_logo.svg/1280px-Infosys_logo.svg.png'
   },
   { 

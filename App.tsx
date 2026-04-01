@@ -117,10 +117,11 @@ const App: React.FC = () => {
     // Test Firestore connection
     const testConnection = async () => {
       try {
+        console.log('Testing connection to DB:', (db as any)._databaseId?.database || 'default');
         await getDocFromServer(doc(db, 'test', 'connection'));
       } catch (error) {
         if (error instanceof Error && error.message.includes('the client is offline')) {
-          setDbError("Firebase is offline or configuration is incorrect. Please check your project settings.");
+          setDbError(`Firebase is offline or configuration is incorrect: ${error.message}`);
         }
       }
     };
