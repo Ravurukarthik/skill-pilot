@@ -38,6 +38,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [selectedUserActivity, setSelectedUserActivity] = useState<User | null>(null);
 
   useEffect(() => {
     if (user.role !== UserRole.ADMIN) return;
@@ -85,7 +86,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
           createdAt: data.createdAt,
           provider: data.provider,
           providerData: data.providerData,
-          phoneNumber: data.phoneNumber
+          phoneNumber: data.phoneNumber,
+          studyStats: data.studyStats,
+          lastStudyDate: data.lastStudyDate,
+          dailyGoalMinutes: data.dailyGoalMinutes
         });
       });
       setUsers(usersData);
@@ -302,14 +306,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-slate-950 rounded-xl flex items-center justify-center text-indigo-400 font-black text-xs border border-slate-800 shadow-inner">
+                        <button 
+                          onClick={() => setSelectedUserActivity(user)}
+                          className="w-9 h-9 bg-slate-950 rounded-xl flex items-center justify-center text-indigo-400 font-black text-xs border border-slate-800 shadow-inner hover:bg-indigo-900/20 transition-all"
+                        >
                           {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="font-bold text-slate-100 text-sm whitespace-nowrap">{user.name}</span>
+                        </button>
+                        <button 
+                          onClick={() => setSelectedUserActivity(user)}
+                          className="font-bold text-slate-100 text-sm whitespace-nowrap hover:text-indigo-400 transition-colors"
+                        >
+                          {user.name}
+                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <span className="text-xs text-slate-400 font-medium truncate block max-w-[200px]" title={user.email}>{user.email}</span>
+                      <button 
+                        onClick={() => setSelectedUserActivity(user)}
+                        className="text-xs text-slate-400 font-medium truncate block max-w-[200px] hover:text-indigo-400 transition-colors" 
+                        title={user.email}
+                      >
+                        {user.email}
+                      </button>
                     </td>
                     <td className="px-6 py-5">
                       <span className="text-xs text-slate-500 font-mono">{user.phoneNumber || '—'}</span>
@@ -427,6 +445,117 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
           </div>
         )}
       </div>
+
+      {/* User Activity Modal */}
+      {selectedUserActivity && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-slate-900 w-full max-w-2xl rounded-[2rem] border border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-400 font-black text-lg border border-indigo-500/20">
+                  {selectedUserActivity.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-100 tracking-tight">{selectedUserActivity.name}</h3>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{selectedUserActivity.email}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedUserActivity(null)}
+                className="p-2 hover:bg-slate-800 rounded-full text-slate-500 hover:text-slate-100 transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Clock size={16} className="text-indigo-400" />
+                    Daily Study Activity
+                  </h4>
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                    Last active: {formatDate(selectedUserActivity.lastStudyDate)}
+                  </span>
+                </div>
+                
+                {selectedUserActivity.studyStats && Object.keys(selectedUserActivity.studyStats).length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(selectedUserActivity.studyStats).map(([module, minutes]: [string, any]) => (
+                      <div key={module} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
+                        <div className="min-w-0">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Module</p>
+                          <p className="text-sm font-bold text-slate-200 truncate pr-2">{module}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Spent</p>
+                          <p className="text-sm font-black text-indigo-400">
+                            {Math.floor(Number(minutes) / 60)}h {Number(minutes) % 60}m
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {(() => {
+                      const stats = selectedUserActivity.studyStats || {};
+                      const total = (Object.values(stats) as any[]).reduce((acc: number, curr: any) => acc + (Number(curr) || 0), 0);
+                      return (
+                        <div className="md:col-span-2 bg-indigo-900/10 p-5 rounded-2xl border border-indigo-500/20 flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
+                              <ShieldCheck size={20} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Total Study Time</p>
+                              <p className="text-xl font-black text-slate-100">
+                                {Math.floor(total / 60)}h {total % 60}m
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Daily Goal</p>
+                            <p className="text-xl font-black text-slate-100">{selectedUserActivity.dailyGoalMinutes || 60}m</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div className="bg-slate-950 p-12 rounded-3xl border border-slate-800 border-dashed text-center">
+                    <Clock size={48} className="text-slate-700 mx-auto mb-4 opacity-20" />
+                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No study activity recorded today.</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Account Status</p>
+                  <p className={`text-sm font-black uppercase tracking-widest ${selectedUserActivity.isPremium ? 'text-amber-500' : 'text-indigo-400'}`}>
+                    {selectedUserActivity.isPremium ? 'Premium Pro' : 'Free Tier'}
+                  </p>
+                </div>
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Role</p>
+                  <p className="text-sm font-black uppercase tracking-widest text-slate-200">
+                    {selectedUserActivity.role}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 bg-slate-950/50 border-t border-slate-800 flex justify-end">
+              <button 
+                onClick={() => setSelectedUserActivity(null)}
+                className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl font-black uppercase tracking-widest text-xs transition-all"
+              >
+                Close Activity
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   </div>
 );

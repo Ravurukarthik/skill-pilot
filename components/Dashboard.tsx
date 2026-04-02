@@ -160,8 +160,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user }) => {
             "Education is the most powerful weapon which you can use to change the world."
           </p>
           <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
-            <p className="text-xs font-bold uppercase tracking-wider text-indigo-200 mb-1">Top Module Today</p>
-            <p className="font-bold">{topModule || 'No activity yet'}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">Activity Breakdown</p>
+            {Object.keys(studyStats).length > 0 ? (
+              <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
+                {Object.entries(studyStats).sort((a, b) => Number(b[1]) - Number(a[1])).map(([module, minutes]) => (
+                  <div key={module} className="flex justify-between items-center text-xs">
+                    <span className="text-indigo-100 truncate mr-2">{module}</span>
+                    <span className="font-bold shrink-0">{Math.floor(Number(minutes) / 60)}h {Number(minutes) % 60}m</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="font-bold text-sm">No activity yet</p>
+            )}
           </div>
         </div>
       </div>

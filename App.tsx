@@ -82,6 +82,14 @@ const App: React.FC = () => {
   }, [user?.role, user?.id]);
 
   // Study Time Tracker
+  const statsRef = React.useRef<{ [key: string]: number } | undefined>(user?.studyStats);
+  const lastDateRef = React.useRef<string | undefined>(user?.lastStudyDate);
+
+  useEffect(() => {
+    statsRef.current = user?.studyStats;
+    lastDateRef.current = user?.lastStudyDate;
+  }, [user?.studyStats, user?.lastStudyDate]);
+
   useEffect(() => {
     if (!user || currentView !== 'module' || !selectedModule) return;
 
@@ -89,10 +97,10 @@ const App: React.FC = () => {
       const today = new Date().toISOString().split('T')[0];
       const userDocRef = doc(db, 'users', user.id);
       
-      let newStats = { ...(user.studyStats || {}) };
+      let newStats = { ...(statsRef.current || {}) };
       
       // Reset if it's a new day
-      if (user.lastStudyDate !== today) {
+      if (lastDateRef.current !== today) {
         newStats = {};
       }
 
@@ -100,18 +108,18 @@ const App: React.FC = () => {
       newStats[moduleName] = (newStats[moduleName] || 0) + 1; // add 1 minute
 
       try {
-        await setDoc(userDocRef, {
+        await updateDoc(userDocRef, {
           studyStats: newStats,
           lastStudyDate: today,
           dailyGoalMinutes: user.dailyGoalMinutes || 60 // Default 1 hour goal
-        }, { merge: true });
+        });
       } catch (err) {
         console.error('Failed to update study stats:', err);
       }
     }, 60000); // Every 1 minute
 
     return () => clearInterval(interval);
-  }, [user?.id, user?.lastStudyDate, user?.studyStats, user?.dailyGoalMinutes, currentView, selectedModule]);
+  }, [user?.id, currentView, selectedModule]);
 
   useEffect(() => {
     // Test Firestore connection
