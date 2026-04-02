@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        <nav className="flex-1 px-3 space-y-1">
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
           <button 
             onClick={onHome}
             className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${!activeModule ? 'bg-indigo-900/40 text-indigo-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'}`}
