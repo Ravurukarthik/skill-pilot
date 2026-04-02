@@ -29,9 +29,10 @@ import {
 interface AdminPanelProps {
   onBack: () => void;
   user: User;
+  onOpenExternalLink?: (url: string) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLink }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -409,7 +410,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
                             </button>
                             {user.paymentProofUrl && (
                               <button 
-                                onClick={() => window.open(user.paymentProofUrl, '_blank')}
+                                onClick={() => onOpenExternalLink?.(user.paymentProofUrl!)}
                                 className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-900/20"
                                 title="View Proof"
                               >

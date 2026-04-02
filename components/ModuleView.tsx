@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
-import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '../constants';
+import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, PAPER_LINKS_BTECH, PAPER_LINKS_MTECH, PAPER_LINKS_MBA, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '../constants';
 import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search, Trophy, Award } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
@@ -10,12 +10,13 @@ interface ModuleViewProps {
   onBack: () => void;
   user: User;
   onUpgrade: () => void;
+  onOpenExternalLink?: (url: string) => void;
 }
 
 type SubTab = 'papers' | 'tutorials' | 'hallticket' | 'marks' | null;
 type InternshipTab = 'paid' | 'unpaid';
 
-const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }) => {
+const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, onOpenExternalLink }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>(null);
   const [internshipTab, setInternshipTab] = useState<InternshipTab>('paid');
   const [selectedCourse, setSelectedCourse] = useState<BTechCourse | null>(null);
@@ -79,22 +80,28 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
 
   const handlePaperClick = (subject: string) => {
     if (type === ModuleType.CLASS_10 && PAPER_LINKS_10TH[subject]) {
-      window.open(PAPER_LINKS_10TH[subject], '_blank');
+      onOpenExternalLink?.(PAPER_LINKS_10TH[subject]);
     } else if (type === ModuleType.INTER) {
       if (PAPER_LINKS_INTER_1ST[subject]) {
-        window.open(PAPER_LINKS_INTER_1ST[subject], '_blank');
+        onOpenExternalLink?.(PAPER_LINKS_INTER_1ST[subject]);
       } else if (PAPER_LINKS_INTER_2ND[subject]) {
-        window.open(PAPER_LINKS_INTER_2ND[subject], '_blank');
+        onOpenExternalLink?.(PAPER_LINKS_INTER_2ND[subject]);
       } else {
         alert(`Papers for ${subject} will be available soon!`);
       }
+    } else if (type === ModuleType.BTECH && PAPER_LINKS_BTECH[subject]) {
+      onOpenExternalLink?.(PAPER_LINKS_BTECH[subject]);
+    } else if (type === ModuleType.MTECH && PAPER_LINKS_MTECH[subject]) {
+      onOpenExternalLink?.(PAPER_LINKS_MTECH[subject]);
+    } else if (type === ModuleType.MBA && PAPER_LINKS_MBA[subject]) {
+      onOpenExternalLink?.(PAPER_LINKS_MBA[subject]);
     } else {
       alert(`Papers for ${subject} will be available soon!`);
     }
   };
 
   const handleExternalRedirect = (url: string) => {
-    window.open(url, '_blank');
+    onOpenExternalLink?.(url);
   };
 
   const renderBranchGrid = (courses: BTechCourse[]) => (
@@ -723,7 +730,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedCompiler(COMPILER_LINKS[lang]);
+                        onOpenExternalLink?.(COMPILER_LINKS[lang]);
                       }}
                       className={`p-1.5 rounded-lg transition-all ${selectedSubject === lang ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-600 hover:text-white'}`}
                       title="Open Online Compiler"
@@ -747,7 +754,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                 </div>
                 {selectedSubject && COMPILER_LINKS[selectedSubject] && (
                   <button
-                    onClick={() => setSelectedCompiler(COMPILER_LINKS[selectedSubject])}
+                    onClick={() => onOpenExternalLink?.(COMPILER_LINKS[selectedSubject])}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-emerald-900/20"
                   >
                     <Terminal size={14} />

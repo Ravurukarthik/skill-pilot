@@ -64,6 +64,36 @@ export const PAPER_LINKS_INTER_2ND: Record<string, string> = {
   'Chemistry (2nd Year)': 'https://static.collegedekho.com/media/uploads/2022/08/11/chemistry-iiem.pdf'
 };
 
+export const PAPER_LINKS_BTECH: Record<string, string> = {
+  'Data Structures': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Data-Structures-Previous-Question-Papers.pdf',
+  'Algorithms': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Design-and-Analysis-of-Algorithms-Previous-Question-Papers.pdf',
+  'DBMS': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Database-Management-Systems-Previous-Question-Papers.pdf',
+  'Operating Systems': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Operating-Systems-Previous-Question-Papers.pdf',
+  'Computer Networks': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Computer-Networks-Previous-Question-Papers.pdf',
+  'Microprocessors': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Microprocessors-and-Microcontrollers-Previous-Question-Papers.pdf',
+  'Digital Electronics': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Digital-Electronics-Previous-Question-Papers.pdf',
+  'Signals & Systems': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Signals-and-Systems-Previous-Question-Papers.pdf',
+  'Control Systems': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Control-Systems-Previous-Question-Papers.pdf',
+  'Structural Analysis': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Structural-Analysis-I-Previous-Question-Papers.pdf',
+  'Fluid Mechanics': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Fluid-Mechanics-Previous-Question-Papers.pdf',
+  'Surveying': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Surveying-Previous-Question-Papers.pdf',
+  'Geotechnical Engineering': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Geotechnical-Engineering-I-Previous-Question-Papers.pdf'
+};
+
+export const PAPER_LINKS_MTECH: Record<string, string> = {
+  'Advanced Algorithms': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Advanced-Algorithms-Previous-Question-Papers.pdf',
+  'Distributed Systems': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Distributed-Systems-Previous-Question-Papers.pdf',
+  'Cloud Computing': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Cloud-Computing-Previous-Question-Papers.pdf',
+  'Network Security': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Network-Security-Previous-Question-Papers.pdf'
+};
+
+export const PAPER_LINKS_MBA: Record<string, string> = {
+  'Management Principles': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Management-Principles-Previous-Question-Papers.pdf',
+  'Marketing Management': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Marketing-Management-Previous-Question-Papers.pdf',
+  'Financial Accounting': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Financial-Accounting-Previous-Question-Papers.pdf',
+  'Human Resource Management': 'https://www.jntufastupdates.com/wp-content/uploads/2018/03/Human-Resource-Management-Previous-Question-Papers.pdf'
+};
+
 export const HALL_TICKET_LINK_10TH = 'https://bse.ap.gov.in/apsschtttfy/ASEDefault.aspx';
 
 export const HALL_TICKET_LINKS_INTER = {

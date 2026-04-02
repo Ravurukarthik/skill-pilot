@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import AdminPanel from './components/AdminPanel';
 import PaymentModal from './components/PaymentModal';
+import ExternalLinkModal from './components/ExternalLinkModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -24,6 +25,7 @@ const App: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [externalUrl, setExternalUrl] = useState<string | null>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -451,11 +453,11 @@ const App: React.FC = () => {
         )}
 
         {currentView === 'dashboard' ? (
-              <Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} />
+              <Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} onOpenExternalLink={setExternalUrl} />
             ) : (currentView === 'admin' && user.role === UserRole.ADMIN) ? (
-              <AdminPanel onBack={navigateHome} user={user} />
+              <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={setExternalUrl} />
             ) : (
-              selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} />
+              selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} onOpenExternalLink={setExternalUrl} />
             )}
           </main>
 
@@ -469,6 +471,13 @@ const App: React.FC = () => {
             onClose={() => setShowPaymentModal(false)} 
             onUpload={handleReceiptUpload}
             isProcessing={isVerifyingPayment}
+          />
+        )}
+
+        {externalUrl && (
+          <ExternalLinkModal 
+            url={externalUrl} 
+            onClose={() => setExternalUrl(null)} 
           />
         )}
       </div>
