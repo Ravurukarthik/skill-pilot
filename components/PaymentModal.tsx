@@ -14,7 +14,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // High-quality super.money UPI QR code for Ravuru Karthik
-  const qrCodeImage = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=upi://pay?pa=8125399090@superyes&pn=RAVURU%20KARTHIK&am=299&cu=INR";
+  const qrCodeImage = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=upi://pay?pa=8125399090@superyes&pn=RAVURU%20KARTHIK&am=99&cu=INR";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -76,7 +76,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
                 </div>
                 
                 <div className="mt-8 text-center space-y-1">
-                  <h3 className="text-sm font-bold text-gray-900 tracking-tight">Pay ₹299.00 to <span className="uppercase">RAVURU KARTHIK</span></h3>
+                  <h3 className="text-sm font-bold text-gray-900 tracking-tight">Pay ₹99.00 to <span className="uppercase">RAVURU KARTHIK</span></h3>
                   <p className="text-[10px] text-gray-500 font-mono">UPI ID : 8125399090@superyes</p>
                 </div>
                 
@@ -85,7 +85,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
                 </div>
               </div>
               <div className="mt-6 text-center">
-                <p className="text-indigo-600 font-bold">₹299.00 / Month</p>
+                <p className="text-indigo-600 font-bold">₹99.00 / Month</p>
               </div>
             </div>
           </div>
@@ -150,7 +150,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
               <div className="text-center space-y-0.5">
                 <h3 className="text-[10px] text-gray-900 font-bold tracking-tight uppercase truncate">RAVURU KARTHIK</h3>
                 <p className="text-[8px] text-gray-400 font-mono">8125399090@superyes</p>
-                <p className="text-[9px] text-indigo-600 font-bold mt-1">₹299 / Month</p>
+                <p className="text-[9px] text-indigo-600 font-bold mt-1">₹99 / Month</p>
               </div>
             </div>
             
@@ -173,15 +173,15 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, onUpload, isProces
 
             <div className="mb-8">
               <h3 className="text-2xl font-black text-gray-900 mb-1">Activation</h3>
-              <p className="text-gray-400 text-xs font-medium">Monthly Pro Access • ₹299.00</p>
+              <p className="text-gray-400 text-xs font-medium">Monthly Pro Access • ₹99.00</p>
             </div>
             
             <div className="space-y-6">
               <div className="flex gap-4">
                 <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-sm">1</div>
                 <div>
-                  <p className="text-sm font-bold text-gray-800">Scan & Pay ₹299</p>
-                  <p className="text-[10px] text-gray-400 leading-relaxed font-medium">Use any UPI app to scan the QR and pay ₹299 for one month of Pro access.</p>
+                  <p className="text-sm font-bold text-gray-800">Scan & Pay ₹99</p>
+                  <p className="text-[10px] text-gray-400 leading-relaxed font-medium">Use any UPI app to scan the QR and pay ₹99 for one month of Pro access.</p>
                 </div>
               </div>
               

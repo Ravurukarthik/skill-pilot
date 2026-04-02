@@ -68,6 +68,14 @@
         "lastStudyDate": {
           "type": "string",
           "description": "The last date the user studied (used for daily resets)."
+        },
+        "monthlyStudyStats": {
+          "type": "object",
+          "description": "Map of module names to minutes spent studying them in the current month."
+        },
+        "lastStudyMonth": {
+          "type": "string",
+          "description": "The last month the user studied (used for monthly resets)."
         }
       },
       "required": ["name", "email", "role"]

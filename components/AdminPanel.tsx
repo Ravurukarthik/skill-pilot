@@ -18,6 +18,8 @@ import {
   XCircle,
   ExternalLink,
   Clock,
+  Activity,
+  Code,
   RefreshCw,
   ChevronDown,
   AlertCircle,
@@ -89,7 +91,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
           phoneNumber: data.phoneNumber,
           studyStats: data.studyStats,
           lastStudyDate: data.lastStudyDate,
-          dailyGoalMinutes: data.dailyGoalMinutes
+          monthlyStudyStats: data.monthlyStudyStats,
+          lastStudyMonth: data.lastStudyMonth,
+          dailyGoalMinutes: data.dailyGoalMinutes,
+          activeModule: data.activeModule
         });
       });
       setUsers(usersData);
@@ -368,6 +373,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
                         <span className="text-xs text-slate-400 font-bold">
                           {user.isPremium ? formatDate(user.paymentDate) : '—'}
                         </span>
+                        {user.activeModule && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-900/40 text-indigo-300 text-[8px] font-black uppercase tracking-widest border border-indigo-500/30 animate-pulse">
+                            <Code size={10} /> {user.activeModule}
+                          </span>
+                        )}
                         {user.isPremium ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-900/20 text-green-400 text-[8px] font-black uppercase tracking-widest border border-green-900/30">
                             <CheckCircle2 size={10} /> Active
@@ -470,63 +480,112 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user }) => {
             
             <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Clock size={16} className="text-indigo-400" />
-                    Daily Study Activity
+                    Study Activity Report
                   </h4>
-                  <span className="text-[10px] font-bold text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">
-                    Last active: {formatDate(selectedUserActivity.lastStudyDate)}
-                  </span>
+                  <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button 
+                      onClick={() => {
+                        const updated = { ...selectedUserActivity, _reportType: 'daily' } as any;
+                        setSelectedUserActivity(updated);
+                      }}
+                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${(!selectedUserActivity as any)._reportType || (selectedUserActivity as any)._reportType === 'daily' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      Daily
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const updated = { ...selectedUserActivity, _reportType: 'monthly' } as any;
+                        setSelectedUserActivity(updated);
+                      }}
+                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${(selectedUserActivity as any)._reportType === 'monthly' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      Monthly
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mb-6">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                    <span>REPORT PERIOD</span>
+                    <span className="bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                      {((selectedUserActivity as any)._reportType === 'monthly') 
+                        ? `Month: ${selectedUserActivity.lastStudyMonth || 'N/A'}`
+                        : `Date: ${formatDate(selectedUserActivity.lastStudyDate)}`}
+                    </span>
+                  </div>
+                  {selectedUserActivity.activeModule && (
+                    <div className="flex items-center justify-between text-[10px] font-black text-indigo-400">
+                      <span>CURRENTLY ACTIVE</span>
+                      <span className="bg-indigo-900/20 px-2 py-1 rounded border border-indigo-500/30 animate-pulse uppercase tracking-widest">
+                        {selectedUserActivity.activeModule}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
-                {selectedUserActivity.studyStats && Object.keys(selectedUserActivity.studyStats).length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(selectedUserActivity.studyStats).map(([module, minutes]: [string, any]) => (
-                      <div key={module} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
-                        <div className="min-w-0">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Module</p>
-                          <p className="text-sm font-bold text-slate-200 truncate pr-2">{module}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Spent</p>
-                          <p className="text-sm font-black text-indigo-400">
-                            {Math.floor(Number(minutes) / 60)}h {Number(minutes) % 60}m
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {(() => {
-                      const stats = selectedUserActivity.studyStats || {};
-                      const total = (Object.values(stats) as any[]).reduce((acc: number, curr: any) => acc + (Number(curr) || 0), 0);
-                      return (
-                        <div className="md:col-span-2 bg-indigo-900/10 p-5 rounded-2xl border border-indigo-500/20 flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
-                              <ShieldCheck size={20} />
+                {(() => {
+                  const isMonthly = (selectedUserActivity as any)._reportType === 'monthly';
+                  const stats = isMonthly ? (selectedUserActivity.monthlyStudyStats || {}) : (selectedUserActivity.studyStats || {});
+                  
+                  if (Object.keys(stats).length > 0) {
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(stats).map(([module, minutes]: [string, any]) => (
+                          <div key={module} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between group hover:border-indigo-500/30 transition-all">
+                            <div className="min-w-0">
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Module</p>
+                              <p className="text-sm font-bold text-slate-200 truncate pr-2">{module}</p>
                             </div>
-                            <div>
-                              <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Total Study Time</p>
-                              <p className="text-xl font-black text-slate-100">
-                                {Math.floor(total / 60)}h {total % 60}m
+                            <div className="text-right shrink-0">
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Time Spent</p>
+                              <p className="text-sm font-black text-indigo-400">
+                                {Math.floor(Number(minutes) / 60)}h {Number(minutes) % 60}m
                               </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Daily Goal</p>
-                            <p className="text-xl font-black text-slate-100">{selectedUserActivity.dailyGoalMinutes || 60}m</p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div className="bg-slate-950 p-12 rounded-3xl border border-slate-800 border-dashed text-center">
-                    <Clock size={48} className="text-slate-700 mx-auto mb-4 opacity-20" />
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No study activity recorded today.</p>
-                  </div>
-                )}
+                        ))}
+                        
+                        {(() => {
+                          const total = (Object.values(stats) as any[]).reduce((acc: number, curr: any) => acc + (Number(curr) || 0), 0);
+                          const dailyGoal = selectedUserActivity.dailyGoalMinutes || 60;
+                          const periodGoal = isMonthly ? dailyGoal * 30 : dailyGoal;
+                          
+                          return (
+                            <div className="md:col-span-2 bg-indigo-900/10 p-5 rounded-2xl border border-indigo-500/20 flex items-center justify-between mt-2">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-900/20">
+                                  <ShieldCheck size={20} />
+                                </div>
+                                <div>
+                                  <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Total Period Time</p>
+                                  <p className="text-xl font-black text-slate-100">
+                                    {Math.floor(total / 60)}h {total % 60}m
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest">Period Goal</p>
+                                <p className="text-xl font-black text-slate-100">{Math.floor(periodGoal / 60)}h {periodGoal % 60}m</p>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="bg-slate-950 p-12 rounded-3xl border border-slate-800 border-dashed text-center">
+                        <Clock size={48} className="text-slate-700 mx-auto mb-4 opacity-20" />
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
+                          No {isMonthly ? 'monthly' : 'daily'} activity recorded for this period.
+                        </p>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
               
               <div className="grid grid-cols-2 gap-4">

@@ -2,17 +2,26 @@
 import React from 'react';
 import { ModuleType, User } from '../types';
 import { MODULES_DATA } from '../constants';
-import { ArrowRight, Sparkles, User as UserIcon, Mail, Lock, ShieldAlert } from 'lucide-react';
+import { ArrowRight, Sparkles, User as UserIcon, Mail, Lock, ShieldAlert, Settings } from 'lucide-react';
 
 interface DashboardProps {
   onSelectModule: (module: ModuleType) => void;
   user: User;
+  onUpdateGoal?: (minutes: number) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user, onUpdateGoal }) => {
+  const [reportType, setReportType] = React.useState<'daily' | 'monthly'>('daily');
+  const [isEditingGoal, setIsEditingGoal] = React.useState(false);
+  const [newGoal, setNewGoal] = React.useState(user.dailyGoalMinutes || 60);
+  
   const studyStats = user.studyStats || {};
-  const totalMinutes = Number(Object.values(studyStats).reduce((acc: number, curr: any) => acc + (Number(curr) || 0), 0));
-  const goalMinutes = Number(user.dailyGoalMinutes || 60);
+  const monthlyStudyStats = user.monthlyStudyStats || {};
+  
+  const currentStats = reportType === 'daily' ? studyStats : monthlyStudyStats;
+  
+  const totalMinutes = Number(Object.values(currentStats).reduce((acc: number, curr: any) => acc + (Number(curr) || 0), 0));
+  const goalMinutes = reportType === 'daily' ? Number(user.dailyGoalMinutes || 60) : Number(user.dailyGoalMinutes || 60) * 30; // Monthly goal is 30x daily
   const progressPercent = Math.min(Math.round((totalMinutes / goalMinutes) * 100), 100);
 
   // Find module with most time spent
@@ -148,22 +157,96 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user }) => {
           </div>
         </div>
         <div className="bg-gradient-to-br from-indigo-900 to-indigo-700 p-8 rounded-3xl text-white">
-          <h3 className="text-xl font-bold mb-4">Daily Study Goal</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold">Study Progress</h3>
+            <div className="flex bg-indigo-800/50 p-1 rounded-xl border border-white/10">
+              <button 
+                onClick={() => setReportType('daily')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${reportType === 'daily' ? 'bg-indigo-500 text-white shadow-lg' : 'text-indigo-300 hover:text-white'}`}
+              >
+                Daily
+              </button>
+              <button 
+                onClick={() => setReportType('monthly')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${reportType === 'monthly' ? 'bg-indigo-500 text-white shadow-lg' : 'text-indigo-300 hover:text-white'}`}
+              >
+                Monthly
+              </button>
+            </div>
+          </div>
+          
+          {user.activeModule && (
+            <div className="mb-4 p-3 bg-white/10 rounded-2xl border border-white/20 animate-pulse">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-200 mb-1">Currently Studying</p>
+              <p className="text-sm font-black text-white">{user.activeModule}</p>
+            </div>
+          )}
+          
           <div className="flex items-center justify-between mb-4">
-            <span className="text-indigo-200">{Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m / {Math.floor(goalMinutes / 60)}h</span>
+            <div className="flex items-center gap-2">
+              <span className="text-indigo-200">
+                {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m / {Math.floor(goalMinutes / 60)}h
+              </span>
+              {reportType === 'daily' && (
+                <button 
+                  onClick={() => setIsEditingGoal(true)}
+                  className="p-1 hover:bg-white/10 rounded-lg text-indigo-300 transition-colors"
+                  title="Edit Daily Goal"
+                >
+                  <Settings size={12} />
+                </button>
+              )}
+            </div>
             <span className="font-bold">{progressPercent}%</span>
           </div>
+
+          {isEditingGoal && (
+            <div className="mb-6 p-4 bg-white/10 rounded-2xl border border-white/20 animate-in zoom-in-95">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-200 mb-3">Set Daily Goal (minutes)</p>
+              <div className="flex gap-2">
+                <input 
+                  type="number" 
+                  value={newGoal}
+                  onChange={(e) => setNewGoal(Number(e.target.value))}
+                  className="flex-1 bg-indigo-900/50 border border-white/20 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+                  min="1"
+                  max="1440"
+                />
+                <button 
+                  onClick={() => {
+                    onUpdateGoal?.(newGoal);
+                    setIsEditingGoal(false);
+                  }}
+                  className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-50 transition-colors"
+                >
+                  Save
+                </button>
+                <button 
+                  onClick={() => setIsEditingGoal(false)}
+                  className="text-white/60 px-2 py-2 text-xs font-bold hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
           <div className="w-full bg-indigo-800 h-3 rounded-full overflow-hidden mb-8">
             <div className="bg-indigo-400 h-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
           </div>
+          
           <p className="text-sm text-indigo-100 opacity-80 mb-6 italic">
-            "Education is the most powerful weapon which you can use to change the world."
+            {reportType === 'daily' 
+              ? "\"Education is the most powerful weapon which you can use to change the world.\""
+              : "\"Success is the sum of small efforts, repeated day in and day out.\""}
           </p>
+          
           <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
-            <p className="text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">Activity Breakdown</p>
-            {Object.keys(studyStats).length > 0 ? (
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">
+              {reportType === 'daily' ? 'Daily' : 'Monthly'} Activity Breakdown
+            </p>
+            {Object.keys(currentStats).length > 0 ? (
               <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
-                {Object.entries(studyStats).sort((a, b) => Number(b[1]) - Number(a[1])).map(([module, minutes]) => (
+                {Object.entries(currentStats).sort((a, b) => Number(b[1]) - Number(a[1])).map(([module, minutes]) => (
                   <div key={module} className="flex justify-between items-center text-xs">
                     <span className="text-indigo-100 truncate mr-2">{module}</span>
                     <span className="font-bold shrink-0">{Math.floor(Number(minutes) / 60)}h {Number(minutes) % 60}m</span>

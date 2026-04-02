@@ -83,34 +83,50 @@ const App: React.FC = () => {
 
   // Study Time Tracker
   const statsRef = React.useRef<{ [key: string]: number } | undefined>(user?.studyStats);
+  const monthlyStatsRef = React.useRef<{ [key: string]: number } | undefined>(user?.monthlyStudyStats);
   const lastDateRef = React.useRef<string | undefined>(user?.lastStudyDate);
+  const lastMonthRef = React.useRef<string | undefined>(user?.lastStudyMonth);
 
   useEffect(() => {
     statsRef.current = user?.studyStats;
+    monthlyStatsRef.current = user?.monthlyStudyStats;
     lastDateRef.current = user?.lastStudyDate;
-  }, [user?.studyStats, user?.lastStudyDate]);
+    lastMonthRef.current = user?.lastStudyMonth;
+  }, [user?.studyStats, user?.monthlyStudyStats, user?.lastStudyDate, user?.lastStudyMonth]);
 
   useEffect(() => {
     if (!user || currentView !== 'module' || !selectedModule) return;
 
     const interval = setInterval(async () => {
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const currentMonth = today.substring(0, 7); // YYYY-MM
       const userDocRef = doc(db, 'users', user.id);
       
       let newStats = { ...(statsRef.current || {}) };
+      let newMonthlyStats = { ...(monthlyStatsRef.current || {}) };
       
-      // Reset if it's a new day
+      // Reset daily if it's a new day
       if (lastDateRef.current !== today) {
         newStats = {};
       }
 
+      // Reset monthly if it's a new month
+      if (lastMonthRef.current !== currentMonth) {
+        newMonthlyStats = {};
+      }
+
       const moduleName = selectedModule;
       newStats[moduleName] = (newStats[moduleName] || 0) + 1; // add 1 minute
+      newMonthlyStats[moduleName] = (newMonthlyStats[moduleName] || 0) + 1; // add 1 minute
 
       try {
         await updateDoc(userDocRef, {
           studyStats: newStats,
           lastStudyDate: today,
+          monthlyStudyStats: newMonthlyStats,
+          lastStudyMonth: currentMonth,
+          activeModule: moduleName,
           dailyGoalMinutes: user.dailyGoalMinutes || 60 // Default 1 hour goal
         });
       } catch (err) {
@@ -208,7 +224,12 @@ const App: React.FC = () => {
               createdAt: profile.createdAt,
               provider: profile.provider,
               providerData: profile.providerData,
-              phoneNumber: profile.phoneNumber
+              phoneNumber: profile.phoneNumber,
+              dailyGoalMinutes: profile.dailyGoalMinutes,
+              studyStats: profile.studyStats,
+              lastStudyDate: profile.lastStudyDate,
+              monthlyStudyStats: profile.monthlyStudyStats,
+              lastStudyMonth: profile.lastStudyMonth
             };
             setUser(userData);
             localStorage.setItem('skillpilot_user', JSON.stringify(userData));
@@ -221,6 +242,11 @@ const App: React.FC = () => {
               name: firebaseUser.displayName || 'User',
               role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
               isPremium: isAdmin ? true : false,
+              dailyGoalMinutes: 60,
+              studyStats: {},
+              lastStudyDate: new Date().toISOString().split('T')[0],
+              monthlyStudyStats: {},
+              lastStudyMonth: new Date().toISOString().split('T')[0].substring(0, 7)
             };
             setUser(userData);
           }
@@ -307,24 +333,62 @@ const App: React.FC = () => {
     }
   };
 
-  const navigateToModule = (module: ModuleType) => {
+  const navigateToModule = async (module: ModuleType) => {
     setSelectedModule(module);
     setCurrentView('module');
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.id), {
+          activeModule: module
+        });
+      } catch (err) {
+        console.error('Failed to update active module:', err);
+      }
+    }
   };
 
-  const navigateHome = () => {
+  const navigateHome = async () => {
     setCurrentView('dashboard');
     setSelectedModule(null);
+    if (user) {
+      try {
+        await updateDoc(doc(db, 'users', user.id), {
+          activeModule: null
+        });
+      } catch (err) {
+        console.error('Failed to clear active module:', err);
+      }
+    }
   };
 
-  const navigateToAdmin = () => {
+  const navigateToAdmin = async () => {
     if (user?.role === UserRole.ADMIN) {
       setCurrentView('admin');
       setSelectedModule(null);
+      if (user) {
+        try {
+          await updateDoc(doc(db, 'users', user.id), {
+            activeModule: null
+          });
+        } catch (err) {
+          console.error('Failed to clear active module:', err);
+        }
+      }
     }
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const updateDailyGoal = async (minutes: number) => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'users', user.id), {
+        dailyGoalMinutes: minutes
+      });
+    } catch (err) {
+      console.error('Failed to update daily goal:', err);
+    }
+  };
 
   if (loading || !isAuthInitialized) {
     return (
@@ -387,7 +451,7 @@ const App: React.FC = () => {
         )}
 
         {currentView === 'dashboard' ? (
-              <Dashboard onSelectModule={navigateToModule} user={user} />
+              <Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} />
             ) : (currentView === 'admin' && user.role === UserRole.ADMIN) ? (
               <AdminPanel onBack={navigateHome} user={user} />
             ) : (

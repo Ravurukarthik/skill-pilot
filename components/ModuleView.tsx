@@ -215,7 +215,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                 <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-green-500" /> 24/7 Access</span>
                 <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-green-500" /> Ad Free</span>
               </div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Only ₹299 per month</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Only ₹99 per month</p>
             </div>
           </div>
         </div>
@@ -430,7 +430,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
                 >
                   <Zap size={20} className="fill-current text-indigo-200" /> Unlock Paid Internships
                 </button>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Only ₹299 per Month Access</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Only ₹99 per Month Access</p>
               </div>
             </div>
           </div>
@@ -835,46 +835,54 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredHackathons.map((hack) => (
-            <div key={hack.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                  hack.status === 'Ongoing' ? 'bg-green-900/30 text-green-400 border-green-500/20' : 'bg-amber-900/30 text-amber-400 border-amber-500/20'
-                }`}>
-                  {hack.status}
-                </span>
-              </div>
-
-              <div className="w-14 h-14 bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                <Trophy size={28} />
-              </div>
-              
-              <h4 className="text-xl font-bold text-slate-100 mb-2 group-hover:text-indigo-400 transition-colors">{hack.title}</h4>
-              <p className="text-xs text-slate-400 mb-4 font-medium">{hack.organizer}</p>
-              
-              <p className="text-xs text-slate-400 mb-6 line-clamp-3 leading-relaxed">
-                {hack.description}
-              </p>
-              
-              <div className="space-y-3 mb-8 flex-1">
-                <div className="flex items-center gap-3 text-sm text-slate-300">
-                  <Calendar size={16} className="text-slate-500" />
-                  {hack.date}
+          {filteredHackathons.length > 0 ? (
+            filteredHackathons.map((hack) => (
+              <div key={hack.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4">
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                    hack.status === 'Ongoing' ? 'bg-green-900/30 text-green-400 border-green-500/20' : 'bg-amber-900/30 text-amber-400 border-amber-500/20'
+                  }`}>
+                    {hack.status}
+                  </span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-300">
-                  <Award size={16} className="text-slate-500" />
-                  {hack.prize}
-                </div>
-              </div>
 
-              <button 
-                onClick={() => handleExternalRedirect(hack.link)}
-                className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
-              >
-                Register Now <ExternalLink size={18} />
-              </button>
+                <div className="w-14 h-14 bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <Trophy size={28} />
+                </div>
+                
+                <h4 className="text-xl font-bold text-slate-100 mb-2 group-hover:text-indigo-400 transition-colors">{hack.title}</h4>
+                <p className="text-xs text-slate-400 mb-4 font-medium">{hack.organizer}</p>
+                
+                <p className="text-xs text-slate-400 mb-6 line-clamp-3 leading-relaxed">
+                  {hack.description}
+                </p>
+                
+                <div className="space-y-3 mb-8 flex-1">
+                  <div className="flex items-center gap-3 text-sm text-slate-300">
+                    <Calendar size={16} className="text-slate-500" />
+                    {hack.date}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-300">
+                    <Award size={16} className="text-slate-500" />
+                    {hack.prize}
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => handleExternalRedirect(hack.link)}
+                  className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
+                >
+                  Register Now <ExternalLink size={18} />
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center bg-slate-900/50 rounded-3xl border border-dashed border-slate-800">
+              <Trophy size={48} className="mx-auto text-slate-700 mb-4 opacity-20" />
+              <h4 className="text-lg font-bold text-slate-500">No Hackathons Available</h4>
+              <p className="text-slate-600 text-sm">Check back later for new opportunities.</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     );
@@ -898,39 +906,47 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {EXAMS_MOCK.map((exam) => (
-            <div key={exam.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center text-amber-400 group-hover:bg-amber-900/50 transition-colors">
-                  <FileText size={24} />
+          {EXAMS_MOCK.length > 0 ? (
+            EXAMS_MOCK.map((exam) => (
+              <div key={exam.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center text-amber-400 group-hover:bg-amber-900/50 transition-colors">
+                    <FileText size={24} />
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-900/30 text-amber-400 border border-amber-500/20">
+                    Semester Exam
+                  </span>
                 </div>
-                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-900/30 text-amber-400 border border-amber-500/20">
-                  Semester Exam
-                </span>
-              </div>
-              
-              <h4 className="text-xl font-bold text-slate-100 mb-2 group-hover:text-amber-400 transition-colors">{exam.title}</h4>
-              {exam.company && <p className="text-xs text-slate-400 mb-2 font-medium">{exam.company}</p>}
-              
-              {exam.description && (
-                <p className="text-xs text-slate-400 mb-4 line-clamp-3 italic leading-relaxed">
-                  "{exam.description}"
-                </p>
-              )}
-              
-              <div className="flex items-center gap-3 text-sm text-slate-300 mb-6">
-                <Calendar size={16} className="text-slate-500" />
-                <span>Scheduled: {exam.date}</span>
-              </div>
+                
+                <h4 className="text-xl font-bold text-slate-100 mb-2 group-hover:text-amber-400 transition-colors">{exam.title}</h4>
+                {exam.company && <p className="text-xs text-slate-400 mb-2 font-medium">{exam.company}</p>}
+                
+                {exam.description && (
+                  <p className="text-xs text-slate-400 mb-4 line-clamp-3 italic leading-relaxed">
+                    "{exam.description}"
+                  </p>
+                )}
+                
+                <div className="flex items-center gap-3 text-sm text-slate-300 mb-6">
+                  <Calendar size={16} className="text-slate-500" />
+                  <span>Scheduled: {exam.date}</span>
+                </div>
 
-              <button 
-                onClick={() => handleExternalRedirect(exam.link)}
-                className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-amber-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
-              >
-                View Details <ExternalLink size={18} />
-              </button>
+                <button 
+                  onClick={() => handleExternalRedirect(exam.link)}
+                  className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-amber-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
+                >
+                  View Details <ExternalLink size={18} />
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center bg-slate-900/50 rounded-3xl border border-dashed border-slate-800">
+              <FileText size={48} className="mx-auto text-slate-700 mb-4 opacity-20" />
+              <h4 className="text-lg font-bold text-slate-500">No Exam Notifications</h4>
+              <p className="text-slate-600 text-sm">Stay tuned for upcoming academic schedules.</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     );

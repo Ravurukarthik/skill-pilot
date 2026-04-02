@@ -21,6 +21,9 @@ export interface User {
   dailyGoalMinutes?: number;
   studyStats?: { [moduleName: string]: number };
   lastStudyDate?: string;
+  monthlyStudyStats?: { [moduleName: string]: number };
+  lastStudyMonth?: string;
+  activeModule?: string;
 }
 
 export enum ModuleType {
