@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
-import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS } from '../constants';
-import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search } from 'lucide-react';
+import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '../constants';
+import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search, Trophy, Award } from 'lucide-react';
 import { getTutorialSummary } from '../services/geminiService';
 
 interface ModuleViewProps {
@@ -526,9 +526,10 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
     const filteredJobs = JOBS_MOCK.filter(job => {
       const postedDate = new Date(job.postedAt);
       const isRecent = postedDate >= oneMonthAgo;
+      const isNotExpired = !job.expiresAt || new Date(job.expiresAt) > new Date();
       const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            job.company.toLowerCase().includes(searchQuery.toLowerCase());
-      return isRecent && matchesSearch;
+      return isRecent && isNotExpired && matchesSearch;
     }).sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 
     return (
@@ -814,6 +815,127 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
     );
   };
 
+  const renderHackathons = () => {
+    const filteredHackathons = HACKATHONS_MOCK.filter(hack => 
+      hack.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      hack.organizer.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+        <div className="relative max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <input
+            type="text"
+            placeholder="Search hackathons..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-slate-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredHackathons.map((hack) => (
+            <div key={hack.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4">
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                  hack.status === 'Ongoing' ? 'bg-green-900/30 text-green-400 border-green-500/20' : 'bg-amber-900/30 text-amber-400 border-amber-500/20'
+                }`}>
+                  {hack.status}
+                </span>
+              </div>
+
+              <div className="w-14 h-14 bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                <Trophy size={28} />
+              </div>
+              
+              <h4 className="text-xl font-bold text-slate-100 mb-2 group-hover:text-indigo-400 transition-colors">{hack.title}</h4>
+              <p className="text-xs text-slate-400 mb-4 font-medium">{hack.organizer}</p>
+              
+              <p className="text-xs text-slate-400 mb-6 line-clamp-3 leading-relaxed">
+                {hack.description}
+              </p>
+              
+              <div className="space-y-3 mb-8 flex-1">
+                <div className="flex items-center gap-3 text-sm text-slate-300">
+                  <Calendar size={16} className="text-slate-500" />
+                  {hack.date}
+                </div>
+                <div className="flex items-center gap-3 text-sm text-slate-300">
+                  <Award size={16} className="text-slate-500" />
+                  {hack.prize}
+                </div>
+              </div>
+
+              <button 
+                onClick={() => handleExternalRedirect(hack.link)}
+                className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
+              >
+                Register Now <ExternalLink size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderExams = () => {
+    return (
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+        <div className="bg-amber-900/20 border border-amber-500/20 p-6 rounded-3xl flex flex-col md:flex-row items-center gap-6 mb-4">
+          <div className="w-16 h-16 bg-amber-600/20 rounded-2xl flex items-center justify-center text-amber-400">
+            <FileText size={32} />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <h3 className="text-xl font-bold text-amber-100 mb-1">Academic Exam Notifications</h3>
+            <p className="text-amber-400/70 text-sm">Stay updated with the latest semester and university examination schedules.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-amber-600/10 px-4 py-2 rounded-full border border-amber-500/20">
+            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Active Notifications</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {EXAMS_MOCK.map((exam) => (
+            <div key={exam.id} className="bg-slate-800 rounded-3xl border border-slate-700 p-6 hover:shadow-xl transition-all group flex flex-col">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center text-amber-400 group-hover:bg-amber-900/50 transition-colors">
+                  <FileText size={24} />
+                </div>
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-900/30 text-amber-400 border border-amber-500/20">
+                  Semester Exam
+                </span>
+              </div>
+              
+              <h4 className="text-xl font-bold text-slate-100 mb-2 group-hover:text-amber-400 transition-colors">{exam.title}</h4>
+              {exam.company && <p className="text-xs text-slate-400 mb-2 font-medium">{exam.company}</p>}
+              
+              {exam.description && (
+                <p className="text-xs text-slate-400 mb-4 line-clamp-3 italic leading-relaxed">
+                  "{exam.description}"
+                </p>
+              )}
+              
+              <div className="flex items-center gap-3 text-sm text-slate-300 mb-6">
+                <Calendar size={16} className="text-slate-500" />
+                <span>Scheduled: {exam.date}</span>
+              </div>
+
+              <button 
+                onClick={() => handleExternalRedirect(exam.link)}
+                className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-amber-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
+              >
+                View Details <ExternalLink size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderGeneralSubModules = () => {
     const filteredSubModules = hasBranches 
       ? SUB_MODULES_GENERAL.filter(sub => sub.id === 'tutorials')
@@ -889,8 +1011,11 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
           <p className="text-slate-400">
             {isInternship ? 'Kickstart your professional journey with handpicked opportunities.' :
              isCodingSession ? 'Master programming languages with interactive expert-guided sessions and real-time coding practice.' :
+             type === ModuleType.EXAMS ? 'Stay updated with the latest academic, semester, and professional certification examination notifications.' :
+             type === ModuleType.HACKATHONS ? 'Compete in global hackathons, solve real-world problems, and win exciting prizes.' :
              activeSubTab === 'papers' ? `Viewing previous year examination papers for ${type}.` : 
              activeSubTab === 'tutorials' ? `Explore comprehensive AI-powered tutorials for ${type}. (Subject-wise tutorials coming soon for all categories!)` :
+             type === ModuleType.CERTIFICATIONS ? 'Boost your resume with professional certificates and specialized learning paths from top industry leaders.' :
              hasBranches 
               ? (selectedCourse ? `Access specialized subjects and materials for ${selectedCourse.name}.` : `Select your ${isMBA ? 'year' : 'branch'} to view course-specific tutorials.`)
               : `Comprehensive resources including question papers, tutorials, and examination tools for ${type}.`}
@@ -907,6 +1032,10 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
       {type === ModuleType.JOBS && renderJobs()}
 
       {type === ModuleType.CODING_SESSION && renderCodingSession()}
+
+      {type === ModuleType.EXAMS && renderExams()}
+
+      {type === ModuleType.HACKATHONS && renderHackathons()}
 
       {selectedCompiler && (
         <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col animate-in fade-in zoom-in-95 duration-300">
@@ -955,7 +1084,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade }
         </div>
       )}
 
-      {!hasBranches && !isInternship && type !== ModuleType.JOBS && type !== ModuleType.CODING_SESSION && (
+      {!hasBranches && !isInternship && type !== ModuleType.JOBS && type !== ModuleType.CODING_SESSION && type !== ModuleType.EXAMS && type !== ModuleType.CERTIFICATIONS && type !== ModuleType.HACKATHONS && (
         <>
           {renderGeneralSubModules()}
           

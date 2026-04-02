@@ -166,11 +166,11 @@ const App: React.FC = () => {
           if (docSnap.exists()) {
             const profile = docSnap.data();
             
-            // Auto-upgrade for pace.ac.in accounts
+            const isAdmin = firebaseUser.email === 'ravurukarthik740@gmail.com';
             const isPaceDomain = firebaseUser.email?.endsWith('@pace.ac.in');
-            const shouldBePremium = isPaceDomain || profile.isPremium;
+            const shouldBePremium = isPaceDomain || profile.isPremium || isAdmin;
             
-            if (isPaceDomain && !profile.isPremium) {
+            if ((isPaceDomain || isAdmin) && !profile.isPremium) {
               updateDoc(userDocRef, { isPremium: true }).catch(err => {
                 console.error('Auto-upgrade error:', err);
               });
@@ -206,12 +206,13 @@ const App: React.FC = () => {
             localStorage.setItem('skillpilot_user', JSON.stringify(userData));
           } else {
             // If profile doesn't exist yet (might happen during sign up race condition)
+            const isAdmin = firebaseUser.email === 'ravurukarthik740@gmail.com';
             const userData: User = {
               id: firebaseUser.uid,
               email: firebaseUser.email || '',
               name: firebaseUser.displayName || 'User',
-              role: firebaseUser.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT,
-              isPremium: false,
+              role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
+              isPremium: isAdmin ? true : false,
             };
             setUser(userData);
           }

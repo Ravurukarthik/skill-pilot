@@ -9,7 +9,8 @@ import {
   Layers,
   Award,
   Users,
-  Code
+  Code,
+  Trophy
 } from 'lucide-react';
 import { ModuleType, BTechCourse, Internship, Job } from './types';
 
@@ -23,7 +24,9 @@ export const MODULES_DATA = [
   { type: ModuleType.INTERNSHIPS, icon: <Users className="w-8 h-8 text-green-500" />, description: "Explore latest internship opportunities." },
   { type: ModuleType.JOBS, icon: <Briefcase className="w-8 h-8 text-orange-500" />, description: "Find and apply for top tech and non-tech jobs." },
   { type: ModuleType.CERTIFICATIONS, icon: <Award className="w-8 h-8 text-red-500" />, description: "Boost your resume with professional certificates." },
-  { type: ModuleType.CODING_SESSION, icon: <Code className="w-8 h-8 text-emerald-500" />, description: "Access all coding compilers and IDEs in one place." }
+  { type: ModuleType.CODING_SESSION, icon: <Code className="w-8 h-8 text-emerald-500" />, description: "Access all coding compilers and IDEs in one place." },
+  { type: ModuleType.EXAMS, icon: <FileText className="w-8 h-8 text-amber-500" />, description: "Stay updated with latest academic, semester, and professional exam notifications." },
+  { type: ModuleType.HACKATHONS, icon: <Trophy className="w-8 h-8 text-yellow-400" />, description: "Compete in global hackathons and showcase your skills." }
 ];
 
 export const SUB_MODULES_GENERAL = [
@@ -178,6 +181,19 @@ export const COMPILER_LINKS: Record<string, string> = {
 
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
+    id: 'harman-advanced-engineer-2026', 
+    title: 'Advanced Engineer – Data Engineering & MS Fabric', 
+    company: 'Harman', 
+    stipend: 'Best in Industry', 
+    duration: 'Program Duration', 
+    location: 'Bangalore', 
+    type: 'paid', 
+    link: 'https://jobsearch.harman.com/en_US/careers/ApplicationMethods?jobId=30504',
+    postedAt: '2026-04-01',
+    description: 'Qualification: B.E/B.Tech/B.Sc\nExperience: Freshers\nLast Date: ASAP',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Harman_International_logo.svg/1200px-Harman_International_logo.svg.png'
+  },
+  { 
     id: 'tata-data-visualisation', 
     title: 'Data Visualisation: Empowering Business with Effective Insights', 
     company: 'Tata Group', 
@@ -188,6 +204,32 @@ export const INTERNSHIP_MOCK: Internship[] = [
     link: 'https://www.theforage.com/simulations/tata/data-visualisation-p5xo',
     postedAt: '2026-03-31',
     description: 'Gain insights into leveraging data visualisations as a tool for making informed business decisions.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tata_logo.svg/1200px-Tata_logo.svg.png'
+  },
+  { 
+    id: 'tata-cybersecurity-iam', 
+    title: 'Cybersecurity - IAM Developer', 
+    company: 'Tata Group', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Virtual', 
+    type: 'unpaid', 
+    link: 'https://www.theforage.com/simulations/tata/cybersecurity-sbda',
+    postedAt: '2026-03-31',
+    description: 'Assist the cybersecurity consulting team and become an IAM expert by enhancing TechCorp\'s digital defences.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tata_logo.svg/1200px-Tata_logo.svg.png'
+  },
+  { 
+    id: 'tata-genai-data-analytics', 
+    title: 'GenAI Powered Data Analytics', 
+    company: 'Tata Group', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Virtual', 
+    type: 'unpaid', 
+    link: 'https://www.theforage.com/simulations/tata/data-analytics-t3zr',
+    postedAt: '2026-03-31',
+    description: 'GenAI-Powered No-Code Analytics to Realize Business Objectives.',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tata_logo.svg/1200px-Tata_logo.svg.png'
   },
   { 
@@ -377,6 +419,18 @@ export const JOBS_MOCK: Job[] = [
     type: 'Full Time'
   },
   {
+    id: 'infosys-off-campus-2026',
+    title: 'Specialist Programmer / Digital Specialist Engineer',
+    company: 'Infosys',
+    postedAt: '2026-04-01',
+    applicants: 'Be the first to apply',
+    location: 'Across India',
+    description: 'Infosys Off Campus Recruitment 2026 Details\nRole: Specialist Programmer / Digital Specialist Engineer\nCategory: Off-Campus Drive\nQualification: B.E/B.Tech/M.E/M.Tech/MCA/MSc\nBatch: 2024 & 2025\nExperience: Freshers\nSalary: ₹6.25 LPA – ₹21 LPA\nLocation: Across India\nLast Date to Apply: 13 April 2026',
+    link: 'https://surveys.infosysapps.com/r/a/InfosysDSESPoffcampus',
+    type: 'Off-Campus Drive',
+    expiresAt: '2026-04-14T00:01:00Z'
+  },
+  {
     id: 'cognizant-analyst-trainee-2026',
     title: 'Analyst Trainee',
     company: 'Cognizant',
@@ -389,7 +443,51 @@ export const JOBS_MOCK: Job[] = [
   }
 ];
 
+export const EXAMS_MOCK = [
+  { 
+    id: 'aws-cloud-practitioner', 
+    title: 'AWS Certified Cloud Practitioner', 
+    date: 'Ongoing / Self-Scheduled', 
+    link: 'https://aws.amazon.com/certification/certified-cloud-practitioner/',
+    description: 'The AWS Certified Cloud Practitioner validates foundational, high-level understanding of AWS Cloud, services, and terminology. This is a good starting point on the AWS Certification journey for individuals with no prior IT or cloud experience switching to a cloud career or for line-of-business employees looking for foundational cloud literacy.',
+    company: 'Amazon'
+  },
+  { 
+    id: 'aws-ml-engineer-associate', 
+    title: 'AWS Certified Machine Learning Engineer - Associate', 
+    date: 'Ongoing / Self-Scheduled', 
+    link: 'https://aws.amazon.com/certification/certified-machine-learning-engineer-associate/',
+    description: 'AWS Certified Machine Learning Engineer - Associate validates technical ability in implementing ML workloads in production and operationalizing them. Boost your career profile and credibility, and position yourself for in-demand machine learning job roles.',
+    company: 'Amazon'
+  },
+  { 
+    id: 'oracle-sunbird-ed', 
+    title: 'Become Oracle Cloud Infrastructure for Sunbird ED Specialty Certified', 
+    date: 'Ongoing / Self-Scheduled', 
+    link: 'https://mylearn.oracle.com/ou/learning-path/become-oracle-cloud-infrastructure-for-sunbird-ed-specialty-certified/127531',
+    description: 'This learning path is designed to help you prepare for the Oracle Cloud Infrastructure for Sunbird ED Specialty certification. It covers foundational cloud concepts and specific implementations for Sunbird ED.',
+    company: 'Oracle'
+  },
+  { id: 'jntuk-sem-1', title: 'JNTUK B.Tech 1-1 Semester Exams', date: 'April 2026', link: 'https://jntuk.edu.in/notifications/' },
+  { id: 'jntuk-sem-2', title: 'JNTUK B.Tech 2-1 Semester Exams', date: 'May 2026', link: 'https://jntuk.edu.in/notifications/' },
+  { id: 'jntuk-sem-3', title: 'JNTUK B.Tech 3-1 Semester Exams', date: 'June 2026', link: 'https://jntuk.edu.in/notifications/' },
+  { id: 'jntuk-sem-4', title: 'JNTUK B.Tech 4-1 Semester Exams', date: 'July 2026', link: 'https://jntuk.edu.in/notifications/' },
+];
+
 export const CERTIFICATIONS_MOCK: Internship[] = [
+  { 
+    id: 'ibm-gen-ai-intro', 
+    title: 'Getting Started with Generative AI (Earn a digital credential!)', 
+    company: 'IBM SkillsBuild', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://skills.yourlearning.ibm.com/activity/PLAN-BAEFCCAAD520?_gl=1*lqyo4w*_ga*NDY3ODg2Ni4xNzc1MTMwMjM2*_ga_FYECCCS21D*czE3NzUxMzAyMzUkbzEkZzEkdDE3NzUxMzAzMzckajU1JGwwJGgw',
+    postedAt: '2026-04-02',
+    description: 'Master the basics of Generative AI and earn a digital credential from IBM SkillsBuild.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/1200px-IBM_logo.svg.png'
+  },
   { 
     id: 'chatgpt-productivity-specialization', 
     title: 'ChatGPT: Master Free AI Tools to Supercharge Productivity Specialization', 
@@ -428,5 +526,38 @@ export const CERTIFICATIONS_MOCK: Internship[] = [
     postedAt: '2026-03-28',
     description: 'Master Salesforce fundamentals with this easy-to-follow course and prepare for your certification.',
     logo: 'https://www.vectorlogo.zone/logos/udemy/udemy-icon.svg'
+  }
+];
+
+export const HACKATHONS_MOCK = [
+  {
+    id: 'hack-1',
+    title: 'Smart India Hackathon 2026',
+    organizer: 'Government of India',
+    date: 'August 2026',
+    link: 'https://www.sih.gov.in/',
+    description: 'World\'s biggest open innovation model that provides students with a platform to solve some of the pressing problems we face in our daily lives.',
+    prize: '₹1,00,000 per problem statement',
+    status: 'Upcoming'
+  },
+  {
+    id: 'hack-2',
+    title: 'Google Solution Challenge 2026',
+    organizer: 'Google Developers',
+    date: 'January 2026',
+    link: 'https://developers.google.com/community/gdsc-solution-challenge',
+    description: 'Build a solution for one or more of the United Nations 17 Sustainable Development Goals using Google technology.',
+    prize: 'Mentorship + Cash Prizes',
+    status: 'Ongoing'
+  },
+  {
+    id: 'hack-3',
+    title: 'Microsoft Imagine Cup 2026',
+    organizer: 'Microsoft',
+    date: 'February 2026',
+    link: 'https://imaginecup.microsoft.com/',
+    description: 'The premier global student technology competition that gives students the opportunity to use their imagination and passion to create a technology solution.',
+    prize: '$100,000 + Mentorship',
+    status: 'Upcoming'
   }
 ];

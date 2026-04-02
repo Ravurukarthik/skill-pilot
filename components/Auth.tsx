@@ -67,7 +67,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             email: firebaseUser.email || '',
             name: profile.name || firebaseUser.displayName || 'User',
             role: profile.role || (firebaseUser.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT),
-            isPremium: profile.isPremium || false,
+            isPremium: (profile.isPremium || firebaseUser.email === 'ravurukarthik740@gmail.com') ? true : false,
             isPendingVerification: profile.isPendingVerification || false,
             paymentProofUrl: profile.paymentProofUrl,
             paymentDate: profile.paymentDate,
@@ -145,7 +145,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             email: result.user.email || '',
             name: profile.name || result.user.displayName || 'User',
             role: profile.role || (result.user.email === 'ravurukarthik740@gmail.com' ? UserRole.ADMIN : UserRole.STUDENT),
-            isPremium: (isPaceDomain || profile.isPremium) ? true : false,
+            isPremium: (isPaceDomain || profile.isPremium || result.user.email === 'ravurukarthik740@gmail.com') ? true : false,
             isPendingVerification: profile.isPendingVerification || false,
             paymentProofUrl: profile.paymentProofUrl,
             paymentDate: profile.paymentDate,
@@ -159,7 +159,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             name: result.user.displayName || 'User',
             email: result.user.email,
             role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
-            isPremium: isPaceDomain ? true : false, // Free premium for pace.ac.in
+            isPremium: (isPaceDomain || isAdmin) ? true : false, // Free premium for pace.ac.in and Admin
             isPendingVerification: false,
             createdAt: new Date().toISOString(),
             provider: 'google',
@@ -367,7 +367,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               email: result.user.email || '',
               name: profile.name || result.user.displayName || 'User',
               role: profile.role || UserRole.STUDENT,
-              isPremium: profile.isPremium || false,
+              isPremium: (profile.isPremium || result.user.email === 'ravurukarthik740@gmail.com') ? true : false,
               isPendingVerification: profile.isPendingVerification || false,
               paymentProofUrl: profile.paymentProofUrl,
               paymentDate: profile.paymentDate,
@@ -379,7 +379,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               email: result.user.email || '',
               name: result.user.displayName || 'User',
               role: UserRole.STUDENT,
-              isPremium: false,
+              isPremium: result.user.email === 'ravurukarthik740@gmail.com' ? true : false,
             });
           }
         }
@@ -407,7 +407,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               name: name,
               email: email,
               role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
-              isPremium: isPaceDomain ? true : false, // Free premium for pace.ac.in
+              isPremium: (isPaceDomain || isAdmin) ? true : false, // Free premium for pace.ac.in and Admin
               isPendingVerification: false,
               password: password,
               createdAt: new Date().toISOString(),
@@ -436,7 +436,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             email: email,
             name: name,
             role: isAdmin ? UserRole.ADMIN : UserRole.STUDENT,
-            isPremium: false,
+            isPremium: isAdmin ? true : false,
             password: password
           });
         }

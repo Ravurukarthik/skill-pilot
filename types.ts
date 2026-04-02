@@ -33,7 +33,9 @@ export enum ModuleType {
   INTERNSHIPS = 'Internships',
   JOBS = 'Job Applications',
   CERTIFICATIONS = 'Certification Courses',
-  CODING_SESSION = 'Coding Compilers & IDE'
+  CODING_SESSION = 'Coding Compilers & IDE',
+  EXAMS = 'Exams',
+  HACKATHONS = 'Hackathons'
 }
 
 export interface SubModule {
@@ -80,4 +82,5 @@ export interface Job {
   description: string;
   link: string;
   type: string;
+  expiresAt?: string;
 }
