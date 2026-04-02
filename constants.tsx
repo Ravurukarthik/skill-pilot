@@ -468,10 +468,6 @@ export const EXAMS_MOCK = [
     description: 'This learning path is designed to help you prepare for the Oracle Cloud Infrastructure for Sunbird ED Specialty certification. It covers foundational cloud concepts and specific implementations for Sunbird ED.',
     company: 'Oracle'
   },
-  { id: 'jntuk-sem-1', title: 'JNTUK B.Tech 1-1 Semester Exams', date: 'April 2026', link: 'https://jntuk.edu.in/notifications/' },
-  { id: 'jntuk-sem-2', title: 'JNTUK B.Tech 2-1 Semester Exams', date: 'May 2026', link: 'https://jntuk.edu.in/notifications/' },
-  { id: 'jntuk-sem-3', title: 'JNTUK B.Tech 3-1 Semester Exams', date: 'June 2026', link: 'https://jntuk.edu.in/notifications/' },
-  { id: 'jntuk-sem-4', title: 'JNTUK B.Tech 4-1 Semester Exams', date: 'July 2026', link: 'https://jntuk.edu.in/notifications/' },
 ];
 
 export const CERTIFICATIONS_MOCK: Internship[] = [
