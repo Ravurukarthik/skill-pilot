@@ -525,35 +525,4 @@ export const CERTIFICATIONS_MOCK: Internship[] = [
   }
 ];
 
-export const HACKATHONS_MOCK = [
-  {
-    id: 'hack-1',
-    title: 'Smart India Hackathon 2026',
-    organizer: 'Government of India',
-    date: 'August 2026',
-    link: 'https://www.sih.gov.in/',
-    description: 'World\'s biggest open innovation model that provides students with a platform to solve some of the pressing problems we face in our daily lives.',
-    prize: '₹1,00,000 per problem statement',
-    status: 'Upcoming'
-  },
-  {
-    id: 'hack-2',
-    title: 'Google Solution Challenge 2026',
-    organizer: 'Google Developers',
-    date: 'January 2026',
-    link: 'https://developers.google.com/community/gdsc-solution-challenge',
-    description: 'Build a solution for one or more of the United Nations 17 Sustainable Development Goals using Google technology.',
-    prize: 'Mentorship + Cash Prizes',
-    status: 'Ongoing'
-  },
-  {
-    id: 'hack-3',
-    title: 'Microsoft Imagine Cup 2026',
-    organizer: 'Microsoft',
-    date: 'February 2026',
-    link: 'https://imaginecup.microsoft.com/',
-    description: 'The premier global student technology competition that gives students the opportunity to use their imagination and passion to create a technology solution.',
-    prize: '$100,000 + Mentorship',
-    status: 'Upcoming'
-  }
-];
+export const HACKATHONS_MOCK = [];
