@@ -8,6 +8,9 @@ interface ExternalLinkModalProps {
 }
 
 const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) => {
+  const isPdf = url.toLowerCase().endsWith('.pdf');
+  const displayUrl = isPdf ? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true` : url;
+
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
@@ -16,16 +19,13 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
     setIsLoading(true);
     setError(false);
     if (iframeRef.current) {
-      iframeRef.current.src = url;
+      iframeRef.current.src = displayUrl;
     }
   };
 
   const handleOpenExternal = () => {
     window.open(url, '_blank');
   };
-
-  const isPdf = url.toLowerCase().endsWith('.pdf');
-  const displayUrl = isPdf ? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true` : url;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 bg-slate-950/90 backdrop-blur-sm animate-in fade-in duration-300">
@@ -110,7 +110,7 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
                 setError(true);
               }}
               title="External Content"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
             />
           )}
         </div>

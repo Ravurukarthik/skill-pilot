@@ -28,6 +28,14 @@ const App: React.FC = () => {
   const [externalUrl, setExternalUrl] = useState<string | null>(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [notification, setNotification] = useState<{ message: string; type: 'info' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   const handleLogout = async (isForced = false) => {
     try {
@@ -70,7 +78,10 @@ const App: React.FC = () => {
             isPremium: approve,
             isPendingVerification: false
           });
-          alert(approve ? `User ${userId} upgraded to Premium!` : `Verification for user ${userId} rejected.`);
+          setNotification({ 
+            message: approve ? `User ${userId} upgraded to Premium!` : `Verification for user ${userId} rejected.`,
+            type: 'info'
+          });
           // Clear params from URL
           window.history.replaceState({}, document.title, window.location.pathname);
         } catch (err) {
@@ -479,6 +490,19 @@ const App: React.FC = () => {
             url={externalUrl} 
             onClose={() => setExternalUrl(null)} 
           />
+        )}
+
+        {notification && (
+          <div className="fixed bottom-4 right-4 z-[300] animate-in slide-in-from-right-4 fade-in duration-300">
+            <div className={`px-6 py-3 rounded-xl shadow-lg border flex items-center gap-3 ${
+              notification.type === 'error' 
+                ? 'bg-red-900/90 border-red-500 text-red-100' 
+                : 'bg-slate-800/90 border-slate-700 text-slate-100'
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${notification.type === 'error' ? 'bg-red-500' : 'bg-indigo-500'}`} />
+              <p className="text-sm font-medium">{notification.message}</p>
+            </div>
+          </div>
         )}
       </div>
     </ErrorBoundary>

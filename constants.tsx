@@ -383,6 +383,39 @@ export const INTERNSHIP_MOCK: Internship[] = [
 
 export const JOBS_MOCK: Job[] = [
   {
+    id: 'accenture-application-support-engineer-2026',
+    title: 'Application Support Engineer',
+    company: 'Accenture',
+    postedAt: '2026-04-05',
+    applicants: 'Be the first to apply',
+    location: 'Mumbai, India',
+    description: 'Accenture Offering for Freshers 2026 Details\nRole: Application Support Engineer\nCategory: IT Jobs\nQualification: B.E/B.Tech (CS, AI, Data Science, or related fields)\nExperience: 0 – 3 Years\nSalary: Best in industry\nLast Date: Apply as soon as possible',
+    link: 'https://www.accenture.com/in-en/careers/jobdetails?id=ATCI-5490966-S2002787_en&src=LINKEDINJP',
+    type: 'Full Time'
+  },
+  {
+    id: 'idfc-first-bank-model-risk-analyst-2026',
+    title: 'Model Risk Analyst',
+    company: 'IDFC First Bank',
+    postedAt: '2026-04-05',
+    applicants: 'Be the first to apply',
+    location: 'Mumbai, India',
+    description: 'IDFC First Bank Recruitment 2026 Details\nRole: Model Risk Analyst\nQualification: Master’s Degree\nBatch: 2023/2024\nExperience: Freshers\nSalary: Best in Industry\nLast Date: ASAP',
+    link: 'https://careers.idfcfirstbank.com/in/en/job/IFBAINP205914ENIN',
+    type: 'Full Time'
+  },
+  {
+    id: 'deloitte-associate-analyst-2026',
+    title: 'Associate Analyst / Analyst',
+    company: 'Deloitte',
+    postedAt: '2026-04-04',
+    applicants: 'Be the first to apply',
+    location: 'Hyderabad, India',
+    description: 'Deloitte Announced Recruitment 2026 Details\nRole: Associate Analyst / Analyst\nCategory: Off-Campus Drive\nQualification: MBA/PGDM / B.Com / BBA\nBatch: 2024 & 2025\nExperience: 0 – 2 Years\nSalary: Best in industry\nLast Date: Apply as soon as possible',
+    link: 'https://usijobs.deloitte.com/en_US/careersUSI/JobDetail/USI-EH26-EA-GPS-SSC-Associate-Analyst-Analyst/328660',
+    type: 'Full Time'
+  },
+  {
     id: 'ge-hc-get',
     title: 'Graduate Engineer Trainee',
     company: 'GE HealthCare',
@@ -501,6 +534,19 @@ export const EXAMS_MOCK = [
 ];
 
 export const CERTIFICATIONS_MOCK: Internship[] = [
+  { 
+    id: 'stock-market-foundation-skill-india', 
+    title: 'Stock Market Foundation Course', 
+    company: 'Skill India Digital (ASSETGRO FINTECH)', 
+    stipend: 'Free', 
+    duration: '2 Hours', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://www.skillindiadigital.gov.in/courses/detail/58f5e455-4212-4c27-9db6-afcf1902895a',
+    postedAt: '2026-04-03',
+    description: 'Category: Banking, Financial Services & Insurance (BFSI)\nEnrolled: 7269+ students\n\nBy completing this course, learners will grasp essential stock market concepts, interpret financial statements, analyze stocks using fundamental and technical tools, and understand derivatives like options and futures. They will be equipped with the foundational knowledge needed to start their investment journey with confidence.',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/0d/Skill_India_logo.svg/1200px-Skill_India_logo.svg.png'
+  },
   { 
     id: 'ibm-gen-ai-intro', 
     title: 'Getting Started with Generative AI (Earn a digital credential!)', 

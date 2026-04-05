@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
 import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, PAPER_LINKS_BTECH, PAPER_LINKS_MTECH, PAPER_LINKS_MBA, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '../constants';
 import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search, Trophy, Award } from 'lucide-react';
@@ -20,6 +20,14 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   const [activeSubTab, setActiveSubTab] = useState<SubTab>(null);
   const [internshipTab, setInternshipTab] = useState<InternshipTab>('paid');
   const [selectedCourse, setSelectedCourse] = useState<BTechCourse | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'info' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedSubSubject, setSelectedSubSubject] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
@@ -87,7 +95,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
       } else if (PAPER_LINKS_INTER_2ND[subject]) {
         onOpenExternalLink?.(PAPER_LINKS_INTER_2ND[subject]);
       } else {
-        alert(`Papers for ${subject} will be available soon!`);
+        setNotification({ message: `Papers for ${subject} will be available soon!`, type: 'info' });
       }
     } else if (type === ModuleType.BTECH && PAPER_LINKS_BTECH[subject]) {
       onOpenExternalLink?.(PAPER_LINKS_BTECH[subject]);
@@ -96,7 +104,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
     } else if (type === ModuleType.MBA && PAPER_LINKS_MBA[subject]) {
       onOpenExternalLink?.(PAPER_LINKS_MBA[subject]);
     } else {
-      alert(`Papers for ${subject} will be available soon!`);
+      setNotification({ message: `Papers for ${subject} will be available soon!`, type: 'info' });
     }
   };
 
@@ -1290,6 +1298,18 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
       )}
 
       {type === ModuleType.CERTIFICATIONS && renderCertifications()}
+      {notification && (
+        <div className="fixed bottom-4 right-4 z-[100] animate-in slide-in-from-right-4 fade-in duration-300">
+          <div className={`px-6 py-3 rounded-xl shadow-lg border flex items-center gap-3 ${
+            notification.type === 'error' 
+              ? 'bg-red-900/90 border-red-500 text-red-100' 
+              : 'bg-slate-800/90 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${notification.type === 'error' ? 'bg-red-500' : 'bg-indigo-500'}`} />
+            <p className="text-sm font-medium">{notification.message}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
