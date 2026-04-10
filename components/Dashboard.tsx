@@ -142,8 +142,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user, onUpdateGoa
                 </div>
               </div>
             )}
-            <div className="flex gap-4 p-4 bg-slate-800/50 rounded-2xl border border-slate-800">
-              <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex-shrink-0 flex items-center justify-center text-blue-400">
+            <div 
+              onClick={() => onSelectModule(ModuleType.CERTIFICATIONS)}
+              className="flex gap-4 p-4 bg-slate-800/50 rounded-2xl border border-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group"
+            >
+              <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex-shrink-0 flex items-center justify-center text-blue-400 group-hover:bg-blue-900/40 transition-colors">
                 <Sparkles size={20} />
               </div>
               <div>
@@ -151,7 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectModule, user, onUpdateGoa
                 <p className="text-sm text-slate-400">Boost your resume with professional certifications in trending technologies.</p>
               </div>
               <div className="ml-auto self-center">
-                <ArrowRight size={20} className="text-slate-600" />
+                <ArrowRight size={20} className="text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
               </div>
             </div>
           </div>

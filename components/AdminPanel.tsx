@@ -30,9 +30,10 @@ interface AdminPanelProps {
   onBack: () => void;
   user: User;
   onOpenExternalLink?: (url: string) => void;
+  setNotification: (notif: { message: string; type: 'info' | 'error' } | null) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLink }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLink, setNotification }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -138,7 +139,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
         isPremium: approve,
         isPendingVerification: false
       });
-      alert(approve ? "User upgraded to Premium!" : "Verification rejected.");
+      setNotification({
+        message: approve ? "User upgraded to Premium!" : "Verification rejected.",
+        type: 'info'
+      });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `users/${userId}`);
     }

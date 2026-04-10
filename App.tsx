@@ -216,9 +216,12 @@ const App: React.FC = () => {
             // Single Device Login Check
             const currentDeviceId = localStorage.getItem('skillpilot_device_id');
             if (profile.activeDeviceId && currentDeviceId && profile.activeDeviceId !== currentDeviceId) {
-              // Use a small delay to ensure the alert is seen and the state is stable
+              // Use a small delay to ensure the notification is seen and the state is stable
               setTimeout(() => {
-                alert("You have been logged out because your account is being used on another device.");
+                setNotification({
+                  message: "You have been logged out because your account is being used on another device.",
+                  type: 'error'
+                });
                 handleLogout(true); // Pass true to avoid clearing the new device's ID
               }, 100);
               return;
@@ -338,10 +341,16 @@ const App: React.FC = () => {
         // Admin must verify manually via Admin Panel.
         setIsVerifyingPayment(false);
         setShowPaymentModal(false);
-        alert("Payment proof submitted successfully! Admin will verify your payment shortly (usually within 5-10 mins).");
+        setNotification({
+          message: "Payment proof submitted successfully! Admin will verify your payment shortly (usually within 5-10 mins).",
+          type: 'info'
+        });
       }
     } catch (err: any) {
-      alert(err.message || "Failed to upload receipt");
+      setNotification({
+        message: err.message || "Failed to upload receipt",
+        type: 'error'
+      });
       setIsVerifyingPayment(false);
     }
   };
@@ -466,7 +475,7 @@ const App: React.FC = () => {
         {currentView === 'dashboard' ? (
               <Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} onOpenExternalLink={setExternalUrl} />
             ) : (currentView === 'admin' && user.role === UserRole.ADMIN) ? (
-              <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={setExternalUrl} />
+              <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={setExternalUrl} setNotification={setNotification} />
             ) : (
               selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} onOpenExternalLink={setExternalUrl} />
             )}

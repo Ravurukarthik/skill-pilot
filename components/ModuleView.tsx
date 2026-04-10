@@ -28,6 +28,19 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
+  useEffect(() => {
+    setActiveSubTab(null);
+    setSelectedCourse(null);
+    setSelectedSubject(null);
+    setSelectedSubSubject(null);
+    setSelectedLesson(null);
+    setVideoUrl(null);
+    setAiContent(null);
+    setIsAiLoading(false);
+    setSelectedCompiler(null);
+    setSearchQuery('');
+  }, [type]);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedSubSubject, setSelectedSubSubject] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
