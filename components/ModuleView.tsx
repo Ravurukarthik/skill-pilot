@@ -82,6 +82,11 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
       return;
     }
 
+    if (type === ModuleType.BTECH && selectedCourse?.id === 'cse' && subject === 'Data Structures') {
+      setVideoUrl('https://drive.google.com/file/d/1VjeWz6ZspQi2f86zJn2DevBw4qyzizXAIXt8OqfUez4/preview');
+      return;
+    }
+
     if (subject === 'Universal IDE') {
       setIsAiLoading(false);
       setAiContent("Welcome to the Universal IDE. You can select any programming language from the dropdown menu in the editor below to start coding. This environment supports 50+ languages with real-time compilation.");
