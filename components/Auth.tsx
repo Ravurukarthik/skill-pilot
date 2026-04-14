@@ -572,7 +572,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-900 text-slate-100 text-sm"
-                      placeholder="John Doe"
+                      placeholder="Enter name"
                       required
                     />
                   </div>
