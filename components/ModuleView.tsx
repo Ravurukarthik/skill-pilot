@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
 import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, PAPER_LINKS_BTECH, PAPER_LINKS_MTECH, PAPER_LINKS_MBA, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '../constants';
-import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search, Trophy, Award } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, Banknote, Users, Code, Terminal, X, Search, Trophy, Award, Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
+import ReactPlayer from 'react-player';
 import { getTutorialSummary } from '../services/geminiService';
 
 interface ModuleViewProps {
@@ -42,6 +43,11 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
     setSearchQuery('');
   }, [type]);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [volume, setVolume] = useState(0.8);
+  const [muted, setMuted] = useState(false);
+  const [showControls, setShowControls] = useState(true);
   const [selectedSubSubject, setSelectedSubSubject] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -78,7 +84,12 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
     setVideoUrl(null);
 
     if (lesson === 'రామాయణం') {
-      setVideoUrl('https://www.youtube-nocookie.com/embed/f-WPzbNi-Eg');
+      setVideoUrl('https://www.youtube-nocookie.com/embed/f-WPzbNi-Eg?controls=0&modestbranding=1&rel=0&disablekb=1&iv_load_policy=3&enablejsapi=1');
+      return;
+    }
+
+    if (lesson === 'Lesson 1: Introduction') {
+      setVideoUrl('https://drive.google.com/file/d/1xLHodlJoiODjLIjdXeq84Q_L4eXP9crZUmQeoEF4etM/preview');
       return;
     }
 
@@ -178,6 +189,12 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                 <FileText size={18} className="text-indigo-400" />
                 Inter 1st Year Previous Papers
               </h4>
+              <button 
+                onClick={() => setActiveSubTab(null)}
+                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold bg-slate-700/50 px-3 py-1.5 rounded-lg"
+              >
+                <ArrowLeft size={14} /> Back to Sections
+              </button>
             </div>
             {renderPaperGrid(SUBJECTS_MOCK['Inter Guide 1st Year'])}
           </section>
@@ -201,15 +218,21 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
 
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h4 className="font-bold text-slate-200 flex items-center gap-2">
             <FileText size={18} className="text-indigo-400" />
             Select Subject for Previous Papers
           </h4>
-          {type === ModuleType.CLASS_10 && (
+          <button 
+            onClick={() => setActiveSubTab(null)}
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold bg-slate-700/50 px-3 py-1.5 rounded-lg w-fit"
+          >
+            <ArrowLeft size={14} /> Back to Sections
+          </button>
+        </div>
+        {type === ModuleType.CLASS_10 && (
             <span className="text-xs bg-indigo-900/50 text-indigo-300 px-3 py-1 rounded-full font-bold border border-indigo-500/30">2024-2025 Papers Live</span>
           )}
-        </div>
         {renderPaperGrid(subjects)}
       </div>
     );
@@ -257,29 +280,57 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
 
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-        <div className="bg-indigo-900/30 border border-indigo-500/20 p-4 rounded-2xl flex items-center gap-3 mb-2">
-          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></div>
-          <p className="text-sm font-bold text-indigo-200">Coming Soon: Subject-wise tutorials for all categories!</p>
-        </div>
-        <h4 className="font-bold text-slate-200 flex items-center gap-2">
-          <BookOpen size={18} className="text-indigo-400" />
-          Select a Subject for AI Tutorial
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {subjects.map((subject) => (
-            <button
-              key={subject}
-              onClick={() => handleTutorialRequest(subject)}
-              className={`p-4 rounded-xl border text-left transition-all flex items-center justify-between group ${selectedSubject === subject ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-900/20' : 'bg-slate-800 text-slate-200 border-slate-700 hover:border-indigo-500'}`}
+        {!selectedSubject && (
+          <>
+            <div className="bg-indigo-900/30 border border-indigo-500/20 p-4 rounded-2xl flex items-center gap-3 mb-2">
+              <div className="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></div>
+              <p className="text-sm font-bold text-indigo-200">Coming Soon: Subject-wise tutorials for all categories!</p>
+            </div>
+            <h4 className="font-bold text-slate-200 flex items-center gap-2">
+              <BookOpen size={18} className="text-indigo-400" />
+              Select a Subject for AI Tutorial
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {subjects.map((subject) => (
+                <button
+                  key={subject}
+                  onClick={() => handleTutorialRequest(subject)}
+                  className="p-4 rounded-xl border text-left transition-all flex items-center justify-between group bg-slate-800 text-slate-200 border-slate-700 hover:border-indigo-500"
+                >
+                  <span className="font-medium">{subject}</span>
+                  <Sparkles size={16} className="text-slate-500 group-hover:text-indigo-400" />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {selectedSubject && !selectedLesson && (
+          <div className="flex items-center gap-4 mb-4">
+            <button 
+              onClick={() => {
+                if (selectedSubSubject) {
+                  setSelectedSubSubject(null);
+                } else {
+                  setSelectedSubject(null);
+                }
+                setVideoUrl(null);
+                setAiContent(null);
+              }}
+              className="flex items-center gap-2 text-indigo-400 font-bold hover:text-indigo-300 transition-colors bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700"
             >
-              <span className="font-medium">{subject}</span>
-              <Sparkles size={16} className={selectedSubject === subject ? 'text-indigo-200' : 'text-slate-500 group-hover:text-indigo-400'} />
+              <ArrowLeft size={18} /> Back to {selectedSubSubject ? 'Modules' : 'Subjects'}
             </button>
-          ))}
-        </div>
+            <div className="h-8 w-px bg-slate-700 mx-2"></div>
+            <h4 className="font-bold text-slate-200 flex items-center gap-2">
+              <Sparkles size={18} className="text-indigo-400" />
+              {selectedSubject} {selectedSubSubject ? `> ${selectedSubSubject}` : ''}
+            </h4>
+          </div>
+        )}
 
         {selectedSubject === 'Telugu' && type === ModuleType.CLASS_10 && !selectedSubSubject && (
-          <div className="mt-6 p-6 bg-slate-800 rounded-2xl border border-slate-700 animate-in fade-in zoom-in-95">
+          <div className="p-6 bg-slate-800 rounded-2xl border border-slate-700 animate-in fade-in zoom-in-95">
             <h5 className="font-bold text-indigo-400 mb-4 flex items-center gap-2">
               <Sparkles size={18} /> Select Module for Telugu
             </h5>
@@ -299,12 +350,13 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
         )}
 
         {selectedSubject === 'Telugu' && type === ModuleType.CLASS_10 && selectedSubSubject === 'విషయా సుచికా' && !selectedLesson && (
-          <div className="mt-6 p-6 bg-slate-800 rounded-2xl border border-slate-700 animate-in fade-in zoom-in-95">
+          <div className="p-6 bg-slate-800 rounded-2xl border border-slate-700 animate-in fade-in zoom-in-95">
             <h5 className="font-bold text-indigo-400 mb-4 flex items-center gap-2">
               <Sparkles size={18} /> Select Lesson Name
             </h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
+                'Lesson 1: Introduction',
                 'ప్రత్యక్ష దైవాలు',
                 'బతుకు గంప',
                 'శతక మాధుర్యం',
@@ -332,12 +384,13 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
         )}
 
         {selectedSubject === 'Telugu' && type === ModuleType.CLASS_10 && selectedSubSubject === 'ఉపవాచకం' && !selectedLesson && (
-          <div className="mt-6 p-6 bg-slate-800 rounded-2xl border border-slate-700 animate-in fade-in zoom-in-95">
+          <div className="p-6 bg-slate-800 rounded-2xl border border-slate-700 animate-in fade-in zoom-in-95">
             <h5 className="font-bold text-indigo-400 mb-4 flex items-center gap-2">
               <Sparkles size={18} /> Select Lesson Name
             </h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
+                'Lesson 1: Introduction',
                 'రామాయణం'
               ].map((lesson, idx) => (
                 <button
@@ -353,11 +406,48 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
           </div>
         )}
 
+        {type === ModuleType.CLASS_10 && selectedSubject && selectedSubject !== 'Telugu' && !selectedLesson && (
+          <div className="p-6 bg-slate-800 rounded-2xl border border-slate-700 animate-in fade-in zoom-in-95">
+            <h5 className="font-bold text-indigo-400 mb-4 flex items-center gap-2">
+              <Sparkles size={18} /> Select Lesson Name
+            </h5>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {[
+                'Lesson 1: Introduction',
+                'Lesson 2: Core Concepts',
+                'Lesson 3: Advanced Topics',
+                'Lesson 4: Practice Session'
+              ].map((lesson, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleTutorialRequest(selectedSubject, undefined, lesson)}
+                  className="bg-slate-700 p-3 rounded-xl border border-slate-600 text-sm text-indigo-400 font-semibold hover:bg-indigo-600 hover:text-white transition-all shadow-sm flex items-center justify-between group"
+                >
+                  <span className="truncate mr-2">{lesson}</span>
+                  <ChevronRight size={14} className="text-indigo-300 group-hover:text-white flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {(isAiLoading || aiContent || videoUrl) && (
-          <div className="mt-10 bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-8 animate-in zoom-in-95 duration-300">
-            <div className="flex items-center gap-2 mb-6 text-indigo-400 font-bold border-b border-slate-700 pb-4">
-              <Sparkles size={20} />
-              AI Tutorial Helper: {selectedSubject} {selectedSubSubject ? `(${selectedSubSubject})` : ''} {selectedLesson ? `- ${selectedLesson}` : ''}
+          <div className="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-8 animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700 pb-4">
+              <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                <Sparkles size={20} />
+                AI Tutorial Helper: {selectedSubject} {selectedSubSubject ? `(${selectedSubSubject})` : ''} {selectedLesson ? `- ${selectedLesson}` : ''}
+              </div>
+              <button 
+                onClick={() => {
+                  setSelectedLesson(null);
+                  setVideoUrl(null);
+                  setAiContent(null);
+                }}
+                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold bg-slate-700/50 px-3 py-1.5 rounded-lg"
+              >
+                <ArrowLeft size={14} /> Back to Lessons
+              </button>
             </div>
             
             {isAiLoading ? (
@@ -366,16 +456,119 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                 <p>Generating your comprehensive tutorial guide...</p>
               </div>
             ) : videoUrl ? (
-              <div className="aspect-video rounded-2xl overflow-hidden shadow-lg border-4 border-slate-700">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={videoUrl}
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                ></iframe>
+              <div 
+                className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border-4 border-slate-700 bg-black group"
+                onMouseEnter={() => setShowControls(true)}
+                onMouseLeave={() => setShowControls(false)}
+              >
+                {videoUrl.includes('youtube') ? (
+                  <>
+                    {(() => {
+                      const Player = ReactPlayer as any;
+                      return (
+                        <div className="w-full h-full relative">
+                          <Player
+                            url={videoUrl}
+                            playing={playing}
+                            controls={false}
+                            volume={volume}
+                            muted={muted}
+                            width="100%"
+                            height="100%"
+                            onProgress={(state: any) => setProgress(state.played)}
+                            config={{
+                              youtube: {
+                                modestbranding: 1,
+                                rel: 0,
+                                disablekb: 1,
+                                iv_load_policy: 3
+                              } as any
+                            }}
+                          />
+                          {/* Transparent overlay to block double-tap skipping and direct interaction */}
+                          <div className="absolute inset-0 z-10" />
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Custom Controls */}
+                    <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+                      <div className="flex items-center gap-4">
+                        <button 
+                          onClick={() => setPlaying(!playing)}
+                          className="text-white hover:text-indigo-400 transition-colors p-2 bg-slate-800/50 rounded-full"
+                          title={playing ? "Pause" : "Play"}
+                        >
+                          {playing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                        </button>
+
+                        <div className="flex items-center gap-2 group/volume">
+                          <button 
+                            onClick={() => setMuted(!muted)}
+                            className="text-white hover:text-indigo-400 transition-colors"
+                          >
+                            {muted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                          </button>
+                          <input 
+                            type="range" 
+                            min="0" 
+                            max="1" 
+                            step="0.1" 
+                            value={muted ? 0 : volume} 
+                            onChange={(e) => {
+                              setVolume(parseFloat(e.target.value));
+                              setMuted(false);
+                            }}
+                            className="w-0 group-hover/volume:w-20 transition-all duration-300 accent-indigo-500 h-1 cursor-pointer"
+                          />
+                        </div>
+                        
+                        <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden relative">
+                          <div 
+                            className="h-full bg-indigo-500 transition-all duration-300" 
+                            style={{ width: `${progress * 100}%` }}
+                          />
+                          {/* Invisible overlay to prevent clicking on progress bar to skip */}
+                          <div className="absolute inset-0 z-10 cursor-default" />
+                        </div>
+                        
+                        <div className="text-xs text-slate-300 font-mono bg-slate-800/50 px-2 py-1 rounded">
+                          {Math.round(progress * 100)}%
+                        </div>
+
+                        <button 
+                          onClick={() => {
+                            const el = document.querySelector('.aspect-video');
+                            if (el?.requestFullscreen) el.requestFullscreen();
+                          }}
+                          className="text-white hover:text-indigo-400 transition-colors"
+                          title="Fullscreen"
+                        >
+                          <Maximize size={20} />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="relative w-full h-full">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={videoUrl}
+                      title="Video player"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      sandbox="allow-scripts allow-same-origin allow-presentation"
+                      className="w-full h-full"
+                    ></iframe>
+                    {/* Overlays to block seek bar and potential skipping buttons */}
+                    <div className="absolute bottom-0 left-0 right-0 h-[15%] bg-transparent z-10 cursor-not-allowed" />
+                    <div className="absolute top-0 left-0 right-0 h-[10%] bg-transparent z-10 cursor-not-allowed" />
+                    <div className="absolute top-0 bottom-0 left-0 w-[15%] bg-transparent z-10 cursor-not-allowed" />
+                    <div className="absolute top-0 bottom-0 right-0 w-[15%] bg-transparent z-10 cursor-not-allowed" />
+                  </div>
+                )}
               </div>
             ) : (
               <div className="prose prose-invert prose-indigo max-w-none">
@@ -986,6 +1179,8 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   };
 
   const renderGeneralSubModules = () => {
+    if (activeSubTab) return null;
+
     const filteredSubModules = hasBranches 
       ? SUB_MODULES_GENERAL.filter(sub => sub.id === 'tutorials')
       : SUB_MODULES_GENERAL;
@@ -1143,6 +1338,14 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
             
             {activeSubTab === 'hallticket' && (
               <div className="bg-slate-800 p-8 md:p-12 rounded-3xl border border-slate-700 animate-in zoom-in-95">
+                <div className="flex justify-end mb-4">
+                  <button 
+                    onClick={() => setActiveSubTab(null)}
+                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold bg-slate-700/50 px-3 py-1.5 rounded-lg"
+                  >
+                    <ArrowLeft size={14} /> Back to Sections
+                  </button>
+                </div>
                 <div className="text-center mb-10">
                   <Download className="mx-auto text-indigo-400 mb-4" size={48} />
                   <h3 className="text-2xl font-bold mb-2 text-slate-100">Hall Ticket Portal</h3>
@@ -1213,6 +1416,14 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
 
             {activeSubTab === 'marks' && (
               <div className="bg-slate-800 p-8 md:p-12 rounded-3xl border border-slate-700 animate-in zoom-in-95">
+                <div className="flex justify-end mb-4">
+                  <button 
+                    onClick={() => setActiveSubTab(null)}
+                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold bg-slate-700/50 px-3 py-1.5 rounded-lg"
+                  >
+                    <ArrowLeft size={14} /> Back to Sections
+                  </button>
+                </div>
                 <div className="text-center mb-10">
                   <ScrollText className="mx-auto text-purple-400 mb-4" size={48} />
                   <h3 className="text-2xl font-bold mb-2 text-slate-100">Mark List & Results Portal</h3>

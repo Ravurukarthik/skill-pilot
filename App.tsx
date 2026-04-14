@@ -473,7 +473,7 @@ const App: React.FC = () => {
         )}
 
         {currentView === 'dashboard' ? (
-              <Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} onOpenExternalLink={setExternalUrl} />
+              <Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} />
             ) : (currentView === 'admin' && user.role === UserRole.ADMIN) ? (
               <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={setExternalUrl} setNotification={setNotification} />
             ) : (
