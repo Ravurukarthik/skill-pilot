@@ -106,9 +106,9 @@ export const HALL_TICKET_LINKS_INTER = {
 export const MARK_LIST_LINK_10TH = 'https://bse.ap.gov.in/RESULTSTWT/';
 
 export const MARK_LIST_LINKS_INTER = {
-  '1st_YEAR_REGULAR': 'https://www.results.manabadi.co.in/2025/AP/Inter/1st-year/AP-Intermediate-1st-year-regular-exam-results-April-2025-080425.htm',
+  '1st_YEAR_REGULAR': 'https://results.eenadu.net/exam-results/ap-inter-1st-year-results-2026-general',
   '1st_YEAR_SUPPLY': 'https://www.results.manabadi.co.in/2025/AP/Inter-Sup/1st-year/Mobile/AP-Intermediate-1st-year-supply-exam-results-june-2025-060625.htm',
-  '2nd_YEAR_REGULAR': 'https://www.results.manabadi.co.in/2025/AP/Inter/2nd-year/AP-Intermediate-2nd-year-regular-exam-results-Apr-2025-080425.htm',
+  '2nd_YEAR_REGULAR': 'https://results1.sakshieducation.com/andhrapradesh/inter/year2/general.html',
   '2nd_YEAR_SUPPLY': 'https://www.results.manabadi.co.in/2025/AP/Inter-Sup/2nd-year/Mobile/AP-Intermediate-2nd-year-supply-exam-results-june-2025-060625-Popup.htm'
 };
 
