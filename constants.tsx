@@ -379,9 +379,68 @@ export const INTERNSHIP_MOCK: Internship[] = [
     description: 'Eligibility:\nEngineering Students\nPostgraduate\nUndergraduate',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png'
   },
+  { 
+    id: 'aicte-google-virtual-internship', 
+    title: 'Google Developer Virtual Internship', 
+    company: 'AICTE - Google', 
+    stipend: 'Certificate', 
+    duration: '2 Months', 
+    location: 'Virtual', 
+    type: 'aicte', 
+    link: 'https://internship.aicte-india.org/internship-details.php?id=MzY2Nw==',
+    postedAt: '2026-04-10',
+    description: 'AICTE in collaboration with Google Cloud is offering virtual internships for students in Cloud Computing and Android Development.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1200px-Google_2015_logo.svg.png'
+  },
+  { 
+    id: 'aicte-amazon-virtual-internship', 
+    title: 'AWS Cloud Virtual Internship', 
+    company: 'AICTE - AWS', 
+    stipend: 'Certificate', 
+    duration: '2 Months', 
+    location: 'Virtual', 
+    type: 'aicte', 
+    link: 'https://internship.aicte-india.org/internship-details.php?id=MzY2OQ==',
+    postedAt: '2026-04-12',
+    description: 'AICTE and AWS EdStart are launching the AWS Cloud virtual internship program to provide students with cloud computing skills.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1200px-Amazon_logo.svg.png'
+  },
 ];
 
 export const JOBS_MOCK: Job[] = [
+  {
+    id: 'accenture-it-customer-service-rep-2026',
+    title: 'IT Customer Service Representative',
+    company: 'Accenture',
+    postedAt: '2026-04-17',
+    applicants: 'Be the first to apply',
+    location: 'Coimbatore, India',
+    description: 'Accenture Recruitment 2026 Details\nRole: IT Customer Service Representative\nCategory: IT Jobs\nQualification: Any Degree\nExperience: 0 – 2 Years\nSalary: Best in Industry\nLast Date to Apply: Apply ASAP',
+    link: 'https://www.accenture.com/in-en/careers/jobdetails?id=14154433_en',
+    type: 'Full Time'
+  },
+  {
+    id: 'philips-software-technologist-1-2026',
+    title: 'Software Technologist I',
+    company: 'Philips',
+    postedAt: '2026-04-17',
+    applicants: 'Be the first to apply',
+    location: 'Bangalore, India',
+    description: 'Philips Recruitment 2026 Details\nRole: Software Technologist I\nCategory: IT Jobs\nQualification: B.E / B.Tech / B.Sc\nExperience: Freshers\nSalary: Best in Industry\nLast Date: 20 April 2026',
+    link: 'https://philips.wd3.myworkdayjobs.com/jobs-and-careers/job/Bangalore/Software-Technologist-I_579945/',
+    type: 'Full Time'
+  },
+  {
+    id: 'tata-technologies-diploma-engineer-trainee-2026',
+    title: 'Diploma Engineer Trainee',
+    company: 'Tata Technologies',
+    postedAt: '2026-04-17',
+    applicants: 'Be the first to apply',
+    location: 'Pune, India',
+    description: 'Tata Technologies Recruitment 2026 Details\nRole: Diploma Engineer Trainee\nCategory: Engineering Jobs\nQualification: Diploma in Mechanical / ECE / CS / IT / EEE / Related Streams\nBatch: 2024 / 2025 / 2026\nExperience: Freshers / 0–1 Year\nSalary: ₹3 – 4 LPA (Approx.)\nLast Date: Apply As Soon As Possible',
+    link: 'https://tatatechnologies.ripplehire.com/candidate/?token=GpmL7GmyLc1DoGB7gulO&lang=en&source=LINKEDIN&ref=LI02#detail',
+    type: 'Full Time'
+  },
   {
     id: 'accenture-application-support-engineer-2026',
     title: 'Application Support Engineer',

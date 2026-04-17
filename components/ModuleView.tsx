@@ -15,7 +15,7 @@ interface ModuleViewProps {
 }
 
 type SubTab = 'papers' | 'tutorials' | 'hallticket' | 'marks' | null;
-type InternshipTab = 'paid' | 'unpaid';
+type InternshipTab = 'paid' | 'unpaid' | 'aicte';
 
 const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, onOpenExternalLink }) => {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>(null);
@@ -614,6 +614,13 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
             >
               <Zap size={18} />
               Level 2: Skill Focus (Unpaid)
+            </button>
+            <button 
+              onClick={() => setInternshipTab('aicte')}
+              className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${internshipTab === 'aicte' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-700'}`}
+            >
+              <Users size={18} />
+              Level 3: AICTE Internships
             </button>
           </div>
 

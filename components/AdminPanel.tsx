@@ -140,7 +140,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
         isPendingVerification: false
       });
       setNotification({
-        message: approve ? "User upgraded to Premium!" : "Verification rejected.",
+        message: approve ? "User upgraded to Prime!" : "Verification rejected.",
         type: 'info'
       });
     } catch (err) {
@@ -265,7 +265,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${filter === f ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-950 text-slate-500 hover:bg-slate-800 border border-slate-800'}`}
               >
-                {f}
+                {f === 'premium' ? 'Prime' : f}
               </button>
             ))}
           </div>
@@ -376,7 +376,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
                     <td className="px-6 py-5">
                       <div className="flex flex-col gap-1.5">
                         <span className="text-xs text-slate-400 font-bold">
-                          {user.isPremium ? formatDate(user.paymentDate) : '—'}
+                          {(user.isPremium || user.isPendingVerification) ? formatDate(user.paymentDate) : '—'}
                         </span>
                         {user.activeModule && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-900/40 text-indigo-300 text-[8px] font-black uppercase tracking-widest border border-indigo-500/30 animate-pulse">
@@ -428,7 +428,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
                             onClick={() => handleVerifyUser(user.id, true)}
                             className="text-[10px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest bg-indigo-900/20 px-3 py-2 rounded-xl border border-indigo-900/30 transition-all"
                            >
-                             Grant Pro
+                             Grant Prime
                            </button>
                         )}
                         {user.isPremium && (
@@ -436,7 +436,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
                             onClick={() => handleVerifyUser(user.id, false)}
                             className="text-[10px] font-black text-red-400 hover:text-red-300 uppercase tracking-widest bg-red-900/20 px-3 py-2 rounded-xl border border-red-900/30 transition-all"
                            >
-                             Revoke Pro
+                             Revoke Prime
                            </button>
                         )}
                       </div>
@@ -597,8 +597,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
                 <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Account Status</p>
                   <p className={`text-sm font-black uppercase tracking-widest ${selectedUserActivity.isPremium ? 'text-amber-500' : 'text-indigo-400'}`}>
-                    {selectedUserActivity.isPremium ? 'Premium Pro' : 'Free Tier'}
+                    {selectedUserActivity.isPremium ? 'Prime Membership' : 'Free Tier'}
                   </p>
+                  {selectedUserActivity.isPremium && selectedUserActivity.paymentDate && (
+                    <p className="text-[9px] text-slate-500 mt-1 font-medium">Joined: {formatDate(selectedUserActivity.paymentDate)}</p>
+                  )}
                 </div>
                 <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Role</p>

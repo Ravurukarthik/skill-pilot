@@ -68,7 +68,7 @@ export interface Internship {
   stipend: string | null;
   duration: string;
   location: string;
-  type: 'paid' | 'unpaid';
+  type: 'paid' | 'unpaid' | 'aicte';
   link: string;
   postedAt: string;
   description?: string;
