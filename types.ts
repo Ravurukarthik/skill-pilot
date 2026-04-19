@@ -73,6 +73,7 @@ export interface Internship {
   postedAt: string;
   description?: string;
   logo?: string;
+  expiresAt?: string;
 }
 
 export interface Job {

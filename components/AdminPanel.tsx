@@ -375,7 +375,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-xs text-slate-400 font-bold">
+                        <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none mb-1">Membership Start Date</span>
+                        <span className="text-sm text-slate-300 font-bold">
                           {(user.isPremium || user.isPendingVerification) ? formatDate(user.paymentDate) : '—'}
                         </span>
                         {user.activeModule && (

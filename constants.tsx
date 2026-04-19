@@ -380,34 +380,70 @@ export const INTERNSHIP_MOCK: Internship[] = [
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png'
   },
   { 
-    id: 'aicte-google-virtual-internship', 
-    title: 'Google Developer Virtual Internship', 
-    company: 'AICTE - Google', 
+    id: 'cisco-virtual-internship-2026', 
+    title: 'Cisco Virtual Internship 2026', 
+    company: 'AICTE - Cisco', 
     stipend: 'Certificate', 
     duration: '2 Months', 
-    location: 'Virtual', 
+    location: 'Fully Online', 
     type: 'aicte', 
-    link: 'https://internship.aicte-india.org/internship-details.php?id=MzY2Nw==',
-    postedAt: '2026-04-10',
-    description: 'AICTE in collaboration with Google Cloud is offering virtual internships for students in Cloud Computing and Android Development.',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1200px-Google_2015_logo.svg.png'
+    link: 'https://internship.aicte-india.org/internship-details.php?uid=SU5URVJOU0hJUF8xNzc0NDIwNjY0NjljMzgyYjg3MTU3Yw==&level=NA==',
+    postedAt: '2026-03-25',
+    description: 'Domains: Networking, Cybersecurity, Artificial Intelligence\nDuration: 2 months (8 weeks)\nMode: Fully online (work from home)\nStipend: No stipend (skill-focused program)\nApplication Deadline: April 25, 2026',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/1200px-Cisco_logo_blue_2016.svg.png',
+    expiresAt: '2026-04-25T23:59:59Z'
   },
   { 
-    id: 'aicte-amazon-virtual-internship', 
-    title: 'AWS Cloud Virtual Internship', 
-    company: 'AICTE - AWS', 
+    id: 'ibm-ai-virtual-internship-2026', 
+    title: 'IBM AI Virtual Internship 2026', 
+    company: 'AICTE - IBM', 
     stipend: 'Certificate', 
-    duration: '2 Months', 
-    location: 'Virtual', 
+    duration: '4 to 6 Weeks', 
+    location: '100% Online', 
     type: 'aicte', 
-    link: 'https://internship.aicte-india.org/internship-details.php?id=MzY2OQ==',
-    postedAt: '2026-04-12',
-    description: 'AICTE and AWS EdStart are launching the AWS Cloud virtual internship program to provide students with cloud computing skills.',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1200px-Amazon_logo.svg.png'
+    link: 'https://internship.aicte-india.org/internship-details.php?uid=SU5URVJOU0hJUF8xNzc1NDkwMDIwNjlkM2QzZTRmMzkwMw==&level=NA==',
+    postedAt: '2026-04-19',
+    description: 'Duration: 4 to 6 weeks\nMode: 100% Online (accessible across India)\nFocus Areas: Artificial Intelligence (AI), Machine Learning (ML), IBM Cloud\nApplication Deadline: 30 April 2026\nStart Date: May 2026',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/1200px-IBM_logo.svg.png',
+    expiresAt: '2026-04-30T23:59:59Z'
   },
 ];
 
 export const JOBS_MOCK: Job[] = [
+  {
+    id: 'infosys-off-campus-2026-updated',
+    title: 'Specialist Programmer / Digital Specialist Engineer',
+    company: 'Infosys',
+    postedAt: '2026-04-19',
+    applicants: 'Be the first to apply',
+    location: 'Across India',
+    description: 'Infosys Off Campus Recruitment 2026 Details\nRole: Specialist Programmer / Digital Specialist Engineer\nCategory: Off-Campus Drive\nQualification: B.E/B.Tech/M.E/M.Tech/MCA/MSc\nBatch: 2024 & 2025\nExperience: Freshers\nSalary: ₹6.25 LPA – ₹21 LPA\nLocation: Across India\nLast Date to Apply: 19 April 2026',
+    link: 'https://surveys.infosysapps.com/r/a/InfosysDSESPoffcampus',
+    type: 'Off-Campus Drive',
+    expiresAt: '2026-04-20T00:01:00Z'
+  },
+  {
+    id: 'hcltech-service-desk-analyst-2026',
+    title: 'Service Desk Analyst',
+    company: 'HCLTech',
+    postedAt: '2026-04-19',
+    applicants: 'Be the first to apply',
+    location: 'Lucknow, India',
+    description: 'HCLTech Off Campus Recruitment 2026 Overview\nRole: Service Desk Analyst\nCategory: Off-Campus Drive\nQualification: Any Degree\nExperience: 6 months to 3+ years\nSalary: Competitive (as per industry standards)\nLocation: Lucknow\nApplication Deadline: Apply as soon as possible',
+    link: 'https://www.linkedin.com/jobs/view/4399535085/',
+    type: 'Full Time'
+  },
+  {
+    id: 'deloitte-conflicts-check-analyst-2026',
+    title: 'Analyst – Conflicts Check – Risk & Brand Protection',
+    company: 'Deloitte',
+    postedAt: '2026-04-19',
+    applicants: 'Be the first to apply',
+    location: 'Hyderabad, India',
+    description: 'Deloitte Recruitment 2026 Details\nJob Role: Analyst – Conflicts Check – Risk & Brand Protection\nCategory: Discover more, Business advisory services, Microsoft Office suite training, IT Jobs\nQualification: MBA/PGDM\nExperience Required: 2 – 3 Years\nJob Location: Hyderabad\nSalary Package: Best in Industry\nApplication Deadline: Apply ASAP',
+    link: 'https://usijobs.deloitte.com/en_US/careersUSI/JobDetail/USI-EH26-Enabling-Areas-R-BP-Canada-Conflicts-Checks-Analyst/301041',
+    type: 'Full Time'
+  },
   {
     id: 'accenture-it-customer-service-rep-2026',
     title: 'IT Customer Service Representative',
@@ -539,18 +575,6 @@ export const JOBS_MOCK: Job[] = [
     description: 'Reliance Industries Hiring 2026 Details\nRole: Graduate Engineer Trainee (GET)\nCategory: Off-Campus Drive\nQualification: B.E / B.Tech\nBatch: 2026 (and other eligible batches)\nExperience: 0 – 5 Years\nSalary: As per industry standards\nLast Date: 29 March 2026',
     link: 'https://unstop.com/jobs/reliance-industries-all-india-hiring-freshers-and-1-5-years-of-experience-reliance-industries-limited-ril-1660783?utm_source=Jobs&utm_medium=Affiliates&utm_campaign=trackier_2386&click_id=69c55e1274e49d03580e2436&ref=AffFreshersopening',
     type: 'Full Time'
-  },
-  {
-    id: 'infosys-off-campus-2026',
-    title: 'Specialist Programmer / Digital Specialist Engineer',
-    company: 'Infosys',
-    postedAt: '2026-04-01',
-    applicants: 'Be the first to apply',
-    location: 'Across India',
-    description: 'Infosys Off Campus Recruitment 2026 Details\nRole: Specialist Programmer / Digital Specialist Engineer\nCategory: Off-Campus Drive\nQualification: B.E/B.Tech/M.E/M.Tech/MCA/MSc\nBatch: 2024 & 2025\nExperience: Freshers\nSalary: ₹6.25 LPA – ₹21 LPA\nLocation: Across India\nLast Date to Apply: 13 April 2026',
-    link: 'https://surveys.infosysapps.com/r/a/InfosysDSESPoffcampus',
-    type: 'Off-Campus Drive',
-    expiresAt: '2026-04-14T00:01:00Z'
   },
   {
     id: 'cognizant-analyst-trainee-2026',
