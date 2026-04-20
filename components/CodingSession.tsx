@@ -3,151 +3,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Terminal, X, CheckCircle2, AlertCircle, Play, Undo2, Copy, BookOpen, 
   ChevronDown, ChevronRight, RotateCcw, ChevronLeft, Layout, Settings, 
-  HelpCircle, Clock, Maximize2, Monitor, Code2, ListChecks
+  HelpCircle, Clock, Maximize2, Monitor, Code2, ListChecks, ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-type QuestionType = 'coding' | 'theory' | 'blanks';
-
-interface TestCase {
-  id: number;
-  input?: string;
-  expectedOutput: string | RegExp;
-  description: string;
-}
-
-interface Question {
-  id: number;
-  type: QuestionType;
-  title: string;
-  description: string;
-  initialCode?: string;
-  testCases?: TestCase[];
-  options?: string[];
-  correctAnswers?: any; // For blanks, it's an array of strings
-  hints?: string[];
-}
-
-const QUESTIONS: Question[] = [
-  {
-    id: 1,
-    type: 'theory',
-    title: "1.1.1. Introduction to a computer",
-    description: "Computers are electronic devices that receive input, store or process the input as per user instructions, and provide output in the desired format.\n\nComputers have become an integral part of our lives.\n\nInput-Process-Output Model:\nSimple workflow in a computer is Input ---> Process ---> Output\n\nSelect all the correct statements from the list given:",
-    options: [
-      "Computers can perform easy and complex tasks repeatedly without committing errors.",
-      "Computers are electrical devices",
-      "Processing is the most important function performed by the computer"
-    ],
-    correctAnswers: [0, 2],
-    hints: ["Re-read the block about Input-Process-Output model.", "Think about reliability of computers vs humans."]
-  },
-  {
-    id: 2,
-    type: 'coding',
-    title: "1.2.1. Print Hello World",
-    description: "Objective: Print the message 'Hello World' on the screen.\n\nWrite a C program that uses printf() to display 'Hello World'.",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    // Type your code here\n    \n    return 0;\n}",
-    hints: ["Use printf(\"Hello World\");"],
-    testCases: [
-      { id: 1, expectedOutput: /Hello World/, description: "Output check" },
-      { id: 2, expectedOutput: /printf\s*\(\s*"Hello World"\s*\)/, description: "Printf syntax" }
-    ]
-  },
-  {
-    id: 3,
-    type: 'coding',
-    title: "1.2.2. Print Name",
-    description: "Objective: Print the name 'Karthik' on the screen.",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}",
-    hints: ["Use printf(\"Karthik\");"],
-    testCases: [
-      { id: 1, expectedOutput: /Karthik/, description: "Output Karthik" }
-    ]
-  },
-  {
-    id: 4,
-    type: 'coding',
-    title: "1.2.3. Print Multiple Lines",
-    description: "Objective: Print 'Line1' and 'Line2' on two separate lines.",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}",
-    hints: ["Use \\n for a new line."],
-    testCases: [
-      { id: 1, expectedOutput: /Line1\nLine2/, description: "Multi-line output" },
-      { id: 2, expectedOutput: /\\n/, description: "New line character check" }
-    ]
-  },
-  {
-    id: 5,
-    type: 'coding',
-    title: "1.3.1. Add Two Numbers",
-    description: "Objective: Declare two integers a=2 and b=3, and print their sum using the addition operator.",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}",
-    hints: ["int a=2, b=3;", "printf(\"%d\", a+b);"],
-    testCases: [
-      { id: 1, expectedOutput: /5/, description: "Result is 5" },
-      { id: 2, expectedOutput: /\+/, description: "Addition operator used" }
-    ]
-  },
-  {
-    id: 6,
-    type: 'coding',
-    title: "1.3.2. Input and Print",
-    description: "Objective: Read an integer input from the user and print it directly.",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    int a;\n    // Use scanf and printf\n    return 0;\n}",
-    hints: ["Use scanf(\"%d\", &a);", "Use printf(\"%d\", a);"],
-    testCases: [
-      { id: 1, expectedOutput: /scanf/, description: "Uses scanf" },
-      { id: 2, expectedOutput: /%d/, description: "Integer format specifier" },
-      { id: 3, expectedOutput: /&[a-zA-Z]/, description: "Address operator usage" }
-    ]
-  },
-  {
-    id: 7,
-    type: 'coding',
-    title: "1.4.1. Area of Rectangle",
-    description: "Objective: Read the length and breadth as input and calculate the area (Area = length * breadth).",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    int l, b;\n    \n    return 0;\n}",
-    hints: ["Read two numbers using scanf.", "Print l * b."],
-    testCases: [
-      { id: 1, expectedOutput: /scanf.*%.*%.*/, description: "Input two values" },
-      { id: 2, expectedOutput: /\*/, description: "Multiplication operator" }
-    ]
-  },
-  {
-    id: 8,
-    type: 'coding',
-    title: "1.5.1. Swap Numbers",
-    description: "Objective: Swap the values of two variables a=5 and b=10 using a third variable 't'.",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    int a=5, b=10, t;\n    \n    return 0;\n}",
-    hints: ["t=a;", "a=b;", "b=t;"],
-    testCases: [
-      { id: 1, expectedOutput: /10 5/, description: "Output swapped values" },
-      { id: 2, expectedOutput: /t\s*=\s*[ab]/, description: "Swap logic applied" }
-    ]
-  },
-  {
-    id: 9,
-    type: 'coding',
-    title: "1.6.1. Even or Odd",
-    description: "Objective: Read a number and print 'Even' if it's even, or 'Odd' if it's odd.",
-    initialCode: "#include <stdio.h>\n\nint main() {\n    int n;\n    \n    return 0;\n}",
-    hints: ["Use modulo operator %", "If n % 2 == 0 it is even."],
-    testCases: [
-      { id: 1, expectedOutput: /scanf/, description: "Input number" },
-      { id: 2, expectedOutput: /%/, description: "Modulo operator" },
-      { id: 3, expectedOutput: /(Even|Odd).*(Even|Odd)/, description: "Handles both paths" }
-    ]
-  }
-];
+import { Question, TestCase, QuestionType, User } from '../types';
+import { C_QUESTIONS as QUESTIONS } from '../data/cQuestions';
+import { db } from '../services/firebase';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 interface Props {
   onBack: () => void;
+  user: User;
+  questions: Question[];
+  language: string;
 }
 
-export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
+export const CodingSession: React.FC<Props> = ({ onBack, user, questions, language }) => {
+  const [viewMode, setViewMode] = useState<'list' | 'session'>('list');
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [code, setCode] = useState(QUESTIONS[0].initialCode || "");
+  const [code, setCode] = useState(questions[0]?.initialCode || "");
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [blankAnswers, setBlankAnswers] = useState<string[]>([]);
   const [isOutputVisible, setIsOutputVisible] = useState(false);
@@ -155,7 +29,7 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
   const [expandedSection, setExpandedSection] = useState<'tests' | 'hints' | null>(null);
   const [timer, setTimer] = useState(251); // seconds
 
-  const currentQuestion = QUESTIONS[currentIdx];
+  const currentQuestion = questions[currentIdx];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -165,13 +39,15 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
   }, []);
 
   useEffect(() => {
-    setCode(currentQuestion.initialCode || "");
-    setSelectedOptions([]);
-    setBlankAnswers(new Array(currentQuestion.correctAnswers?.length || 0).fill(""));
-    setResults(null);
-    setIsOutputVisible(false);
-    setExpandedSection(null);
-  }, [currentIdx]);
+    if (questions[currentIdx]) {
+      setCode(questions[currentIdx].initialCode || "");
+      setSelectedOptions([]);
+      setBlankAnswers(new Array(questions[currentIdx].correctAnswers?.length || 0).fill(""));
+      setResults(null);
+      setIsOutputVisible(false);
+      setExpandedSection(null);
+    }
+  }, [currentIdx, questions]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -185,55 +61,242 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
     );
   };
 
-  const handleSubmit = () => {
+  const markAsComplete = async (questionId: number) => {
+    if (!user) return;
+    
+    // Check if already completed to avoid redundant writes
+    const completed = user.completedChallenges?.[language] || [];
+    if (completed.includes(questionId)) return;
+
+    try {
+      const userDocRef = doc(db, 'users', user.id);
+      await updateDoc(userDocRef, {
+        [`completedChallenges.${language}`]: arrayUnion(questionId)
+      });
+    } catch (err) {
+      console.error('Failed to mark challenge as complete:', err);
+    }
+  };
+
+  const handleSubmit = async () => {
+    let isCorrect = false;
+    let message = "";
+    let testCaseResults: any[] = [];
+
     if (currentQuestion.type === 'theory') {
-      const isCorrect = 
+      isCorrect = 
         selectedOptions.length === currentQuestion.correctAnswers?.length &&
         selectedOptions.every(val => currentQuestion.correctAnswers?.includes(val));
       
-      setResults({
-        success: isCorrect,
-        message: isCorrect ? "Correct! You understand the basics." : "Not quite. Check the options again.",
-        testCaseResults: currentQuestion.options?.map((opt, i) => ({
+      message = isCorrect ? "Correct! You understand the basics." : "Not quite. Check the options again.";
+      testCaseResults = currentQuestion.options?.map((opt, i) => {
+         const expected = currentQuestion.correctAnswers?.includes(i) ? "Selected" : "Not Selected";
+         const actual = selectedOptions.includes(i) ? "Selected" : "Not Selected";
+         return {
            description: opt.substring(0, 30) + '...',
-           passed: currentQuestion.correctAnswers?.includes(i) ? selectedOptions.includes(i) : !selectedOptions.includes(i)
-        }))
-      });
+           passed: currentQuestion.correctAnswers?.includes(i) ? selectedOptions.includes(i) : !selectedOptions.includes(i),
+           expected,
+           actual
+         };
+      }) || [];
     } else if (currentQuestion.type === 'blanks') {
-      const isCorrect = blankAnswers.every((ans, i) => 
+      isCorrect = blankAnswers.every((ans, i) => 
         ans.trim().toLowerCase() === currentQuestion.correctAnswers[i].toLowerCase()
       );
-      setResults({
-        success: isCorrect,
-        message: isCorrect ? "Excellent! You filled the blanks correctly." : "Wait, some answers are incorrect. Try again.",
-        testCaseResults: currentQuestion.correctAnswers.map((expected: string, i: number) => ({
-          description: `Blank ${i+1} check`,
-          passed: blankAnswers[i]?.trim().toLowerCase() === expected.toLowerCase()
-        }))
-      });
+      message = isCorrect ? "Excellent! You filled the blanks correctly." : "Wait, some answers are incorrect. Try again.";
+      testCaseResults = currentQuestion.correctAnswers.map((expected: string, i: number) => ({
+        description: `Blank ${i+1} check`,
+        passed: blankAnswers[i]?.trim().toLowerCase() === expected.toLowerCase(),
+        expected: expected,
+        actual: blankAnswers[i] || "Empty"
+      }));
     } else {
-      const testCaseResults = currentQuestion.testCases?.map(tc => {
+      testCaseResults = currentQuestion.testCases?.map(tc => {
         const isPass = typeof tc.expectedOutput === 'string' 
           ? code.includes(tc.expectedOutput)
           : tc.expectedOutput.test(code);
-        return { ...tc, passed: isPass };
+        
+        // Simulating actual output by looking for search patterns or just code presence
+        let actualVal = "Code requirements not met";
+        if (isPass) {
+          actualVal = typeof tc.expectedOutput === 'string' ? tc.expectedOutput : "Regex matched";
+        } else {
+          // If it fails, we show a snippet or the specific missing requirement
+          actualVal = "Logic missing or incorrect syntax";
+        }
+
+        return { 
+          ...tc, 
+          passed: isPass,
+          expected: typeof tc.expectedOutput === 'string' ? tc.expectedOutput : tc.expectedOutput.toString(),
+          actual: actualVal
+        };
       }) || [];
 
-      const allPassed = testCaseResults.every(r => r.passed);
-      setResults({
-        success: allPassed,
-        message: allPassed ? "Congratulations! Program satisfies all constraints." : "Logic requirements not met.",
-        testCaseResults
-      });
+      isCorrect = testCaseResults.every(r => r.passed);
+      message = isCorrect ? "Congratulations! Program satisfies all constraints." : "Logic requirements not met.";
     }
+
+    setResults({
+      success: isCorrect,
+      message: message,
+      testCaseResults
+    });
+
+    if (isCorrect) {
+      await markAsComplete(currentQuestion.id);
+    }
+
     setIsOutputVisible(true);
   };
 
+  const handleBack = () => {
+    if (viewMode === 'session') {
+      setViewMode('list');
+    } else {
+      onBack();
+    }
+  };
+
+  const handleSelectQuestion = (idx: number) => {
+    setCurrentIdx(idx);
+    setViewMode('session');
+    setCode(questions[idx].initialCode || "");
+  };
+
+  const renderQuestionList = () => {
+    const completedIds = user.completedChallenges?.[language] || [];
+    const progress = Math.round((completedIds.length / questions.length) * 100);
+
+    return (
+      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-[#0f1115]">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-10 flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-black text-white mb-2 flex items-center gap-3">
+                <Terminal className="text-emerald-500" size={32} />
+                {language} Language Challenges
+              </h2>
+              <p className="text-slate-400 font-medium">Select a challenge to start your interactive practice session.</p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <div className="bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20 flex items-center gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Progress</span>
+                  <span className="text-xl font-black text-white">{progress}%</span>
+                </div>
+                <div className="w-32 h-2 bg-emerald-500/10 rounded-full overflow-hidden border border-emerald-500/20">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    className="h-full bg-emerald-500"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+                <Code2 size={12} />
+                {completedIds.length} / {questions.length} Solved
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {questions.map((q, idx) => {
+               // Extract number and topic from title "1.2.3. Topic"
+               const parts = q.title.split('. ');
+               const qNumber = parts[0];
+               const qTopic = parts.length > 1 ? parts[1] : q.title;
+               const isDone = completedIds.includes(q.id);
+
+               return (
+                <button
+                  key={q.id}
+                  onClick={() => handleSelectQuestion(idx)}
+                  className={`bg-[#1a1c1e] border p-6 rounded-2xl transition-all group text-left flex flex-col h-full shadow-lg relative overflow-hidden ${
+                    isDone ? 'border-emerald-500/30' : 'border-white/5 hover:border-emerald-500/50 hover:bg-white/5'
+                  }`}
+                >
+                  <div className={`absolute top-0 right-0 w-24 h-24 rounded-full -mr-12 -mt-12 transition-colors ${
+                    isDone ? 'bg-emerald-500/10' : 'bg-emerald-500/5 group-hover:bg-emerald-500/10'
+                  }`} />
+                  
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-white/5 px-2 py-1 rounded text-[10px] font-black font-mono text-slate-500 uppercase tracking-widest border border-white/5 group-hover:text-emerald-400 group-hover:border-emerald-400/20 transition-all">
+                      {q.type}
+                    </div>
+                    {isDone && (
+                      <div className="bg-emerald-500/20 text-emerald-400 p-1 rounded-full border border-emerald-500/20 shadow-lg shadow-emerald-500/20">
+                        <CheckCircle2 size={14} />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mb-2">
+                    <span className="text-xs font-black text-emerald-500 uppercase tracking-[0.2em] mb-1 block">Challenge {qNumber}</span>
+                    <h3 className={`text-lg font-bold transition-colors line-clamp-2 ${isDone ? 'text-emerald-400' : 'text-slate-100 group-hover:text-emerald-400'}`}>{qTopic}</h3>
+                  </div>
+
+                  <p className="text-slate-500 text-xs mb-6 line-clamp-3 leading-relaxed flex-1 italic">
+                    {q.description.split('\n')[0]}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-1">
+                      <HelpCircle size={12} /> {q.hints?.length || 0} HINTS
+                    </span>
+                    <div className="flex items-center gap-1 text-emerald-500 text-xs font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
+                      START <ChevronRight size={14} />
+                    </div>
+                  </div>
+                </button>
+               );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (viewMode === 'list') {
+    return (
+      <div 
+        className="flex flex-col h-full bg-[#1a1c1e] text-slate-300 font-sans select-none"
+        onCopy={(e) => e.preventDefault()}
+        onPaste={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
+      >
+        <div className="bg-[#0b0c0d] h-12 flex items-center justify-between px-4 border-b border-white/5">
+          <div className="flex items-center gap-4">
+            <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+              <ArrowLeft size={16} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Back to Modules</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/10 text-emerald-400 font-mono text-xs">
+            Interactive Learning Mode
+          </div>
+          <button onClick={onBack} className="flex items-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-red-500/20">
+            Exit
+          </button>
+        </div>
+        {renderQuestionList()}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full bg-[#1a1c1e] text-slate-300 font-sans select-none">
+    <div 
+      className="flex flex-col h-full bg-[#1a1c1e] text-slate-300 font-sans select-none animate-in fade-in zoom-in-95 duration-500"
+      onCopy={(e) => e.preventDefault()}
+      onPaste={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+    >
       {/* CodeTantra style Header */}
       <div className="bg-[#0b0c0d] h-12 flex items-center justify-between px-4 border-b border-white/5">
         <div className="flex items-center gap-4">
+          <button onClick={() => setViewMode('list')} className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors group" title="Back to Questons">
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          </button>
           <div className="flex items-center gap-2 text-white font-bold text-sm">
              <div className="bg-emerald-600 rounded p-1">
                 <Layout size={14} className="text-white" />
@@ -247,7 +310,7 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
+          <button onClick={() => setViewMode('list')} className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors" title="Question List">
             <RotateCcw size={16} />
           </button>
           <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white">
@@ -256,8 +319,8 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
           <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white">
             <Settings size={16} />
           </button>
-          <button onClick={onBack} className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all ml-2">
-            Logout
+          <button onClick={() => setViewMode('list')} className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all ml-2">
+            Finish
           </button>
         </div>
       </div>
@@ -369,6 +432,9 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
                   <textarea
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
+                    onPaste={(e) => e.preventDefault()}
+                    onCopy={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
                     spellCheck={false}
                     className="flex-1 bg-transparent p-6 outline-none resize-none font-mono text-sm text-emerald-100 placeholder:text-slate-800 custom-scrollbar"
                     placeholder="// Type your code here..."
@@ -392,6 +458,9 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
                                  <input
                                    type="text"
                                    value={blankAnswers[i] || ""}
+                                   onPaste={(e) => e.preventDefault()}
+                                   onCopy={(e) => e.preventDefault()}
+                                   onCut={(e) => e.preventDefault()}
                                    onChange={(e) => {
                                       const newAns = [...blankAnswers];
                                       newAns[i] = e.target.value;
@@ -468,7 +537,7 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
             Prev
          </button>
          <button 
-          onClick={() => { setCode(QUESTIONS[currentIdx].initialCode || ""); setSelectedOptions([]); }}
+          onClick={() => { setCode(questions[currentIdx].initialCode || ""); setSelectedOptions([]); }}
           className="bg-[#2d3136] hover:bg-[#383d42] text-white px-5 py-2 rounded-lg text-xs font-bold transition-all border border-white/5"
          >
             Reset
@@ -480,7 +549,7 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
             Submit
          </button>
          <button 
-          disabled={currentIdx === QUESTIONS.length - 1}
+          disabled={currentIdx === questions.length - 1}
           onClick={() => setCurrentIdx(prev => prev + 1)}
           className="flex items-center gap-2 bg-[#2d3136] hover:bg-[#383d42] disabled:opacity-30 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-xs font-bold transition-all border border-white/5"
          >
@@ -529,22 +598,39 @@ export const CInteractiveSession: React.FC<Props> = ({ onBack }) => {
                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1">Execution Details & Test Cases</h4>
                    <div className="bg-black/30 rounded-xl border border-white/5 overflow-hidden">
                       {results?.testCaseResults.map((tc: any, i: number) => (
-                        <div key={i} className={`flex items-center justify-between p-4 border-b border-white/5 last:border-0 ${tc.passed ? 'bg-emerald-500/5' : 'bg-red-500/5'}`}>
-                           <div className="flex items-center gap-3 text-xs font-mono">
-                              <div className={`w-5 h-5 rounded-md flex items-center justify-center ${tc.passed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                                {tc.passed ? <CheckCircle2 size={12} /> : <X size={12} />}
+                        <div key={i} className={`flex flex-col p-4 border-b border-white/5 last:border-0 ${tc.passed ? 'bg-emerald-500/5' : 'bg-red-500/5'}`}>
+                           <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3 text-xs font-mono">
+                                 <div className={`w-5 h-5 rounded-md flex items-center justify-center ${tc.passed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                                   {tc.passed ? <CheckCircle2 size={12} /> : <X size={12} />}
+                                 </div>
+                                 <span className={tc.passed ? 'text-emerald-100 font-bold' : 'text-slate-300'}>{tc.description}</span>
                               </div>
-                              <span className={tc.passed ? 'text-emerald-100' : 'text-slate-300'}>{tc.description}</span>
+                              <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${tc.passed ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'}`}>
+                                {tc.passed ? 'Passed' : 'Failed'}
+                              </span>
                            </div>
-                           <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${tc.passed ? 'text-emerald-500' : 'text-red-500'}`}>
-                             {tc.passed ? 'OK' : 'Error'}
-                           </span>
+                           
+                           <div className="grid grid-cols-2 gap-4 mt-2">
+                              <div className="space-y-1">
+                                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Expected Output</span>
+                                 <div className="bg-black/40 p-2 rounded border border-white/5 text-[11px] font-mono text-emerald-400/70 truncate" title={tc.expected}>
+                                    {tc.expected}
+                                 </div>
+                              </div>
+                              <div className="space-y-1">
+                                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Actual Result</span>
+                                 <div className={`p-2 rounded border border-white/5 text-[11px] font-mono truncate ${tc.passed ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-900/20 text-red-400'}`} title={tc.actual}>
+                                    {tc.actual}
+                                 </div>
+                              </div>
+                           </div>
                         </div>
                       ))}
                    </div>
                 </div>
 
-                {results?.success && currentIdx < QUESTIONS.length - 1 && (
+                {results?.success && currentIdx < questions.length - 1 && (
                   <button 
                     onClick={() => { setCurrentIdx(prev => prev + 1); setIsOutputVisible(false); }}
                     className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-2"

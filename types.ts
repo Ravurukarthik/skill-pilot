@@ -24,6 +24,7 @@ export interface User {
   monthlyStudyStats?: { [moduleName: string]: number };
   lastStudyMonth?: string;
   activeModule?: string;
+  completedChallenges?: { [moduleName: string]: number[] };
 }
 
 export enum ModuleType {
@@ -87,4 +88,25 @@ export interface Job {
   link: string;
   type: string;
   expiresAt?: string;
+}
+
+export type QuestionType = 'coding' | 'theory' | 'blanks';
+
+export interface TestCase {
+  id?: number;
+  input?: string;
+  expectedOutput: string | RegExp;
+  description: string;
+}
+
+export interface Question {
+  id: number;
+  type: QuestionType;
+  title: string;
+  description: string;
+  initialCode?: string;
+  testCases?: TestCase[];
+  options?: string[];
+  correctAnswers?: any;
+  hints?: string[];
 }

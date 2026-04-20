@@ -5,6 +5,9 @@ import cors from "cors";
 import multer from "multer";
 import nodemailer from "nodemailer";
 import puppeteer from "puppeteer";
+import axios from "axios";
+import * as cheerio from "cheerio";
+import https from "https";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,65 +15,294 @@ const __dirname = path.dirname(__filename);
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Simple cache for proxy
+const proxyCache = new Map<string, { html: string, timestamp: number }>();
+const CACHE_TTL = 1 * 60 * 1000; // 1 minute
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false, // For better compatibility with various site certificates in proxy
+  keepAlive: true,
+});
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(cors());
   app.use(express.json());
-  app.use(cors());
 
   // API Route for Proxying Content (to bypass X-Frame-Options)
   app.get("/api/proxy", async (req, res) => {
     const targetUrl = req.query.url as string;
     if (!targetUrl) return res.status(400).json({ error: "URL is required" });
 
+    // Check Cache
+    const cached = proxyCache.get(targetUrl);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.removeHeader('X-Frame-Options');
+      res.removeHeader('Content-Security-Policy');
+      return res.send(cached.html);
+    }
+
     try {
-      const axiosBuffer = (await import("axios")).default;
-      const response = await axiosBuffer.get(targetUrl, {
+      // Strip fragment from targetUrl before axios request
+      const cleanTargetUrl = targetUrl.split('#')[0];
+      const urlObj = new URL(cleanTargetUrl);
+      const origin = urlObj.origin;
+
+      console.log(`[Proxy] Fetching: ${cleanTargetUrl}`);
+
+      const response = await axios.get(cleanTargetUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
+          'Referer': origin,
+          'Origin': origin,
+          'Connection': 'keep-alive',
+          'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+          'Upgrade-Insecure-Requests': '1'
         },
-        timeout: 15000,
-        validateStatus: () => true, // Handle all status codes
+        timeout: 40000,
+        httpsAgent,
+        maxRedirects: 20,
+        validateStatus: () => true,
       });
 
+      // Get the final URL after redirects
+      const effectiveUrl = response.request.res.responseUrl || cleanTargetUrl;
+      const effectiveOrigin = new URL(effectiveUrl).origin;
+
+      console.log(`[Proxy] Status: ${response.status} | Final URL: ${effectiveUrl}`);
+
       if (response.status >= 400 && response.status !== 404) {
-        console.warn(`Proxy received status ${response.status} for ${targetUrl}`);
+        console.warn(`[Proxy] Warning: Status ${response.status} for ${targetUrl}`);
       }
 
-      let html = response.data;
-      if (typeof html !== 'string') {
-        return res.status(500).send("The target URL did not return HTML content.");
+      let htmlContents = response.data;
+      if (typeof htmlContents !== 'string') {
+        const contentType = response.headers['content-type'];
+        if (contentType && !contentType.includes('text/html')) {
+          res.setHeader('Content-Type', contentType);
+          return res.send(response.data);
+        }
+        return res.status(500).send("The target URL did not return parsable HTML content.");
       }
       
-      // Inject <base> tag to fix relative links (CSS, JS, Images)
-      const urlObj = new URL(targetUrl);
-      const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-      const baseTag = `<base href="${baseUrl}/">`;
+      const $ = cheerio.load(htmlContents);
       
-      if (html.includes('<head>')) {
-        html = html.replace('<head>', `<head>${baseTag}`);
-      } else if (html.includes('<html>')) {
-        html = html.replace('<html>', `<html><head>${baseTag}</head>`);
-      } else {
-        html = `${baseTag}${html}`;
+      // Use a more robust way to determine the absolute base URL for proxy links
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const host = req.get('host');
+      const proxyBaseUrl = `${protocol}://${host}/api/proxy?url=`;
+
+      // Fix relative links for images, scripts, and links using effectiveUrl
+      $('img, script, link, a, source, form, iframe, video, audio, object, embed').each((_, element) => {
+        const el = $(element);
+        ['src', 'href', 'srcset', 'data-src', 'data-href', 'action', 'data'].forEach(attr => {
+          let val = el.attr(attr);
+          if (!val) return;
+
+          // Skip special links
+          if (val.startsWith('javascript:') || val.startsWith('mailto:') || val.startsWith('tel:') || val.startsWith('#')) {
+            return;
+          }
+
+          if (!val.startsWith('http') && !val.startsWith('//') && !val.startsWith('data:')) {
+            try {
+              // Handle comma-separated srcset
+              if (attr === 'srcset') {
+                const parts = val.split(',').map(part => {
+                  const [urlPart, descriptor] = part.trim().split(/\s+/);
+                  if (urlPart && !urlPart.startsWith('http') && !urlPart.startsWith('//') && !urlPart.startsWith('data:')) {
+                    return `${new URL(urlPart, effectiveUrl).href}${descriptor ? ' ' + descriptor : ''}`;
+                  }
+                  return part;
+                });
+                el.attr(attr, parts.join(', '));
+              } else {
+                const absoluteUrl = new URL(val, effectiveUrl).href;
+                
+                // CRITICAL: Rewrite navigation links and form actions to point BACK to our proxy
+                if ((attr === 'href' && element.tagName === 'a') || (attr === 'action' && element.tagName === 'form') || (attr === 'src' && element.tagName === 'iframe')) {
+                  el.attr(attr, `${proxyBaseUrl}${encodeURIComponent(absoluteUrl)}`);
+                } else {
+                  // For all other assets, use absolute URLs to the original site
+                  el.attr(attr, absoluteUrl);
+                }
+              }
+            } catch (e) {
+              // Ignore invalid URLs
+            }
+          } else if (val.startsWith('http') || val.startsWith('//')) {
+            // Even if it's already an absolute URL, we want navigation links to stay in the proxy
+            if ((attr === 'href' && element.tagName === 'a') || (attr === 'action' && element.tagName === 'form') || (attr === 'src' && element.tagName === 'iframe')) {
+              const fullUrl = val.startsWith('//') ? `${protocol}:${val}` : val;
+              el.attr(attr, `${proxyBaseUrl}${encodeURIComponent(fullUrl)}`);
+            }
+          }
+        });
+
+        // Strip subresource integrity to prevent browser blocks when we modify headers
+        el.removeAttr('integrity');
+      });
+
+      // Strip security meta tags that might block framing or JS
+      $('meta[http-equiv="Content-Security-Policy" i], meta[http-equiv="X-Frame-Options" i], meta[name="referrer"]').remove();
+
+      // Strip common frame-busting scripts more aggressively
+      $('script').each((_, element) => {
+        let scriptContent = $(element).html();
+        if (scriptContent) {
+          // Replace patterns instead of removing the whole script to avoid breaking site logic
+          const patterns = [
+            /window\.top/g, /window\.parent/g, /top\.location/g, /parent\.location/g, /self\.location/g,
+            /if\s*\(\s*top\s*!==?\s*self\s*\)/g, /if\s*\(\s*self\s*!==?\s*top\s*\)/g,
+            /if\s*\(\s*window\.top\s*!==?\s*window\.self\s*\)/g,
+            /document\.documentElement\.style\.display\s*=\s*['"]none['"]/g,
+            /document\.body\.style\.display\s*=\s*['"]none['"]/g
+          ];
+          
+          let modified = false;
+          patterns.forEach(p => {
+            if (p.test(scriptContent!)) {
+              scriptContent = scriptContent!.replace(p, 'window.self'); 
+              modified = true;
+            }
+          });
+
+          if (modified) {
+            $(element).html(scriptContent);
+          }
+        }
+      });
+      
+      // Force display:block on body to override any CSS-based frame busting
+      if ($('head').length > 0) {
+        $('head').prepend(`
+          <script>
+            (function() {
+              try {
+                // Total Transparency Layer: Make this window look like a primary top-level window
+                const target = window;
+                const mockTop = { 
+                  get: function() { return target; },
+                  configurable: true
+                };
+                
+                Object.defineProperty(target, 'top', mockTop);
+                Object.defineProperty(target, 'parent', mockTop);
+                Object.defineProperty(target, 'opener', { get: () => null, configurable: true });
+                
+                // Block frame-busting redirects (Comprehensive navigation guard)
+                const isInternal = (url) => {
+                  if (!url || typeof url !== 'string') return true;
+                  try {
+                    const u = new URL(url, window.location.href);
+                    return u.origin === window.location.origin || u.pathname.includes('/api/proxy');
+                  } catch (e) { return true; }
+                };
+
+                const originalReplace = target.location.replace;
+                target.location.replace = function(url) {
+                  if (!isInternal(url)) {
+                    console.log('[Proxy] Blocked replace:', url);
+                    return;
+                  }
+                  return originalReplace.apply(this, arguments);
+                };
+                
+                const originalAssign = target.location.assign;
+                target.location.assign = function(url) {
+                  if (!isInternal(url)) {
+                    console.log('[Proxy] Blocked assign:', url);
+                    return;
+                  }
+                  return originalAssign.apply(this, arguments);
+                };
+
+                // Visibility Watchdog: Force UI visibility regardless of site scripts
+                const forceVisible = () => {
+                  try {
+                    const el = document.documentElement;
+                    const b = document.body;
+                    if (el) {
+                      el.style.setProperty('display', 'block', 'important');
+                      el.style.setProperty('visibility', 'visible', 'important');
+                      el.style.setProperty('opacity', '1', 'important');
+                    }
+                    if (b) {
+                      b.style.setProperty('display', 'block', 'important');
+                      b.style.setProperty('visibility', 'visible', 'important');
+                      b.style.setProperty('opacity', '1', 'important');
+                    }
+                  } catch (e) {}
+                };
+
+                forceVisible();
+                const observer = new MutationObserver(forceVisible);
+                observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
+                
+                // Suppress common error dialogs
+                window.alert = function() { console.log('Blocked alert:', arguments); };
+                window.confirm = function() { return true; };
+                
+                // Periodically trigger resize to wake up lazy loaders
+                setInterval(() => window.dispatchEvent(new Event('resize')), 2000);
+              } catch (e) {}
+            })();
+          </script>
+          <base href="${effectiveUrl}">
+          <style>
+            html, body { 
+              display: block !important; 
+              visibility: visible !important; 
+              opacity: 1 !important; 
+              pointer-events: auto !important;
+              background-color: white !important;
+            }
+          </style>
+        `);
       }
 
-      // Set proper content type and strip security headers
+      const finalHtml = $.html();
+
+      // Set proper content type and strip ALL security headers that could block framing
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      // Explicitly allow framing for our own response
       res.removeHeader('X-Frame-Options');
       res.removeHeader('Content-Security-Policy');
+      res.removeHeader('Cross-Origin-Embedder-Policy');
+      res.removeHeader('Cross-Origin-Opener-Policy');
+      res.removeHeader('Cross-Origin-Resource-Policy');
+      res.setHeader('X-XSS-Protection', '0');
       
-      res.send(html);
+      // Update Cache
+      if (response.status === 200) {
+        proxyCache.set(targetUrl, { html: finalHtml, timestamp: Date.now() });
+      }
+      
+      res.send(finalHtml);
     } catch (error: any) {
       console.error("Proxy Error:", error.message);
-      res.status(500).json({ error: "Could not load the page via proxy" });
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.status(200).send(`
+        <!DOCTYPE html>
+        <html>
+          <body style="background: #0f172a; color: #94a3b8; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; padding: 20px;">
+            <div style="background: #1e293b; padding: 40px; border-radius: 24px; border: 1px solid #334155; max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+              <div style="width: 64px; height: 64px; background: #ef4444; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 32px;">⚠️</div>
+              <h1 style="color: white; font-size: 20px; margin: 0 0 12px;">Display Restricted</h1>
+              <p style="font-size: 14px; line-height: 1.6; margin: 0 0 32px;">This portal has advanced security that prevents integrated viewing. Please use the direct link below.</p>
+              <a href="${targetUrl}" target="_blank" style="display: block; background: #4f46e5; color: white; text-decoration: none; padding: 14px; border-radius: 12px; font-weight: bold; font-size: 14px; transition: all 0.2s;">OPEN OFFICIAL SITE</a>
+              <p style="font-size: 10px; color: #475569; margin-top: 24px; font-family: monospace;">Error: ${error.message}</p>
+            </div>
+          </body>
+        </html>
+      `);
     }
   });
 

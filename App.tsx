@@ -245,7 +245,8 @@ const App: React.FC = () => {
               studyStats: profile.studyStats,
               lastStudyDate: profile.lastStudyDate,
               monthlyStudyStats: profile.monthlyStudyStats,
-              lastStudyMonth: profile.lastStudyMonth
+              lastStudyMonth: profile.lastStudyMonth,
+              completedChallenges: profile.completedChallenges || {}
             };
             setUser(userData);
             localStorage.setItem('skillpilot_user', JSON.stringify(userData));
@@ -262,7 +263,8 @@ const App: React.FC = () => {
               studyStats: {},
               lastStudyDate: new Date().toISOString().split('T')[0],
               monthlyStudyStats: {},
-              lastStudyMonth: new Date().toISOString().split('T')[0].substring(0, 7)
+              lastStudyMonth: new Date().toISOString().split('T')[0].substring(0, 7),
+              completedChallenges: {}
             };
             setUser(userData);
           }

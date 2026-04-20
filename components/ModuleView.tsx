@@ -10,7 +10,16 @@ import {
 } from 'lucide-react';
 import ReactPlayer from 'react-player';
 import { getTutorialSummary } from '../services/geminiService';
-import { CInteractiveSession } from './CInteractiveSession';
+import { CodingSession } from './CodingSession';
+import { C_QUESTIONS } from '../data/cQuestions';
+import { PYTHON_QUESTIONS } from '../data/pythonQuestions';
+import { JAVA_QUESTIONS } from '../data/javaQuestions';
+import { JAVASCRIPT_QUESTIONS } from '../data/javascriptQuestions';
+import { CPP_QUESTIONS } from '../data/cppQuestions';
+import { SQL_QUESTIONS } from '../data/sqlQuestions';
+import { CSHARP_QUESTIONS } from '../data/csharpQuestions';
+import { TYPESCRIPT_QUESTIONS } from '../data/typescriptQuestions';
+import { PHP_QUESTIONS } from '../data/phpQuestions';
 
 interface ModuleViewProps {
   type: ModuleType;
@@ -158,8 +167,12 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
     }
   };
 
-  const handleExternalRedirect = (url: string) => {
-    onOpenExternalLink?.(url);
+  const handleExternalRedirect = (url: string, newTab = false) => {
+    if (newTab) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      onOpenExternalLink?.(url);
+    }
   };
 
   const handleResultSubmit = async (type: string) => {
@@ -909,12 +922,12 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                       Posted {new Date(intern.postedAt).toLocaleDateString()}
                     </div>
-                    <button 
-                      onClick={() => handleExternalRedirect(intern.link)}
-                      className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"
-                    >
-                      Apply <ArrowLeft size={16} className="rotate-180" />
-                    </button>
+              <button 
+                onClick={() => handleExternalRedirect(intern.link)}
+                className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"
+              >
+                Apply <ArrowLeft size={16} className="rotate-180" />
+              </button>
                   </div>
                 </div>
               );
@@ -1087,51 +1100,117 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   const renderCodingSession = () => {
     const languages = SUBJECTS_MOCK['Coding Session'] || [];
     
+    const getProgressInfo = (lang: string) => {
+      const interactiveConfigs: Record<string, number> = {
+        'C': 150,
+        'Python': 150,
+        'Java': 150,
+        'JavaScript': 150,
+        'C++': 150,
+        'SQL': 150,
+        'C#': 150,
+        'TypeScript': 150,
+        'PHP': 150
+      };
+
+      if (interactiveConfigs[lang]) {
+        const total = interactiveConfigs[lang];
+        const completed = user.completedChallenges?.[lang]?.length || 0;
+        return { 
+          percentage: Math.round((completed / total) * 100),
+          completed,
+          total
+        };
+      }
+      return { percentage: 0, completed: 0, total: 0 };
+    };
+
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
-        <div className="bg-emerald-900/20 border border-emerald-500/20 p-6 rounded-3xl flex flex-col md:flex-row items-center gap-6 mb-4">
-          <div className="w-16 h-16 bg-emerald-600/20 rounded-2xl flex items-center justify-center text-emerald-400">
-            <Terminal size={32} />
+        <div className="bg-emerald-900/20 border border-emerald-500/20 p-8 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 mb-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full -mr-32 -mt-32"></div>
+          <div className="w-20 h-20 bg-emerald-600/20 rounded-3xl flex items-center justify-center text-emerald-400 relative z-10 shadow-inner">
+            <Terminal size={40} />
           </div>
-          <div className="flex-1 text-center md:text-left">
-            <h3 className="text-xl font-bold text-emerald-100 mb-1">Interactive Coding Environment</h3>
-            <p className="text-emerald-400/70 text-sm">Master the art of programming with expert-guided practice sessions and real-time feedback.</p>
+          <div className="flex-1 text-center md:text-left relative z-10">
+            <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Interactive Coding Lab</h3>
+            <p className="text-emerald-400/80 text-lg font-medium">Master programming through structured challenges and real-time execution.</p>
           </div>
-          <div className="flex items-center gap-2 bg-emerald-600/10 px-4 py-2 rounded-full border border-emerald-500/20">
+          <div className="flex items-center gap-2 bg-emerald-600/10 px-4 py-2 rounded-full border border-emerald-500/20 relative z-10">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
             <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Compiler Ready</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {languages.map((lang) => (
-            <div
-              key={lang}
-              onClick={() => handleTutorialRequest(lang)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleTutorialRequest(lang);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              className={`p-6 rounded-2xl border transition-all text-left flex flex-col gap-4 group cursor-pointer ${selectedSubject === lang ? 'bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-900/20' : 'bg-slate-800 border-slate-700 hover:border-emerald-500'}`}
-            >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${selectedSubject === lang ? 'bg-emerald-500 text-white' : 'bg-emerald-900/30 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white'}`}>
-                <Code size={24} />
-              </div>
-              <div>
-                <h4 className={`font-bold ${selectedSubject === lang ? 'text-white' : 'text-slate-100'}`}>{lang}</h4>
-                <div className="flex items-center justify-between mt-1">
-                  <p className={`text-xs ${selectedSubject === lang ? 'text-emerald-100' : 'text-slate-400'}`}>Learn & Practice</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {languages.map((lang) => {
+            const { percentage, completed, total } = getProgressInfo(lang);
+            const isInteractive = interactiveLanguages.includes(lang);
+
+            return (
+              <div
+                key={lang}
+                onClick={() => handleTutorialRequest(lang)}
+                className={`p-6 rounded-3xl border transition-all text-left flex flex-col gap-6 group cursor-pointer relative overflow-hidden ${
+                  selectedSubject === lang 
+                    ? 'bg-emerald-600 border-emerald-600 shadow-xl shadow-emerald-900/40' 
+                    : 'bg-slate-800 border-slate-700 hover:border-emerald-500 hover:bg-slate-800/80'
+                }`}
+              >
+                <div className="flex items-start justify-between relative z-10">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors shadow-lg ${
+                    selectedSubject === lang 
+                      ? 'bg-white/20 text-white' 
+                      : 'bg-emerald-900/30 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white'
+                  }`}>
+                    <Code size={28} />
+                  </div>
+                  {isInteractive && (
+                    <div className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${
+                      selectedSubject === lang ? 'bg-white/10 border-white/20 text-white' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                    }`}>
+                      Interactive
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative z-10">
+                  <h4 className={`text-xl font-black mb-1 ${selectedSubject === lang ? 'text-white' : 'text-slate-100 group-hover:text-emerald-400'}`}>{lang}</h4>
+                  <p className={`text-xs font-medium mb-4 ${selectedSubject === lang ? 'text-emerald-100' : 'text-slate-400'}`}>
+                    {isInteractive ? `${total} Challenges` : 'Learn & Practice'}
+                  </p>
+                  
+                  {isInteractive && (
+                    <div className="space-y-2">
+                       <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                          <span className={selectedSubject === lang ? 'text-emerald-100' : 'text-slate-500'}>Progress</span>
+                          <span className={selectedSubject === lang ? 'text-white font-bold' : 'text-emerald-400 font-bold'}>{percentage}%</span>
+                       </div>
+                       <div className={`w-full h-1.5 rounded-full overflow-hidden ${selectedSubject === lang ? 'bg-white/20' : 'bg-slate-900 border border-white/5'}`}>
+                          <div 
+                            className={`h-full ${selectedSubject === lang ? 'bg-white' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'}`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                       </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between relative z-10 pt-2 border-t border-white/5">
+                  <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${selectedSubject === lang ? 'text-white/70' : 'text-slate-500'}`}>
+                    {isInteractive ? `${completed} SOLVED` : 'EXPLORE'}
+                  </span>
                   {COMPILER_LINKS[lang] && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onOpenExternalLink?.(COMPILER_LINKS[lang]);
                       }}
-                      className={`p-1.5 rounded-lg transition-all ${selectedSubject === lang ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-600 hover:text-white'}`}
+                      className={`p-2 rounded-xl transition-all shadow-md ${
+                        selectedSubject === lang 
+                          ? 'bg-white/20 text-white hover:bg-white/30' 
+                          : 'bg-slate-700 text-slate-300 hover:bg-emerald-600 hover:text-white hover:shadow-emerald-500/20'
+                      }`}
                       title="Open Online Compiler"
                     >
                       <Terminal size={14} />
@@ -1139,8 +1218,8 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {(isAiLoading || aiContent) && selectedSubject !== 'C' && (
@@ -1398,10 +1477,25 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   const isCodingSession = type === ModuleType.CODING_SESSION;
   const hasBranches = isBTech || isMTech || isMBA || isCompetitiveExams;
 
-  if (selectedSubject === 'C') {
+  const interactiveLanguages = ['C', 'Python', 'Java', 'JavaScript', 'C++', 'SQL', 'C#', 'TypeScript', 'PHP'];
+  
+  if (selectedSubject && interactiveLanguages.includes(selectedSubject)) {
+    const questions = selectedSubject === 'C' ? C_QUESTIONS : 
+                     selectedSubject === 'Python' ? PYTHON_QUESTIONS :
+                     selectedSubject === 'Java' ? JAVA_QUESTIONS :
+                     selectedSubject === 'JavaScript' ? JAVASCRIPT_QUESTIONS :
+                     selectedSubject === 'C++' ? CPP_QUESTIONS :
+                     selectedSubject === 'SQL' ? SQL_QUESTIONS :
+                     selectedSubject === 'C#' ? CSHARP_QUESTIONS :
+                     selectedSubject === 'TypeScript' ? TYPESCRIPT_QUESTIONS :
+                     selectedSubject === 'PHP' ? PHP_QUESTIONS : [];
+    
     return (
       <div className="fixed inset-0 z-[150] bg-[#0f1115] overflow-hidden">
-        <CInteractiveSession 
+        <CodingSession 
+          user={user}
+          language={selectedSubject}
+          questions={questions}
           onBack={() => {
             setSelectedSubject(null);
             setAiContent(null);
