@@ -167,7 +167,7 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
   'mba-2nd': ['Strategic Management', 'Entrepreneurship', 'Business Ethics', 'International Business'],
   'M.Tech Guide': ['Advanced Mathematics', 'Research Methodology', 'Specialization Elective I', 'Specialization Elective II'],
   'MBA Guide': ['Marketing Management', 'Financial Accounting', 'Organizational Behavior', 'Business Analytics'],
-  'Coding Compilers & IDE': ['Universal IDE', 'C', 'C++', 'C#', 'Python', 'Java', 'JavaScript', 'TypeScript', 'PHP', 'Ruby', 'Go', 'Swift', 'Rust', 'Kotlin', 'HTML/CSS/JS', 'React', 'Node.js', 'SQL', 'MongoDB', 'MERN Stack'],
+  'Coding Session': ['Universal IDE', 'C', 'C++', 'C#', 'Python', 'Java', 'JavaScript', 'TypeScript', 'PHP', 'Ruby', 'Go', 'Swift', 'Rust', 'Kotlin', 'HTML/CSS/JS', 'React', 'Node.js', 'SQL', 'MongoDB', 'MERN Stack'],
   'Competitive Exams': [
     'Engineering & Technology Exams', 
     'Medical Exams', 
@@ -188,7 +188,6 @@ export const SUBJECTS_MOCK: Record<string, string[]> = {
 
 export const COMPILER_LINKS: Record<string, string> = {
   'Universal IDE': 'https://onecompiler.com/embed/?hideLanguageSelection=false&hideHistory=true&theme=dark',
-  'C': 'https://onecompiler.com/embed/c?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'C++': 'https://onecompiler.com/embed/cpp?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'C#': 'https://onecompiler.com/embed/csharp?hideLanguageSelection=true&hideHistory=true&theme=dark',
   'Python': 'https://onecompiler.com/embed/python?hideLanguageSelection=true&hideHistory=true&theme=dark',
@@ -410,6 +409,17 @@ export const INTERNSHIP_MOCK: Internship[] = [
 ];
 
 export const JOBS_MOCK: Job[] = [
+  {
+    id: 'tata-capital-customer-service-2026',
+    title: 'Customer Service Executive',
+    company: 'Tata Capital',
+    postedAt: '2026-04-19',
+    applicants: 'Be the first to apply',
+    location: 'Chennai, India',
+    description: 'Tata Capital Off Campus Drive 2026 Details:\nRole: Customer Service Executive\nCategory: Off-Campus Drive\nQualification: Any Graduate\nBatch: 2024 / 2025 / 2026\nExperience: Freshers (Relevant experience in vehicle sales is a plus)\nSalary: Not disclosed\nLocation: Chennai',
+    link: 'https://www.naukri.com/job-listings-customer-service-executive-tata-capital-ltd-chennai-0-to-2-years-160426505028?src=cluster&sid=17766008097734692_3&xp=5&px=1',
+    type: 'Off-Campus Drive'
+  },
   {
     id: 'infosys-off-campus-2026-updated',
     title: 'Specialist Programmer / Digital Specialist Engineer',

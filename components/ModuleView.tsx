@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import ReactPlayer from 'react-player';
 import { getTutorialSummary } from '../services/geminiService';
+import { CInteractiveSession } from './CInteractiveSession';
 
 interface ModuleViewProps {
   type: ModuleType;
@@ -108,6 +109,13 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
 
     if (type === ModuleType.BTECH && selectedCourse?.id === 'cse' && subject === 'Data Structures') {
       setVideoUrl('https://drive.google.com/file/d/1VjeWz6ZspQi2f86zJn2DevBw4qyzizXAIXt8OqfUez4/preview');
+      return;
+    }
+
+    if (subject === 'C') {
+      setSelectedSubject('C');
+      setAiContent('Interactive Session');
+      setIsAiLoading(false);
       return;
     }
 
@@ -1077,7 +1085,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   };
 
   const renderCodingSession = () => {
-    const languages = SUBJECTS_MOCK['Coding Compilers & IDE'] || [];
+    const languages = SUBJECTS_MOCK['Coding Session'] || [];
     
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
@@ -1135,7 +1143,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
           ))}
         </div>
 
-        {(isAiLoading || aiContent) && (
+        {(isAiLoading || aiContent) && selectedSubject !== 'C' && (
           <div className="mt-10 space-y-6 animate-in zoom-in-95 duration-300">
             <div className="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-8">
               <div className="flex items-center justify-between mb-6 border-b border-slate-700 pb-4">
@@ -1166,9 +1174,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                   </div>
                 </div>
               )}
-            </div>
-
-            {selectedSubject && COMPILER_LINKS[selectedSubject] && (
+              </div>
+            
+            {selectedSubject && selectedSubject !== 'C' && COMPILER_LINKS[selectedSubject] && (
               <div className="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm overflow-hidden flex flex-col h-[600px]">
                 <div className="bg-slate-900 border-b border-slate-700 p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -1389,6 +1397,19 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   const isInternship = type === ModuleType.INTERNSHIPS;
   const isCodingSession = type === ModuleType.CODING_SESSION;
   const hasBranches = isBTech || isMTech || isMBA || isCompetitiveExams;
+
+  if (selectedSubject === 'C') {
+    return (
+      <div className="fixed inset-0 z-[150] bg-[#0f1115] overflow-hidden">
+        <CInteractiveSession 
+          onBack={() => {
+            setSelectedSubject(null);
+            setAiContent(null);
+          }} 
+        />
+      </div>
+    );
+  }
 
   const handleBack = () => {
     if (selectedCompiler) {
