@@ -117,21 +117,6 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
                 title="External Content"
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
               />
-              
-              {/* Common Error Overlay - Since iframe onError is often swallowed */}
-              {isLoading === false && !error && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-                  <div className="bg-slate-900/90 backdrop-blur border border-slate-700 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
-                    <p className="text-xs text-slate-300 font-medium">Seeing a connection error?</p>
-                    <button 
-                      onClick={handleOpenExternal}
-                      className="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5"
-                    >
-                      Open in New Tab <Maximize2 size={12} />
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

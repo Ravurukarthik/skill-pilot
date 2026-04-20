@@ -26,16 +26,27 @@ async function startServer() {
     if (!targetUrl) return res.status(400).json({ error: "URL is required" });
 
     try {
-      const axios = (await import("axios")).default;
-      const response = await axios.get(targetUrl, {
+      const axiosBuffer = (await import("axios")).default;
+      const response = await axiosBuffer.get(targetUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
         },
-        timeout: 10000,
+        timeout: 15000,
+        validateStatus: () => true, // Handle all status codes
       });
 
+      if (response.status >= 400 && response.status !== 404) {
+        console.warn(`Proxy received status ${response.status} for ${targetUrl}`);
+      }
+
       let html = response.data;
+      if (typeof html !== 'string') {
+        return res.status(500).send("The target URL did not return HTML content.");
+      }
       
       // Inject <base> tag to fix relative links (CSS, JS, Images)
       const urlObj = new URL(targetUrl);
