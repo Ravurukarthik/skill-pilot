@@ -18,6 +18,50 @@ async function startServer() {
 
   app.use(cors());
   app.use(express.json());
+  app.use(cors());
+
+  // API Route for Proxying Content (to bypass X-Frame-Options)
+  app.get("/api/proxy", async (req, res) => {
+    const targetUrl = req.query.url as string;
+    if (!targetUrl) return res.status(400).json({ error: "URL is required" });
+
+    try {
+      const axios = (await import("axios")).default;
+      const response = await axios.get(targetUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        },
+        timeout: 10000,
+      });
+
+      let html = response.data;
+      
+      // Inject <base> tag to fix relative links (CSS, JS, Images)
+      const urlObj = new URL(targetUrl);
+      const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+      const baseTag = `<base href="${baseUrl}/">`;
+      
+      if (html.includes('<head>')) {
+        html = html.replace('<head>', `<head>${baseTag}`);
+      } else if (html.includes('<html>')) {
+        html = html.replace('<html>', `<html><head>${baseTag}</head>`);
+      } else {
+        html = `${baseTag}${html}`;
+      }
+
+      // Set proper content type and strip security headers
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      // Explicitly allow framing for our own response
+      res.removeHeader('X-Frame-Options');
+      res.removeHeader('Content-Security-Policy');
+      
+      res.send(html);
+    } catch (error: any) {
+      console.error("Proxy Error:", error.message);
+      res.status(500).json({ error: "Could not load the page via proxy" });
+    }
+  });
 
   // API Route for Payment Notification
   app.post("/api/send-payment-notification", upload.single("proof"), async (req, res) => {

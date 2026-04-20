@@ -9,7 +9,10 @@ interface ExternalLinkModalProps {
 
 const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) => {
   const isPdf = url.toLowerCase().endsWith('.pdf');
-  const displayUrl = isPdf ? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true` : url;
+  // We use our internal proxy to bypass X-Frame-Options headers on external sites
+  const displayUrl = isPdf 
+    ? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true` 
+    : `/api/proxy?url=${encodeURIComponent(url)}`;
 
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
@@ -86,32 +89,50 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
           {error ? (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900 p-8 text-center">
               <div className="w-20 h-20 bg-red-900/20 rounded-3xl flex items-center justify-center text-red-500 mb-6 border border-red-500/20">
-                <X size={40} />
+                <ShieldCheck size={40} className="text-red-500/50" />
               </div>
-              <h3 className="text-xl font-bold text-slate-100 mb-2">Unable to Load Content</h3>
+              <h3 className="text-xl font-bold text-slate-100 mb-2">Display Restricted by Portal</h3>
               <p className="text-slate-400 max-w-md mb-8">
-                This website might be preventing itself from being displayed in a frame for security reasons.
+                For security reasons, this job portal (e.g., Naukri, LinkedIn) prevents itself from being shown inside other apps. 
+                Click below to open the application in a secure full-page view.
               </p>
               <button 
                 onClick={handleOpenExternal}
-                className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-xl shadow-indigo-900/20"
+                className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-xl shadow-indigo-900/20 ring-4 ring-indigo-500/20"
               >
-                Open in New Tab <ExternalLink size={18} />
+                Open Official Portal <ExternalLink size={18} />
               </button>
             </div>
           ) : (
-            <iframe
-              ref={iframeRef}
-              src={displayUrl}
-              className="w-full h-full border-none"
-              onLoad={() => setIsLoading(false)}
-              onError={() => {
-                setIsLoading(false);
-                setError(true);
-              }}
-              title="External Content"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
-            />
+            <div className="w-full h-full relative">
+              <iframe
+                ref={iframeRef}
+                src={displayUrl}
+                className="w-full h-full border-none bg-white"
+                onLoad={() => setIsLoading(false)}
+                onError={() => {
+                  setIsLoading(false);
+                  setError(true);
+                }}
+                title="External Content"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+              />
+              
+              {/* Common Error Overlay - Since iframe onError is often swallowed */}
+              {isLoading === false && !error && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+                  <div className="bg-slate-900/90 backdrop-blur border border-slate-700 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
+                    <p className="text-xs text-slate-300 font-medium">Seeing a connection error?</p>
+                    <button 
+                      onClick={handleOpenExternal}
+                      className="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5"
+                    >
+                      Open in New Tab <Maximize2 size={12} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
         
