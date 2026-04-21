@@ -8,7 +8,12 @@ interface ExternalLinkModalProps {
 }
 
 const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) => {
-  const isPdf = url.toLowerCase().endsWith('.pdf');
+  const isPdf = typeof url === 'string' && (
+    url.toLowerCase().endsWith('.pdf') || 
+    url.toLowerCase().includes('.pdf?') || 
+    url.toLowerCase().includes('.pdf#') ||
+    url.toLowerCase().includes('/pdf/')
+  );
   // We use our internal proxy to bypass X-Frame-Options headers on external sites
   const displayUrl = isPdf 
     ? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true` 
@@ -32,14 +37,16 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
     setIsLoading(true);
     setError(false);
     setLoadTimeExceeded(false);
+    setIsEmpty(false);
     if (iframeRef.current) {
-      // Use both cache buster and a small delay to force a fresh tunnel initialization
+      const buster = `&v=${Date.now()}`;
       iframeRef.current.src = 'about:blank';
       setTimeout(() => {
         if (iframeRef.current) {
-          iframeRef.current.src = `${displayUrl.split('&v=')[0]}&v=${Date.now()}`;
+          const base = displayUrl.split('&v=')[0];
+          iframeRef.current.src = `${base}${buster}`;
         }
-      }, 50);
+      }, 100);
     }
   };
 
@@ -47,8 +54,51 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
     window.open(url, '_blank');
   };
 
-  // Check if content is physically empty (common in advanced frame busting)
   const [isEmpty, setIsEmpty] = React.useState(false);
+  const retryCount = React.useRef(0);
+
+  const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    setIsLoading(false);
+    const iframe = e.currentTarget;
+    
+    try {
+      // If we can access contentWindow, we are same-origin (proxy is working)
+      if (iframe.contentWindow) {
+        const doc = iframe.contentWindow.document;
+        const body = doc.body;
+        
+        if (body) {
+          const bodyText = body.innerText || '';
+          const hasChildren = body.children.length > 0;
+          
+          // Check for proxy errors
+          if (bodyText.includes('Display Restricted') || bodyText.includes('Could not load the page via proxy')) {
+            setError(true);
+            return;
+          }
+
+          // Check for empty content (white space)
+          if (!hasChildren && bodyText.trim().length === 0) {
+            if (retryCount.current < 2) {
+              retryCount.current++;
+              setTimeout(handleRefresh, 1000);
+            } else {
+              setIsEmpty(true);
+            }
+          } else {
+            // Success! Reset retry count
+            retryCount.current = 0;
+            setIsEmpty(false);
+          }
+        }
+      }
+    } catch (err) {
+      // Cross-origin error means the proxy might have redirected the browser directly
+      // or the browser blocked access. We treat this as a potential failure if nothing is visible.
+      console.warn("Tunnel access restricted:", err);
+      // We don't set error here because it might still be displaying content, just inaccessible to JS
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 md:p-4 bg-slate-950/95 backdrop-blur-md animate-in fade-in duration-300">
@@ -132,14 +182,18 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
             </div>
           )}
           
-          {error ? (
+          {(error || isEmpty) ? (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950 p-8 text-center animate-in zoom-in duration-500">
               <div className="w-24 h-24 bg-red-500/10 rounded-[2rem] flex items-center justify-center text-red-500 mb-8 border border-red-500/20 shadow-2xl shadow-red-950/20">
                 <AlertTriangle size={48} />
               </div>
-              <h3 className="text-3xl font-black text-slate-100 mb-4 tracking-tighter uppercase">High Security Blocked</h3>
+              <h3 className="text-3xl font-black text-slate-100 mb-4 tracking-tighter uppercase">
+                {isEmpty ? 'Blank Page Detected' : 'High Security Blocked'}
+              </h3>
               <p className="text-slate-400 max-w-md mb-10 text-sm leading-relaxed font-medium">
-                The content provider has detected an integration attempt. For your security, please open the original course portal directly.
+                {isEmpty 
+                  ? 'The portal loaded but is currently displaying no content. This usually happens when the host site blocks embedded scripts.'
+                  : 'The content provider has detected an integration attempt. For your security, please open the original course portal directly.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
                 <button 
@@ -149,7 +203,7 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
                   OPEN PORTAL <ExternalLink size={18} />
                 </button>
                 <button 
-                  onClick={() => { setError(false); handleRefresh(); }}
+                  onClick={() => { setError(false); setIsEmpty(false); retryCount.current = 0; handleRefresh(); }}
                   className="bg-slate-800 text-slate-300 px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-700 transition-all flex items-center justify-center gap-2 border border-slate-700/50"
                 >
                   <RotateCcw size={18} /> RETRY
@@ -163,36 +217,13 @@ const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) =
                 src={displayUrl}
                 className="w-full h-full border-none bg-white transition-opacity duration-700"
                 referrerPolicy="no-referrer"
-                onLoad={(e) => {
+                onLoad={handleIframeLoad}
+                onError={() => {
                   setIsLoading(false);
-                  try {
-                    const iframe = e.currentTarget;
-                    if (iframe.contentWindow) {
-                      const body = iframe.contentWindow.document.body;
-                      // Detect if the portal returned our proxy error
-                      if (body.innerText.includes('Display Restricted') || body.innerText.includes('Could not load the page via proxy')) {
-                        setError(true);
-                        return;
-                      }
-                      
-                    // Compatibility Guard: Check for "empty" loads that often indicate stealth frame-busting
-                    if (body.children.length === 0 && body.innerText.trim().length === 0) {
-                      // Wait 5s then check again, sometimes portals are just very slow to hydrate
-                      setTimeout(() => {
-                        if (body.children.length === 0 && body.innerText.trim().length === 0) {
-                          setError(true);
-                        }
-                      }, 5000);
-                    }
-                  }
-                } catch (e) {}
-              }}
-              onError={() => {
-                setIsLoading(false);
-                setError(true);
-              }}
-              title="Portal Content"
-            />
+                  setError(true);
+                }}
+                title="Portal Content"
+              />
               
               {/* Intelligent Help Trigger - Modern Floating Pill */}
               {loadTimeExceeded && !isLoading && !error && (

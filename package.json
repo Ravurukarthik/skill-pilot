@@ -3,10 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js",
-    "start": "node dist/server.js",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=prod-server.js",
+    "start": "node prod-server.js",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
   },

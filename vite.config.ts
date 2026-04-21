@@ -11,6 +11,23 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [react(), tailwindcss()],
+      build: {
+        outDir: 'dist',
+        emptyOutDir: true,
+        rollupOptions: {
+          output: {
+            manualChunks: (id) => {
+              if (id.includes('node_modules')) {
+                if (id.includes('firebase')) return 'vendor-firebase';
+                if (id.includes('react')) return 'vendor-react';
+                if (id.includes('lucide')) return 'vendor-lucide';
+                return 'vendor';
+              }
+            }
+          }
+        },
+        chunkSizeWarningLimit: 1000
+      },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)

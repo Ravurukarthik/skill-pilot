@@ -167,12 +167,8 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
     }
   };
 
-  const handleExternalRedirect = (url: string, newTab = false) => {
-    if (newTab) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } else {
-      onOpenExternalLink?.(url);
-    }
+  const handleExternalRedirect = (url: string) => {
+    onOpenExternalLink?.(url);
   };
 
   const handleResultSubmit = async (type: string) => {
@@ -736,17 +732,28 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                   </>
                 ) : (
                   <div className="relative w-full h-full">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={videoUrl}
-                      title="Video player"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      sandbox="allow-scripts allow-same-origin allow-presentation"
-                      className="w-full h-full"
-                    ></iframe>
+                    {(() => {
+                      const isEmbeddable = videoUrl.includes('youtube') || 
+                                         videoUrl.includes('drive.google.com') ||
+                                         videoUrl.includes('onecompiler.com') ||
+                                         videoUrl.includes('codesandbox.io');
+                      
+                      const finalUrl = isEmbeddable ? videoUrl : `/api/proxy?url=${encodeURIComponent(videoUrl)}`;
+                      
+                      return (
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={finalUrl}
+                          title="Video player"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                          className="w-full h-full"
+                        ></iframe>
+                      );
+                    })()}
                     {/* Overlays to block seek bar and potential skipping buttons */}
                     <div className="absolute bottom-0 left-0 right-0 h-[15%] bg-transparent z-10 cursor-not-allowed" />
                     <div className="absolute top-0 left-0 right-0 h-[10%] bg-transparent z-10 cursor-not-allowed" />

@@ -1,5 +1,4 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import path from "path";
 import cors from "cors";
 import multer from "multer";
@@ -59,6 +58,7 @@ async function startServer() {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
           'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
           'Referer': origin,
           'Origin': origin,
           'Connection': 'keep-alive',
@@ -67,38 +67,45 @@ async function startServer() {
           'Sec-Ch-Ua-Platform': '"Windows"',
           'Upgrade-Insecure-Requests': '1'
         },
-        timeout: 40000,
+        timeout: 45000,
         httpsAgent,
         maxRedirects: 20,
+        responseType: 'arraybuffer',
         validateStatus: () => true,
       });
+
+      // Decompress / Convert to String if it's likely HTML
+      const contentType = response.headers['content-type'] || 'text/html';
+      const isHtml = contentType.toLowerCase().includes('text/html');
 
       // Get the final URL after redirects
       const effectiveUrl = response.request.res.responseUrl || cleanTargetUrl;
       const effectiveOrigin = new URL(effectiveUrl).origin;
 
-      console.log(`[Proxy] Status: ${response.status} | Final URL: ${effectiveUrl}`);
+      console.log(`[Proxy] Status: ${response.status} | Content-Type: ${contentType} | Final URL: ${effectiveUrl}`);
 
       if (response.status >= 400 && response.status !== 404) {
         console.warn(`[Proxy] Warning: Status ${response.status} for ${targetUrl}`);
       }
 
-      let htmlContents = response.data;
-      if (typeof htmlContents !== 'string') {
-        const contentType = response.headers['content-type'];
-        if (contentType && !contentType.includes('text/html')) {
-          res.setHeader('Content-Type', contentType);
-          return res.send(response.data);
-        }
-        return res.status(500).send("The target URL did not return parsable HTML content.");
+      // If not HTML, serve raw data directly
+      if (!isHtml) {
+        res.setHeader('Content-Type', contentType);
+        res.removeHeader('X-Frame-Options');
+        res.removeHeader('Content-Security-Policy');
+        return res.send(response.data);
       }
-      
+
+      let htmlContents = response.data.toString('utf8');
       const $ = cheerio.load(htmlContents);
       
-      // Use a more robust way to determine the absolute base URL for proxy links
-      const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      // Use a robust absolute proxy base URL that works even with the <base> tag active
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
       const host = req.get('host');
-      const proxyBaseUrl = `${protocol}://${host}/api/proxy?url=`;
+      const absoluteProxyBase = `${proto}://${host}/api/proxy?url=`;
+      
+      const protocol = proto;
+      const proxyBaseUrl = absoluteProxyBase;
 
       // Fix relative links for images, scripts, and links using effectiveUrl
       $('img, script, link, a, source, form, iframe, video, audio, object, embed').each((_, element) => {
@@ -131,8 +138,14 @@ async function startServer() {
                 if ((attr === 'href' && element.tagName === 'a') || (attr === 'action' && element.tagName === 'form') || (attr === 'src' && element.tagName === 'iframe')) {
                   el.attr(attr, `${proxyBaseUrl}${encodeURIComponent(absoluteUrl)}`);
                 } else {
-                  // For all other assets, use absolute URLs to the original site
-                  el.attr(attr, absoluteUrl);
+                  // For all other assets, use absolute URLs but ensure they match current security context
+                  // If we are on HTTPS and target is HTTP, some assets might be blocked. 
+                  // We'll use protocol-relative where appropriate.
+                  let finalUrl = absoluteUrl;
+                  if (absoluteUrl.startsWith('http:')) {
+                    finalUrl = absoluteUrl.replace('http:', ''); // Make protocol-relative: //domain/path
+                  }
+                  el.attr(attr, finalUrl);
                 }
               }
             } catch (e) {
@@ -153,6 +166,9 @@ async function startServer() {
 
       // Strip security meta tags that might block framing or JS
       $('meta[http-equiv="Content-Security-Policy" i], meta[http-equiv="X-Frame-Options" i], meta[name="referrer"]').remove();
+      
+      // Strip existing base tags to avoid conflict with our injected one
+      $('base').remove();
 
       // Strip common frame-busting scripts more aggressively
       $('script').each((_, element) => {
@@ -182,8 +198,10 @@ async function startServer() {
       });
       
       // Force display:block on body to override any CSS-based frame busting
-      if ($('head').length > 0) {
-        $('head').prepend(`
+      const injectionTarget = $('head').length > 0 ? $('head') : $('body');
+      
+      if (injectionTarget.length > 0) {
+        const injectionScript = `
           <script>
             (function() {
               try {
@@ -198,31 +216,24 @@ async function startServer() {
                 Object.defineProperty(target, 'parent', mockTop);
                 Object.defineProperty(target, 'opener', { get: () => null, configurable: true });
                 
-                // Block frame-busting redirects (Comprehensive navigation guard)
-                const isInternal = (url) => {
-                  if (!url || typeof url !== 'string') return true;
+                // Navigation Proxying: Ensure JS redirects stay inside the tunnel
+                const getProxiedUrl = (url) => {
+                  if (!url || typeof url !== 'string') return url;
+                  if (url.includes('/api/proxy')) return url;
                   try {
                     const u = new URL(url, window.location.href);
-                    return u.origin === window.location.origin || u.pathname.includes('/api/proxy');
-                  } catch (e) { return true; }
+                    return '/api/proxy?url=' + encodeURIComponent(u.href);
+                  } catch (e) { return url; }
                 };
 
                 const originalReplace = target.location.replace;
                 target.location.replace = function(url) {
-                  if (!isInternal(url)) {
-                    console.log('[Proxy] Blocked replace:', url);
-                    return;
-                  }
-                  return originalReplace.apply(this, arguments);
+                  return originalReplace.call(target.location, getProxiedUrl(url));
                 };
                 
                 const originalAssign = target.location.assign;
                 target.location.assign = function(url) {
-                  if (!isInternal(url)) {
-                    console.log('[Proxy] Blocked assign:', url);
-                    return;
-                  }
-                  return originalAssign.apply(this, arguments);
+                  return originalAssign.call(target.location, getProxiedUrl(url));
                 };
 
                 // Visibility Watchdog: Force UI visibility regardless of site scripts
@@ -230,15 +241,26 @@ async function startServer() {
                   try {
                     const el = document.documentElement;
                     const b = document.body;
+                    const styles = {
+                      'display': 'block',
+                      'visibility': 'visible',
+                      'opacity': '1',
+                      'background-color': 'white'
+                    };
+                    
                     if (el) {
-                      el.style.setProperty('display', 'block', 'important');
-                      el.style.setProperty('visibility', 'visible', 'important');
-                      el.style.setProperty('opacity', '1', 'important');
+                      for (const [prop, val] of Object.entries(styles)) {
+                        if (el.style.getPropertyValue(prop) !== val) {
+                          el.style.setProperty(prop, val, 'important');
+                        }
+                      }
                     }
                     if (b) {
-                      b.style.setProperty('display', 'block', 'important');
-                      b.style.setProperty('visibility', 'visible', 'important');
-                      b.style.setProperty('opacity', '1', 'important');
+                      for (const [prop, val] of Object.entries(styles)) {
+                        if (b.style.getPropertyValue(prop) !== val) {
+                          b.style.setProperty(prop, val, 'important');
+                        }
+                      }
                     }
                   } catch (e) {}
                 };
@@ -247,6 +269,27 @@ async function startServer() {
                 const observer = new MutationObserver(forceVisible);
                 observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
                 
+                // Navigation Interceptor
+                document.addEventListener('click', (e) => {
+                  const link = e.target.closest('a');
+                  if (link && link.href && !link.href.includes('/api/proxy') && !link.href.startsWith('javascript:')) {
+                    try {
+                      const url = new URL(link.href);
+                      // If it's a cross-origin link or has target="_blank" / "_top" / "_parent", force it through proxy
+                      if (url.origin !== window.location.origin || ['_blank', '_top', '_parent'].includes(link.target)) {
+                        e.preventDefault();
+                        window.location.href = getProxiedUrl(link.href);
+                      }
+                    } catch (err) {}
+                  }
+                }, true);
+
+                // Open Proxy
+                window.open = function(url) {
+                  window.location.href = getProxiedUrl(url);
+                  return null;
+                };
+
                 // Suppress common error dialogs
                 window.alert = function() { console.log('Blocked alert:', arguments); };
                 window.confirm = function() { return true; };
@@ -266,7 +309,13 @@ async function startServer() {
               background-color: white !important;
             }
           </style>
-        `);
+        `;
+
+        if ($('head').length > 0) {
+          $('head').prepend(injectionScript);
+        } else {
+          $('body').prepend(injectionScript);
+        }
       }
 
       const finalHtml = $.html();
@@ -684,7 +733,8 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({ server: { middlewareMode: true }, appType: "spa" });
+    const { createServer } = await import("vite");
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "spa" });
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
