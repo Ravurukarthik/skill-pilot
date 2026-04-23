@@ -210,6 +210,19 @@ export const COMPILER_LINKS: Record<string, string> = {
 
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
+    id: 'google-swe-summer-2026', 
+    title: 'Google Summer Internship 2026 Details', 
+    company: 'Google', 
+    stipend: 'Best in industry', 
+    duration: 'Summer 2026', 
+    location: 'Bengaluru / Hyderabad / Pune', 
+    type: 'paid', 
+    link: 'https://www.google.com/about/careers/applications/jobs/results/121166815916106438-software-engineering-intern-summer-2026',
+    postedAt: '2026-04-23',
+    description: 'Role: Software Engineering Intern\nQualification: M.E / M.Tech / MCA / M.S\nExperience: Freshers / Students\nApplication Deadline: Apply as soon as possible',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1200px-Google_2015_logo.svg.png'
+  },
+  { 
     id: 'harman-advanced-engineer-2026', 
     title: 'Advanced Engineer – Data Engineering & MS Fabric', 
     company: 'Harman', 
@@ -409,6 +422,61 @@ export const INTERNSHIP_MOCK: Internship[] = [
 ];
 
 export const JOBS_MOCK: Job[] = [
+  {
+    id: 'cognizant-backoffice-helpdesk-2026',
+    title: 'Backoffice Helpdesk - 2026 Details',
+    company: 'Cognizant',
+    postedAt: '2026-04-23',
+    applicants: 'Be the first to apply',
+    location: 'Coimbatore, India',
+    description: 'Cognizant Off Campus Jobs 2026 Details:\nRole: Backoffice Helpdesk\nQualification: Any Degree\nExperience: Experienced candidates preferred\nSalary: Competitive, as per industry standards\nApplication Deadline: Apply at the earliest',
+    link: 'https://careers.cognizant.com/global-en/jobs/00067912312/tl-cx-backoffice-helpdesk/',
+    type: 'Off-Campus Drive'
+  },
+  {
+    id: 'microsoft-data-center-tech-2026',
+    title: 'Data Center Technician - 2026 Overview',
+    company: 'Microsoft',
+    postedAt: '2026-04-23',
+    applicants: 'Be the first to apply',
+    location: 'Hyderabad, India',
+    description: 'Microsoft Hiring 2026 Details:\nRole: Data Center Technician\nCategory: IT Jobs\nQualification: 12th / GED\nExperience: Experienced candidates preferred\nSalary: Best in the industry\nApplication Deadline: Apply ASAP',
+    link: 'https://apply.careers.microsoft.com/careers/job/1970393556858834',
+    type: 'IT Jobs'
+  },
+  {
+    id: 'cisco-software-engineer-2026',
+    title: 'Software Engineer - 2026 (Hybrid) Details',
+    company: 'Cisco',
+    postedAt: '2026-04-23',
+    applicants: 'Be the first to apply',
+    location: 'Bangalore, India',
+    description: 'Cisco Recruitment 2026 (Hybrid) Details:\nRole: Software Engineer\nCategory: IT Jobs\nQualification: B.E / B.Tech / M.E / M.Tech\nExperience Required: 1 to 3 years\nSalary: Best in the industry\nApplication Deadline: Apply as soon as possible',
+    link: 'https://careers.cisco.com/global/en/job/CISCISGLOBAL2009087EXTERNALENGLOBAL/Software-Embedded-Software-Developer',
+    type: 'IT Jobs'
+  },
+  {
+    id: 'idfc-first-bank-associate-ds-2026',
+    title: 'Associate Data Scientist - 2026 Overview',
+    company: 'IDFC FIRST Bank',
+    postedAt: '2026-04-23',
+    applicants: 'Be the first to apply',
+    location: 'Mumbai, India',
+    description: 'IDFC FIRST Bank Hiring 2026 Details:\nJob Role: Associate Data Scientist\nQualification: B.E/B.Tech/B.Sc/M.E/M.Tech/M.Sc/BCA/MCA\nExperience: 2–3 Years\nSalary: Competitive (as per industry standards)\nApplication Deadline: Apply as soon as possible',
+    link: 'https://careers.idfcfirstbank.com/in/en/job/IFBAINP201678ENIN?utm_source=linkedin&utm_medium=jobboard',
+    type: 'Full Time'
+  },
+  {
+    id: 'ibm-associate-developer-2026',
+    title: 'Associate Developer - 2026 Batch',
+    company: 'IBM',
+    postedAt: '2026-04-23',
+    applicants: 'Be the first to apply',
+    location: 'Hyderabad, India',
+    description: 'IBM Off-Campus Hiring 2026 Details:\nJob Role: Associate Developer\nQualification: B.E / B.Tech\nBatch: 2026\nExperience: Freshers & Experienced candidates can apply\nSalary: Best in the industry\nLast Date to Apply: ASAP',
+    link: 'https://www.foundit.in/seeker-profile/single-page-registration?jobid=145834033&spl=IN_paid_display_direct_acq_affiliate_Asterix_FO2011_Multiple_Apr25&utm_source=Asterix&utm_medium=affiliate&utm_campaign=IN_paid_display_direct_acq_affiliate_Asterix_FO2011_Multiple_Apr25',
+    type: 'Off-Campus Hiring'
+  },
   {
     id: 'tata-capital-customer-service-2026',
     title: 'Customer Service Executive',

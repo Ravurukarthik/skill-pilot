@@ -1,42 +1,53 @@
 import express from "express";
 import path from "path";
 import cors from "cors";
+import compression from "compression";
 import multer from "multer";
 import nodemailer from "nodemailer";
 import puppeteer from "puppeteer";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import https from "https";
+import zlib from "zlib";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // Simple cache for proxy
 const proxyCache = new Map<string, { html: string, timestamp: number }>();
-const CACHE_TTL = 1 * 60 * 1000; // 1 minute
+const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false, // For better compatibility with various site certificates in proxy
   keepAlive: true,
+  maxSockets: 50,
 });
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  app.use(compression());
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // API Route for Proxying Content (to bypass X-Frame-Options)
   app.get("/api/proxy", async (req, res) => {
-    const targetUrl = req.query.url as string;
+    let targetUrl = req.query.url as string;
     if (!targetUrl) return res.status(400).json({ error: "URL is required" });
 
+    // Normalize URL for cache (strip fragment)
+    const cacheKey = targetUrl.split('#')[0];
+
     // Check Cache
-    const cached = proxyCache.get(targetUrl);
+    const cached = proxyCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.removeHeader('X-Frame-Options');
@@ -46,7 +57,7 @@ async function startServer() {
 
     try {
       // Strip fragment from targetUrl before axios request
-      const cleanTargetUrl = targetUrl.split('#')[0];
+      const cleanTargetUrl = cacheKey;
       const urlObj = new URL(cleanTargetUrl);
       const origin = urlObj.origin;
 
@@ -76,13 +87,30 @@ async function startServer() {
 
       // Decompress / Convert to String if it's likely HTML
       const contentType = response.headers['content-type'] || 'text/html';
-      const isHtml = contentType.toLowerCase().includes('text/html');
+      const isHtml = contentType.toLowerCase().includes('text/html') || 
+                     contentType.toLowerCase().includes('application/xhtml+xml') ||
+                     contentType.toLowerCase().includes('application/xml');
 
       // Get the final URL after redirects
       const effectiveUrl = response.request.res.responseUrl || cleanTargetUrl;
       const effectiveOrigin = new URL(effectiveUrl).origin;
 
       console.log(`[Proxy] Status: ${response.status} | Content-Type: ${contentType} | Final URL: ${effectiveUrl}`);
+
+      let data = response.data;
+      const encoding = response.headers['content-encoding'];
+      
+      try {
+        if (encoding === 'gzip') {
+          data = zlib.gunzipSync(data);
+        } else if (encoding === 'deflate') {
+          data = zlib.inflateSync(data);
+        } else if (encoding === 'br') {
+          data = zlib.brotliDecompressSync(data);
+        }
+      } catch (decompressErr) {
+        console.warn(`[Proxy] Decompression failed, attempting raw:`, decompressErr);
+      }
 
       if (response.status >= 400 && response.status !== 404) {
         console.warn(`[Proxy] Warning: Status ${response.status} for ${targetUrl}`);
@@ -93,13 +121,19 @@ async function startServer() {
         res.setHeader('Content-Type', contentType);
         res.removeHeader('X-Frame-Options');
         res.removeHeader('Content-Security-Policy');
-        return res.send(response.data);
+        return res.send(data);
       }
 
-      let htmlContents = response.data.toString('utf8');
-      const $ = cheerio.load(htmlContents);
+      let htmlContents = data.toString('utf8');
+      const $ = cheerio.load(htmlContents, { 
+        xml: false
+      });
       
-      // Use a robust absolute proxy base URL that works even with the <base> tag active
+      // PRESERVE ORIGINAL BASE IF IT EXISTS
+      const originalBase = $('base').attr('href');
+      const resolutionBase = originalBase ? new URL(originalBase, effectiveUrl).href : effectiveUrl;
+      
+      // Use a robust absolute proxy base URL
       const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
       const host = req.get('host');
       const absoluteProxyBase = `${proto}://${host}/api/proxy?url=`;
@@ -107,208 +141,132 @@ async function startServer() {
       const protocol = proto;
       const proxyBaseUrl = absoluteProxyBase;
 
-      // Fix relative links for images, scripts, and links using effectiveUrl
-      $('img, script, link, a, source, form, iframe, video, audio, object, embed').each((_, element) => {
+      // OPTIMIZATION: Only rewrite navigation paths (A, FORM, IFRAME)
+      // All relative assets (IMG, SCRIPT, LINK) will be handled by the <base> tag injected later.
+      $('a, form, iframe').each((_, element) => {
         const el = $(element);
-        ['src', 'href', 'srcset', 'data-src', 'data-href', 'action', 'data'].forEach(attr => {
-          let val = el.attr(attr);
-          if (!val) return;
+        const attr = element.tagName === 'form' ? 'action' : 'src';
+        const finalAttr = element.tagName === 'a' ? 'href' : attr;
+        
+        let val = el.attr(finalAttr);
+        if (!val || val.startsWith('javascript:') || val.startsWith('mailto:') || val.startsWith('tel:') || val.startsWith('#') || val.startsWith('data:')) return;
 
-          // Skip special links
-          if (val.startsWith('javascript:') || val.startsWith('mailto:') || val.startsWith('tel:') || val.startsWith('#')) {
-            return;
-          }
-
-          if (!val.startsWith('http') && !val.startsWith('//') && !val.startsWith('data:')) {
-            try {
-              // Handle comma-separated srcset
-              if (attr === 'srcset') {
-                const parts = val.split(',').map(part => {
-                  const [urlPart, descriptor] = part.trim().split(/\s+/);
-                  if (urlPart && !urlPart.startsWith('http') && !urlPart.startsWith('//') && !urlPart.startsWith('data:')) {
-                    return `${new URL(urlPart, effectiveUrl).href}${descriptor ? ' ' + descriptor : ''}`;
-                  }
-                  return part;
-                });
-                el.attr(attr, parts.join(', '));
-              } else {
-                const absoluteUrl = new URL(val, effectiveUrl).href;
-                
-                // CRITICAL: Rewrite navigation links and form actions to point BACK to our proxy
-                if ((attr === 'href' && element.tagName === 'a') || (attr === 'action' && element.tagName === 'form') || (attr === 'src' && element.tagName === 'iframe')) {
-                  el.attr(attr, `${proxyBaseUrl}${encodeURIComponent(absoluteUrl)}`);
-                } else {
-                  // For all other assets, use absolute URLs but ensure they match current security context
-                  // If we are on HTTPS and target is HTTP, some assets might be blocked. 
-                  // We'll use protocol-relative where appropriate.
-                  let finalUrl = absoluteUrl;
-                  if (absoluteUrl.startsWith('http:')) {
-                    finalUrl = absoluteUrl.replace('http:', ''); // Make protocol-relative: //domain/path
-                  }
-                  el.attr(attr, finalUrl);
-                }
-              }
-            } catch (e) {
-              // Ignore invalid URLs
-            }
-          } else if (val.startsWith('http') || val.startsWith('//')) {
-            // Even if it's already an absolute URL, we want navigation links to stay in the proxy
-            if ((attr === 'href' && element.tagName === 'a') || (attr === 'action' && element.tagName === 'form') || (attr === 'src' && element.tagName === 'iframe')) {
-              const fullUrl = val.startsWith('//') ? `${protocol}:${val}` : val;
-              el.attr(attr, `${proxyBaseUrl}${encodeURIComponent(fullUrl)}`);
-            }
-          }
-        });
-
-        // Strip subresource integrity to prevent browser blocks when we modify headers
-        el.removeAttr('integrity');
+        try {
+          const absoluteUrl = new URL(val, resolutionBase).href;
+          el.attr(finalAttr, `${proxyBaseUrl}${encodeURIComponent(absoluteUrl)}`);
+        } catch (e) {}
       });
 
-      // Strip security meta tags that might block framing or JS
-      $('meta[http-equiv="Content-Security-Policy" i], meta[http-equiv="X-Frame-Options" i], meta[name="referrer"]').remove();
+      // Strip security meta tags and auto-refresh tags
+      $('meta[http-equiv="Content-Security-Policy" i], meta[http-equiv="X-Frame-Options" i], meta[name="referrer" i], meta[http-equiv="refresh" i]').remove();
       
-      // Strip existing base tags to avoid conflict with our injected one
+      // Remove existing base tags - our injected one is supreme
       $('base').remove();
 
-      // Strip common frame-busting scripts more aggressively
-      $('script').each((_, element) => {
-        let scriptContent = $(element).html();
-        if (scriptContent) {
-          // Replace patterns instead of removing the whole script to avoid breaking site logic
-          const patterns = [
-            /window\.top/g, /window\.parent/g, /top\.location/g, /parent\.location/g, /self\.location/g,
-            /if\s*\(\s*top\s*!==?\s*self\s*\)/g, /if\s*\(\s*self\s*!==?\s*top\s*\)/g,
-            /if\s*\(\s*window\.top\s*!==?\s*window\.self\s*\)/g,
-            /document\.documentElement\.style\.display\s*=\s*['"]none['"]/g,
-            /document\.body\.style\.display\s*=\s*['"]none['"]/g
-          ];
-          
-          let modified = false;
-          patterns.forEach(p => {
-            if (p.test(scriptContent!)) {
-              scriptContent = scriptContent!.replace(p, 'window.self'); 
-              modified = true;
-            }
-          });
-
-          if (modified) {
-            $(element).html(scriptContent);
-          }
-        }
-      });
-      
-      // Force display:block on body to override any CSS-based frame busting
+      // OPTIMIZATION: Minified injection script for faster load
       const injectionTarget = $('head').length > 0 ? $('head') : $('body');
       
       if (injectionTarget.length > 0) {
         const injectionScript = `
           <script>
-            (function() {
-              try {
-                // Total Transparency Layer: Make this window look like a primary top-level window
-                const target = window;
-                const mockTop = { 
-                  get: function() { return target; },
-                  configurable: true
-                };
-                
-                Object.defineProperty(target, 'top', mockTop);
-                Object.defineProperty(target, 'parent', mockTop);
-                Object.defineProperty(target, 'opener', { get: () => null, configurable: true });
-                
-                // Navigation Proxying: Ensure JS redirects stay inside the tunnel
-                const getProxiedUrl = (url) => {
-                  if (!url || typeof url !== 'string') return url;
-                  if (url.includes('/api/proxy')) return url;
-                  try {
-                    const u = new URL(url, window.location.href);
-                    return '/api/proxy?url=' + encodeURIComponent(u.href);
-                  } catch (e) { return url; }
-                };
+            (function(){try{
+              const t=window;
+              const targetBase = "${resolutionBase}";
+              const m={get:()=>t,configurable:!0};
+              Object.defineProperty(t,'top',m);
+              Object.defineProperty(t,'parent',m);
+              Object.defineProperty(t,'opener',{get:()=>null,configurable:!0});
+              
+              // Disable Service Workers - they break proxying
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                  for (let registration of registrations) registration.unregister();
+                });
+              }
 
-                const originalReplace = target.location.replace;
-                target.location.replace = function(url) {
-                  return originalReplace.call(target.location, getProxiedUrl(url));
-                };
-                
-                const originalAssign = target.location.assign;
-                target.location.assign = function(url) {
-                  return originalAssign.call(target.location, getProxiedUrl(url));
-                };
+              const p = u => {
+                if(!u || typeof u !== "string" || u.includes('/api/proxy') || u.startsWith('data:') || u.startsWith('blob:') || u.startsWith('javascript:')) return u;
+                try {
+                  // Don't proxy external social/tracking links to avoid noise
+                  if (u.includes('facebook.com') || u.includes('twitter.com') || u.includes('linkedin.com') || u.includes('google-analytics.com')) return u;
+                  const absoluteUrl = new URL(u, targetBase).href;
+                  return '/api/proxy?url=' + encodeURIComponent(absoluteUrl);
+                } catch(e) { return u; }
+              };
+              
+              // Proxy Navigation APIs
+              const oReplace = t.location.replace;
+              t.location.replace = u => { t.location.href = p(u); };
+              const oAssign = t.location.assign;
+              t.location.assign = u => { t.location.href = p(u); };
+              
+              // Proxy History API (for SPAs)
+              const oPushState = t.history.pushState;
+              t.history.pushState = function(s, title, u) {
+                try { return oPushState.apply(this, [s, title, p(u)]); } catch(e) { return oPushState.apply(this, arguments); }
+              };
+              const oReplaceState = t.history.replaceState;
+              t.history.replaceState = function(s, title, u) {
+                try { return oReplaceState.apply(this, [s, title, p(u)]); } catch(e) { return oReplaceState.apply(this, arguments); }
+              };
 
-                // Visibility Watchdog: Force UI visibility regardless of site scripts
-                const forceVisible = () => {
-                  try {
-                    const el = document.documentElement;
-                    const b = document.body;
-                    const styles = {
-                      'display': 'block',
-                      'visibility': 'visible',
-                      'opacity': '1',
-                      'background-color': 'white'
-                    };
-                    
-                    if (el) {
-                      for (const [prop, val] of Object.entries(styles)) {
-                        if (el.style.getPropertyValue(prop) !== val) {
-                          el.style.setProperty(prop, val, 'important');
-                        }
-                      }
-                    }
-                    if (b) {
-                      for (const [prop, val] of Object.entries(styles)) {
-                        if (b.style.getPropertyValue(prop) !== val) {
-                          b.style.setProperty(prop, val, 'important');
-                        }
-                      }
-                    }
-                  } catch (e) {}
-                };
-
-                forceVisible();
-                const observer = new MutationObserver(forceVisible);
-                observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
-                
-                // Navigation Interceptor
-                document.addEventListener('click', (e) => {
-                  const link = e.target.closest('a');
-                  if (link && link.href && !link.href.includes('/api/proxy') && !link.href.startsWith('javascript:')) {
-                    try {
-                      const url = new URL(link.href);
-                      // If it's a cross-origin link or has target="_blank" / "_top" / "_parent", force it through proxy
-                      if (url.origin !== window.location.origin || ['_blank', '_top', '_parent'].includes(link.target)) {
-                        e.preventDefault();
-                        window.location.href = getProxiedUrl(link.href);
-                      }
-                    } catch (err) {}
+              // Proxy XHR and Fetch
+              const oOpen = t.XMLHttpRequest.prototype.open;
+              t.XMLHttpRequest.prototype.open = function(m, u) {
+                return oOpen.apply(this, [m, p(u), ...Array.from(arguments).slice(2)]);
+              };
+              const oFetch = t.fetch;
+              t.fetch = function(input, init) {
+                try {
+                  if (typeof input === 'string') return oFetch(p(input), init);
+                  if (input instanceof URL) return oFetch(new URL(p(input.href)), init);
+                  if (input && input.url) {
+                    const newRequest = new Request(p(input.url), input);
+                    return oFetch(newRequest, init);
                   }
-                }, true);
+                } catch(e) {}
+                return oFetch(input, init);
+              };
 
-                // Open Proxy
-                window.open = function(url) {
-                  window.location.href = getProxiedUrl(url);
-                  return null;
-                };
+              const f=()=>{try{const e=document.documentElement,b=document.body,s={'display':'block','visibility':'visible','opacity':'1'};[e,b].forEach(o=>{if(o)for(let k in s)o.style.setProperty(k,s[k],'important')})}catch(e){}};
+              f();
+              new MutationObserver(f).observe(document.documentElement,{attributes:!0,childList:!0,subtree:!0});
+              
+              document.addEventListener('click', e => {
+                const l = e.target.closest('a');
+                if(l && l.href && !l.href.includes('/api/proxy') && !l.href.startsWith('j')){
+                  try {
+                    const u = new URL(l.href);
+                    if (u.origin === t.location.origin) {
+                      e.preventDefault();
+                      t.location.href = p(l.getAttribute('href'));
+                    } else {
+                      e.preventDefault();
+                      t.location.href = p(l.href);
+                    }
+                  } catch(err) {
+                    e.preventDefault();
+                    t.location.href = p(l.getAttribute('href'));
+                  }
+                }
+              }, !0);
+              
+              t.open = u => { t.location.href = p(u); return { close: () => {} }; };
+              t.alert = () => {};
+              t.confirm = () => !0;
+              setInterval(() => t.dispatchEvent(new Event('resize')), 3000);
 
-                // Suppress common error dialogs
-                window.alert = function() { console.log('Blocked alert:', arguments); };
-                window.confirm = function() { return true; };
-                
-                // Periodically trigger resize to wake up lazy loaders
-                setInterval(() => window.dispatchEvent(new Event('resize')), 2000);
-              } catch (e) {}
-            })();
+              // Inject Return Button
+              const btn = document.createElement('div');
+              btn.innerHTML = '<div style="position:fixed; top:12px; right:12px; z-index:2147483647; background:#4f46e5; color:white; padding:10px 20px; border-radius:14px; font-family: sans-serif; font-weight:900; font-size:12px; cursor:pointer; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; gap:8px; text-transform:uppercase; transition: all 0.2s;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1" onclick="window.location.href = window.location.origin;">' +
+                '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg>' +
+                '<span>Return to Module</span></div>';
+              document.body.appendChild(btn);
+
+            } catch(e){ console.error('Proxy injection error:', e); }})();
           </script>
-          <base href="${effectiveUrl}">
-          <style>
-            html, body { 
-              display: block !important; 
-              visibility: visible !important; 
-              opacity: 1 !important; 
-              pointer-events: auto !important;
-              background-color: white !important;
-            }
-          </style>
+          <base href="${resolutionBase}">
+          <style>html,body{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;min-height:100vh;background-color:white!important;}</style>
         `;
 
         if ($('head').length > 0) {
@@ -331,7 +289,7 @@ async function startServer() {
       
       // Update Cache
       if (response.status === 200) {
-        proxyCache.set(targetUrl, { html: finalHtml, timestamp: Date.now() });
+        proxyCache.set(cacheKey, { html: finalHtml, timestamp: Date.now() });
       }
       
       res.send(finalHtml);
@@ -356,7 +314,7 @@ async function startServer() {
   });
 
   // API Route for Payment Notification
-  app.post("/api/send-payment-notification", upload.single("proof"), async (req, res) => {
+  app.post("/api/send-payment-notification", upload.single("proof"), async (req: any, res) => {
     const { userEmail, userId, paymentDate } = req.body;
     const file = req.file;
 

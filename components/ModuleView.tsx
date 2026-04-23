@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
 import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, PAPER_LINKS_BTECH, PAPER_LINKS_MTECH, PAPER_LINKS_MBA, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '../constants';
 import { 
@@ -33,6 +34,7 @@ type SubTab = 'papers' | 'tutorials' | 'hallticket' | 'marks' | null;
 type InternshipTab = 'paid' | 'unpaid' | 'aicte';
 
 const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, onOpenExternalLink }) => {
+  const navigate = useNavigate();
   const [activeSubTab, setActiveSubTab] = useState<SubTab>(null);
   const [internshipTab, setInternshipTab] = useState<InternshipTab>('paid');
   const [selectedCourse, setSelectedCourse] = useState<BTechCourse | null>(null);
@@ -78,6 +80,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   const [extractedResult, setExtractedResult] = useState<any | null>(null);
   const [resultMode, setResultMode] = useState<'automatic' | 'paste'>('automatic');
   const [pastedContent, setPastedContent] = useState('');
+  const [redirectData, setRedirectData] = useState<{ url: string; title: string; company?: string; type?: string } | null>(null);
 
   const handleTutorialRequest = async (subject: string, subSubject?: string, lesson?: string) => {
     if (!user.isPremium) return;
@@ -167,8 +170,19 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
     }
   };
 
-  const handleExternalRedirect = (url: string) => {
-    onOpenExternalLink?.(url);
+  const handleExternalRedirect = (url: string, itemTitle?: string, company?: string, category?: string) => {
+    const isExternal = url.startsWith("http://") || url.startsWith("https://");
+    
+    if (isExternal) {
+      setRedirectData({
+        url,
+        title: itemTitle || "Professional Resource",
+        company,
+        type: category || (type === ModuleType.CERTIFICATIONS ? 'Certification' : (type === ModuleType.JOBS ? 'Job' : 'Internship'))
+      });
+    } else {
+      onOpenExternalLink?.(url);
+    }
   };
 
   const handleResultSubmit = async (type: string) => {
@@ -732,33 +746,21 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                   </>
                 ) : (
                   <div className="relative w-full h-full">
-                    {(() => {
-                      const isEmbeddable = videoUrl.includes('youtube') || 
-                                         videoUrl.includes('drive.google.com') ||
-                                         videoUrl.includes('onecompiler.com') ||
-                                         videoUrl.includes('codesandbox.io');
-                      
-                      const finalUrl = isEmbeddable ? videoUrl : `/api/proxy?url=${encodeURIComponent(videoUrl)}`;
-                      
-                      return (
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          src={finalUrl}
-                          title="Video player"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                          sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                          className="w-full h-full"
-                        ></iframe>
-                      );
-                    })()}
-                    {/* Overlays to block seek bar and potential skipping buttons */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[15%] bg-transparent z-10 cursor-not-allowed" />
-                    <div className="absolute top-0 left-0 right-0 h-[10%] bg-transparent z-10 cursor-not-allowed" />
-                    <div className="absolute top-0 bottom-0 left-0 w-[15%] bg-transparent z-10 cursor-not-allowed" />
-                    <div className="absolute top-0 bottom-0 right-0 w-[15%] bg-transparent z-10 cursor-not-allowed" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-slate-950/90 text-center backdrop-blur-sm">
+                      <div className="w-16 h-16 bg-red-600/20 rounded-2xl flex items-center justify-center text-red-500 mb-6">
+                        <AlertTriangle size={32} />
+                      </div>
+                      <h4 className="text-xl font-black text-white uppercase tracking-tight mb-3">Resource Blocked</h4>
+                      <p className="text-slate-400 text-sm max-w-sm mb-8">
+                        This external provider prohibits embedding. Please view this tutorial directly on the hosting platform.
+                      </p>
+                      <button 
+                        onClick={() => handleExternalRedirect(videoUrl, "Tutorial Resource", "External Provider", "Media")}
+                        className="bg-red-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all flex items-center gap-2"
+                      >
+                        Open on External Site <ExternalLink size={16} />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -895,9 +897,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                   <p className="text-slate-400 text-sm mb-4 font-medium">{intern.company}</p>
                   
                   {intern.description && (
-                    <div className="bg-slate-900/50 p-3 rounded-xl mb-4 border border-slate-700/50 flex-1">
-                      <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-3 italic">
-                        "{intern.description}"
+                    <div className="bg-slate-900/50 p-3 rounded-xl mb-4 border border-slate-700/50 flex-1 overflow-hidden">
+                      <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-4 italic whitespace-pre-wrap">
+                        {intern.description}
                       </p>
                     </div>
                   )}
@@ -930,7 +932,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                       Posted {new Date(intern.postedAt).toLocaleDateString()}
                     </div>
               <button 
-                onClick={() => handleExternalRedirect(intern.link)}
+                onClick={() => handleExternalRedirect(intern.link, intern.title, intern.company, `Internship • ${intern.type.toUpperCase()}`)}
                 className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"
               >
                 Apply <ArrowLeft size={16} className="rotate-180" />
@@ -1013,7 +1015,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <button 
-                  onClick={() => handleExternalRedirect(job.link)}
+                  onClick={() => handleExternalRedirect(job.link, job.title, job.company, `Job • ${job.type}`)}
                   className="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/20"
                 >
                   Apply on Portal <ExternalLink size={18} />
@@ -1092,7 +1094,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
               </div>
 
               <button 
-                onClick={() => handleExternalRedirect(cert.link)}
+                onClick={() => handleExternalRedirect(cert.link, cert.title, cert.company, 'Professional Certification')}
                 className="w-full bg-slate-700 text-slate-100 py-3 rounded-xl font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center gap-2"
               >
                 Enroll Now <ExternalLink size={18} />
@@ -1289,15 +1291,21 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                   </div>
                 </div>
                 <div className="flex-1 relative bg-slate-950">
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <Loader2 className="animate-spin text-emerald-600/10" size={48} />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-slate-950">
+                    <div className="w-16 h-16 bg-indigo-600/20 rounded-2xl flex items-center justify-center text-indigo-400 mb-6">
+                      <Terminal size={32} />
+                    </div>
+                    <h4 className="text-xl font-black text-slate-100 uppercase tracking-tight mb-3">Professional Compiler</h4>
+                    <p className="text-slate-400 text-sm max-w-xs mb-8">
+                      To ensure full interactive functionality and code persistence, please use the external coding environment.
+                    </p>
+                    <button 
+                      onClick={() => handleExternalRedirect(COMPILER_LINKS[selectedSubject], `${selectedSubject} Compiler`, "OneCompiler", "Full-Screen IDE")}
+                      className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2"
+                    >
+                      Open External IDE <ExternalLink size={16} />
+                    </button>
                   </div>
-                  <iframe 
-                    src={COMPILER_LINKS[selectedSubject]}
-                    className="w-full h-full border-none relative z-10"
-                    title={`${selectedSubject} Compiler`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  />
                 </div>
               </div>
             )}
@@ -1533,13 +1541,102 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-      <button 
-        onClick={handleBack}
-        className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 font-medium mb-6 transition-colors group"
-      >
-        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-        Back to {activeSubTab ? type : (selectedCourse ? type : 'Dashboard')}
-      </button>
+      {redirectData ? (
+        <div className="max-w-4xl mx-auto py-10 animate-in zoom-in-95 duration-500">
+          <button 
+            onClick={() => setRedirectData(null)}
+            className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 font-medium mb-10 transition-colors group"
+          >
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            Return to {type}
+          </button>
+
+          <div className="bg-slate-800/50 backdrop-blur-3xl rounded-[3rem] border border-slate-700 overflow-hidden shadow-2xl relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+            
+            <div className="p-10 md:p-16 relative z-10">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-12">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-900/30 border border-indigo-500/20 rounded-full mb-6">
+                    <ShieldCheck size={14} className="text-emerald-400" />
+                    <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Safe Gateway Active</span>
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
+                    {redirectData.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-4 text-slate-400 font-bold uppercase text-xs tracking-widest">
+                    {redirectData.company && (
+                      <span className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600">
+                        <Briefcase size={14} className="text-indigo-400" /> {redirectData.company}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600">
+                      <Sparkles size={14} className="text-indigo-400" /> {redirectData.type}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="bg-indigo-600/20 w-24 h-24 rounded-3xl flex items-center justify-center text-indigo-400 shrink-0">
+                  <ExternalLink size={48} className="animate-pulse" />
+                </div>
+              </div>
+
+              <div className="bg-slate-900/50 p-8 rounded-3xl border border-slate-800 mb-12">
+                <div className="flex gap-4">
+                  <div className="bg-amber-900/30 w-12 h-12 rounded-2xl flex items-center justify-center text-amber-500 shrink-0">
+                    <AlertCircle size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-100 uppercase tracking-tight mb-2">You are leaving this platform</h3>
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      For your security, certifications and applications are opened directly on the official host platform. Your Skill Pilot progress remains saved.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-6 items-center">
+                <button 
+                  onClick={() => {
+                    sessionStorage.setItem("lastPage", "/dashboard");
+                    window.location.href = redirectData.url;
+                  }}
+                  className="w-full sm:w-auto px-12 py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-900/40 active:scale-95 group flex items-center justify-center gap-4"
+                >
+                  Confirm & Continue <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full sm:w-auto px-10 py-5 bg-slate-800 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-3 group"
+                >
+                  <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
+                </button>
+              </div>
+
+              <div className="mt-12 pt-10 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4 text-emerald-500/60 font-black text-[10px] uppercase tracking-widest">
+                  <ShieldCheck size={16} /> SSL Verified Connection
+                </div>
+                <a 
+                  href={redirectData.url} 
+                  className="text-[10px] text-slate-600 hover:text-indigo-400 font-mono underline underline-offset-4 decoration-slate-800 transition-colors break-all text-center md:text-right"
+                >
+                  {redirectData.url}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <button 
+            onClick={handleBack}
+            className="flex items-center gap-2 text-slate-400 hover:text-indigo-400 font-medium mb-6 transition-colors group"
+          >
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            Back to {activeSubTab ? type : (selectedCourse ? type : 'Dashboard')}
+          </button>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
         <div>
@@ -1609,15 +1706,21 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
             </button>
           </div>
           <div className="flex-1 bg-slate-900 relative">
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <Loader2 className="animate-spin text-emerald-600/20" size={64} />
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-slate-950">
+              <div className="w-20 h-20 bg-indigo-600/20 rounded-3xl flex items-center justify-center text-indigo-400 mb-8">
+                <Code size={40} />
+              </div>
+              <h4 className="text-2xl font-black text-slate-100 uppercase tracking-tight mb-4">Launch Interactive Environment</h4>
+              <p className="text-slate-400 text-base max-w-md mb-10 leading-relaxed">
+                For the best coding experience with real-time feedback and large-screen support, we use a specialized external IDE.
+              </p>
+              <button 
+                onClick={() => handleExternalRedirect(selectedCompiler, "Interactive Coding Session", "System Resource", "Code Runner")}
+                className="bg-indigo-600 text-white px-12 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-3 shadow-xl shadow-indigo-900/30"
+              >
+                Start External IDE <ExternalLink size={20} />
+              </button>
             </div>
-            <iframe 
-              src={selectedCompiler}
-              className="w-full h-full border-none relative z-10"
-              title="Embedded Compiler"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            />
           </div>
         </div>
       )}
@@ -2190,7 +2293,9 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
           </div>
         </div>
       )}
-    </div>
+    </>
+  )}
+</div>
   );
 };
 

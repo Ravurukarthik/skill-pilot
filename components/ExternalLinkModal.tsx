@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { X, ExternalLink, Maximize2, RotateCcw, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { X, ExternalLink, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react';
 
 interface ExternalLinkModalProps {
   url: string;
@@ -8,252 +7,75 @@ interface ExternalLinkModalProps {
 }
 
 const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ url, onClose }) => {
-  const isPdf = typeof url === 'string' && (
-    url.toLowerCase().endsWith('.pdf') || 
-    url.toLowerCase().includes('.pdf?') || 
-    url.toLowerCase().includes('.pdf#') ||
-    url.toLowerCase().includes('/pdf/')
-  );
-  // We use our internal proxy to bypass X-Frame-Options headers on external sites
-  const displayUrl = isPdf 
-    ? `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true` 
-    : `/api/proxy?url=${encodeURIComponent(url)}&v=${Date.now()}`;
-
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState(false);
-  const [loadTimeExceeded, setLoadTimeExceeded] = React.useState(false);
-  const iframeRef = React.useRef<HTMLIFrameElement>(null);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isLoading) {
-        setLoadTimeExceeded(true);
-      }
-    }, 6000); // Reduced delay for faster user assistance
-    return () => clearTimeout(timer);
-  }, [isLoading]);
-
-  const handleRefresh = () => {
-    setIsLoading(true);
-    setError(false);
-    setLoadTimeExceeded(false);
-    setIsEmpty(false);
-    if (iframeRef.current) {
-      const buster = `&v=${Date.now()}`;
-      iframeRef.current.src = 'about:blank';
-      setTimeout(() => {
-        if (iframeRef.current) {
-          const base = displayUrl.split('&v=')[0];
-          iframeRef.current.src = `${base}${buster}`;
-        }
-      }, 100);
-    }
-  };
-
   const handleOpenExternal = () => {
-    window.open(url, '_blank');
-  };
-
-  const [isEmpty, setIsEmpty] = React.useState(false);
-  const retryCount = React.useRef(0);
-
-  const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
-    setIsLoading(false);
-    const iframe = e.currentTarget;
-    
-    try {
-      // If we can access contentWindow, we are same-origin (proxy is working)
-      if (iframe.contentWindow) {
-        const doc = iframe.contentWindow.document;
-        const body = doc.body;
-        
-        if (body) {
-          const bodyText = body.innerText || '';
-          const hasChildren = body.children.length > 0;
-          
-          // Check for proxy errors
-          if (bodyText.includes('Display Restricted') || bodyText.includes('Could not load the page via proxy')) {
-            setError(true);
-            return;
-          }
-
-          // Check for empty content (white space)
-          if (!hasChildren && bodyText.trim().length === 0) {
-            if (retryCount.current < 2) {
-              retryCount.current++;
-              setTimeout(handleRefresh, 1000);
-            } else {
-              setIsEmpty(true);
-            }
-          } else {
-            // Success! Reset retry count
-            retryCount.current = 0;
-            setIsEmpty(false);
-          }
-        }
-      }
-    } catch (err) {
-      // Cross-origin error means the proxy might have redirected the browser directly
-      // or the browser blocked access. We treat this as a potential failure if nothing is visible.
-      console.warn("Tunnel access restricted:", err);
-      // We don't set error here because it might still be displaying content, just inaccessible to JS
-    }
+    // Save context before leaving
+    sessionStorage.setItem("lastPage", window.location.pathname);
+    // Open in same tab as requested
+    window.location.href = url;
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-0 md:p-4 bg-slate-950/95 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-slate-900 w-full h-full max-w-full md:max-w-[95vw] md:h-[90vh] md:rounded-3xl border-none md:border md:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-500">
-        {/* Header - Minimal & Professional */}
-        <div className="bg-slate-900 border-b border-slate-800/60 p-3 md:p-4 flex items-center justify-between">
-          <div className="flex items-center gap-4 overflow-hidden">
-            <div className="bg-indigo-600 w-8 h-8 md:w-10 md:h-10 rounded-xl text-white flex items-center justify-center shadow-lg shadow-indigo-900/30 flex-shrink-0 animate-pulse">
-              <ShieldCheck size={20} />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-[11px] md:text-sm font-black text-slate-100 tracking-wider uppercase">Portal Link Tunnel</h3>
-                <div className="flex items-center gap-1.5 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
-                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-ping"></div>
-                  <span className="text-[8px] md:text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">Live Stream</span>
-                </div>
-              </div>
-              <p className="text-[9px] md:text-[11px] text-slate-500 truncate font-mono max-w-[150px] md:max-w-xl opacity-80">{url}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="hidden lg:flex items-center gap-4 mr-4 text-slate-500">
-              <div className="flex flex-col items-end">
-                <span className="text-[8px] font-black uppercase tracking-widest leading-none">Security Level</span>
-                <span className="text-[10px] text-indigo-400 font-bold">Enterprise AES-256</span>
-              </div>
-            </div>
-
-            <button 
-              onClick={handleRefresh}
-              className="p-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
-              title="Refresh"
-            >
-              <RotateCcw size={18} />
-            </button>
-            
-            <button 
-              onClick={handleOpenExternal}
-              className="group relative flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 md:px-5 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all border border-slate-700/50"
-            >
-              <Maximize2 size={14} className="transition-transform group-hover:scale-110" />
-              <span className="hidden sm:inline">SOLVE WHITE SPACE</span>
-              <span className="sm:hidden">FIX</span>
-            </button>
-
-            <div className="w-px h-8 bg-slate-800 mx-1"></div>
-            
-            <button 
-              onClick={onClose}
-              className="p-2.5 text-slate-400 hover:text-white hover:bg-red-500/20 hover:text-red-400 rounded-xl transition-all"
-            >
-              <X size={24} />
-            </button>
-          </div>
-        </div>
-
-        {/* Content Viewport */}
-        <div className="flex-1 relative bg-white">
-          {isLoading && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900">
-              <div className="relative group">
-                <div className="absolute -inset-8 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-all duration-1000"></div>
-                <div className="w-20 h-20 border-[3px] border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <ShieldCheck className="text-indigo-400/50 animate-pulse" size={28} />
-                </div>
-              </div>
-              
-              <div className="mt-10 text-center px-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
-                <h4 className="text-lg font-black text-slate-100 mb-2 tracking-tight">Initializing Secure Tunnel</h4>
-                <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 font-bold uppercase tracking-[0.2em]">
-                  <span>Injecting Guard</span>
-                  <span className="w-1 h-1 bg-slate-700 rounded-full"></span>
-                  <span>Bypassing Blocks</span>
-                  <span className="w-1 h-1 bg-slate-700 rounded-full"></span>
-                  <span>Syncing UI</span>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {(error || isEmpty) ? (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950 p-8 text-center animate-in zoom-in duration-500">
-              <div className="w-24 h-24 bg-red-500/10 rounded-[2rem] flex items-center justify-center text-red-500 mb-8 border border-red-500/20 shadow-2xl shadow-red-950/20">
-                <AlertTriangle size={48} />
-              </div>
-              <h3 className="text-3xl font-black text-slate-100 mb-4 tracking-tighter uppercase">
-                {isEmpty ? 'Blank Page Detected' : 'High Security Blocked'}
-              </h3>
-              <p className="text-slate-400 max-w-md mb-10 text-sm leading-relaxed font-medium">
-                {isEmpty 
-                  ? 'The portal loaded but is currently displaying no content. This usually happens when the host site blocks embedded scripts.'
-                  : 'The content provider has detected an integration attempt. For your security, please open the original course portal directly.'}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
-                <button 
-                  onClick={handleOpenExternal}
-                  className="flex-1 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-indigo-950/40 translate-y-0 active:translate-y-1 hover:-translate-y-1"
-                >
-                  OPEN PORTAL <ExternalLink size={18} />
-                </button>
-                <button 
-                  onClick={() => { setError(false); setIsEmpty(false); retryCount.current = 0; handleRefresh(); }}
-                  className="bg-slate-800 text-slate-300 px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-700 transition-all flex items-center justify-center gap-2 border border-slate-700/50"
-                >
-                  <RotateCcw size={18} /> RETRY
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full h-full relative bg-white overflow-hidden">
-              <iframe
-                ref={iframeRef}
-                src={displayUrl}
-                className="w-full h-full border-none bg-white transition-opacity duration-700"
-                referrerPolicy="no-referrer"
-                onLoad={handleIframeLoad}
-                onError={() => {
-                  setIsLoading(false);
-                  setError(true);
-                }}
-                title="Portal Content"
-              />
-              
-              {/* Intelligent Help Trigger - Modern Floating Pill */}
-              {loadTimeExceeded && !isLoading && !error && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-in slide-in-from-bottom-10 fade-in duration-700">
-                  <div className="bg-slate-900/90 backdrop-blur-2xl border border-indigo-500/30 p-2 pl-6 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-6 group hover:border-indigo-500/50 transition-all">
-                    <span className="text-[11px] font-black text-slate-200 uppercase tracking-widest">Seeing White Space?</span>
-                    <button 
-                      onClick={handleOpenExternal}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-full text-[10px] font-black transition-all shadow-lg shadow-indigo-900/40 uppercase tracking-tighter flex items-center gap-2"
-                    >
-                      Bypass Tunnel <Maximize2 size={12} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-slate-950/98 backdrop-blur-3xl animate-in fade-in duration-200">
+      <div className="max-w-md w-full text-center">
+        {/* Animated Icon Container */}
+        <div className="w-20 h-20 bg-indigo-600/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 relative group">
+          <div className="absolute inset-0 bg-indigo-600/20 rounded-[2rem] animate-ping opacity-20"></div>
+          <RefreshCw className="text-indigo-500 animate-spin-slow" size={32} />
         </div>
         
-        {/* Footer - Immersive & Subtle */}
-        <div className="bg-slate-900 border-t border-slate-800/60 p-2 md:p-3 flex items-center justify-between text-[8px] md:text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] px-6">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={12} className="text-indigo-500/50" />
-            <span>Encrypted Tunnel Active</span>
+        <h3 className="text-2xl font-black text-white mb-3 tracking-tight uppercase">
+          Leaving Platform
+        </h3>
+        <p className="text-slate-400 mb-10 text-xs font-bold uppercase tracking-[0.2em]">
+          Redirecting to safe zone
+        </p>
+        
+        <div className="p-8 bg-slate-900 shadow-2xl rounded-[3rem] border border-slate-800 relative overflow-hidden group">
+          {/* Decorative background element */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
+          
+          <div className="relative z-10 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-950 border border-slate-800 rounded-full mb-6">
+              <ShieldCheck size={14} className="text-emerald-500" />
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Secure Handshake</span>
+            </div>
+
+            <p className="text-slate-300 text-sm mb-10 font-medium leading-[1.6]">
+              You are now being safely redirected to our <span className="text-indigo-400 font-bold">verified external resource</span>. This platform requires manual confirmation to ensure your session security.
+            </p>
+
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={handleOpenExternal}
+                className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-[0_20px_50px_rgba(79,70,229,0.3)] active:scale-95 group"
+              >
+                Proceed to Site <ExternalLink size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </button>
+              
+              <button 
+                onClick={onClose}
+                className="px-8 py-4 bg-slate-800 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-slate-700 hover:text-white transition-all"
+              >
+                Cancel and Stay
+              </button>
+            </div>
+            
+            <div className="mt-10 pt-8 border-t border-slate-800/50">
+              <div className="flex items-center justify-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 opacity-50">
+                <div className="h-[1px] flex-1 bg-slate-800"></div>
+                <span>Technical Context</span>
+                <div className="h-[1px] flex-1 bg-slate-800"></div>
+              </div>
+              <p className="text-[10px] text-slate-600 font-mono break-all leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800/50">
+                {url}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-5">
-            <span className="hidden md:inline">Zero Logs Privacy Policy</span>
-            <span className="w-1 h-1 bg-slate-800 rounded-full"></span>
-            <span>&copy; Skill Pilot Platform Core</span>
-          </div>
+        </div>
+
+        <div className="mt-8 flex items-center justify-center gap-3 text-slate-700">
+           <AlertCircle size={14} />
+           <p className="text-[10px] font-black uppercase tracking-widest leading-none">Redirecting in same browser tab</p>
         </div>
       </div>
     </div>

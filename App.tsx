@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { User, ModuleType, UserRole } from './types';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
@@ -9,6 +10,8 @@ import Sidebar from './components/Sidebar';
 import AdminPanel from './components/AdminPanel';
 import PaymentModal from './components/PaymentModal';
 import ExternalLinkModal from './components/ExternalLinkModal';
+import ExternalView from './components/ExternalView';
+import TopNavBar from './components/TopNavBar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -17,6 +20,8 @@ import { handleFirestoreError, OperationType } from './services/firestoreUtils';
 import { AlertTriangle, ExternalLink, Settings, X, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'module' | 'admin'>('dashboard');
   const [selectedModule, setSelectedModule] = useState<ModuleType | null>(null);
@@ -172,7 +177,14 @@ const App: React.FC = () => {
       localStorage.setItem('skillpilot_device_id', deviceId);
     }
 
-    // 1. Immediate load from localStorage for perceived speed
+    // Check for lastPage redirect context
+    const lastPage = sessionStorage.getItem("lastPage");
+    if (lastPage) {
+      sessionStorage.removeItem("lastPage");
+      if (lastPage !== window.location.pathname) {
+        navigate(lastPage);
+      }
+    }
     const cachedUser = localStorage.getItem('skillpilot_user');
     if (cachedUser) {
       try {
@@ -247,9 +259,22 @@ const App: React.FC = () => {
               lastStudyDate: profile.lastStudyDate,
               monthlyStudyStats: profile.monthlyStudyStats,
               lastStudyMonth: profile.lastStudyMonth,
+              activeModule: profile.activeModule,
               completedChallenges: profile.completedChallenges || {}
             };
             setUser(userData);
+            
+            // Restore module context if we have one and we're on the /module route
+            if (profile.activeModule && !selectedModule) {
+              setSelectedModule(profile.activeModule as ModuleType);
+              if (window.location.pathname === '/module') {
+                setCurrentView('module');
+              }
+            } else if (profile.activeModule && window.location.pathname === '/dashboard') {
+              // Sync currentView if we hit dashboard but have an active module record
+              setCurrentView('dashboard');
+            }
+            
             localStorage.setItem('skillpilot_user', JSON.stringify(userData));
           } else {
             // If profile doesn't exist yet (might happen during sign up race condition)
@@ -358,9 +383,25 @@ const App: React.FC = () => {
     }
   };
 
+  const handleOpenLink = (url: string) => {
+    const isExternal = url.startsWith("http://") || url.startsWith("https://");
+    if (isExternal) {
+      navigate('/external-view', { 
+        state: { 
+          url, 
+          title: "External Portal",
+          type: "Internal Resource" 
+        } 
+      });
+    } else {
+      setExternalUrl(url);
+    }
+  };
+
   const navigateToModule = async (module: ModuleType) => {
     setSelectedModule(module);
     setCurrentView('module');
+    navigate('/module');
     if (user) {
       try {
         await updateDoc(doc(db, 'users', user.id), {
@@ -375,6 +416,7 @@ const App: React.FC = () => {
   const navigateHome = async () => {
     setCurrentView('dashboard');
     setSelectedModule(null);
+    navigate('/dashboard');
     if (user) {
       try {
         await updateDoc(doc(db, 'users', user.id), {
@@ -390,6 +432,7 @@ const App: React.FC = () => {
     if (user?.role === UserRole.ADMIN) {
       setCurrentView('admin');
       setSelectedModule(null);
+      navigate('/admin');
       if (user) {
         try {
           await updateDoc(doc(db, 'users', user.id), {
@@ -461,27 +504,31 @@ const App: React.FC = () => {
             onToggleSidebar={toggleSidebar}
           />
           
-          <main className="flex-1 p-6 md:p-10 overflow-auto">
+          { (currentView !== 'dashboard' || location.pathname === '/external-view') && (
+            <TopNavBar onBack={navigateHome} />
+          )}
+          
+          <main className={`flex-1 p-6 md:p-10 overflow-auto ${(currentView !== 'dashboard' || location.pathname === '/external-view') ? 'pt-24' : ''}`}>
             {dbError && (
-          <div className="fixed bottom-4 right-4 z-[100] bg-red-950 border border-red-900 p-4 rounded-xl shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-4">
-            <AlertTriangle className="text-red-400" size={20} />
-            <div>
-              <p className="text-sm font-bold text-red-100">System Warning</p>
-              <p className="text-xs text-red-300">{dbError}</p>
-            </div>
-            <button onClick={() => setDbError(null)} className="ml-2 text-red-500 hover:text-red-300">
-              <X size={16} />
-            </button>
-          </div>
-        )}
-
-        {currentView === 'dashboard' ? (
-              <Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} />
-            ) : (currentView === 'admin' && user.role === UserRole.ADMIN) ? (
-              <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={setExternalUrl} setNotification={setNotification} />
-            ) : (
-              selectedModule && <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} onOpenExternalLink={setExternalUrl} />
+              <div className="fixed bottom-4 right-4 z-[100] bg-red-950 border border-red-900 p-4 rounded-xl shadow-xl flex items-center gap-3 animate-in slide-in-from-bottom-4">
+                <AlertTriangle className="text-red-400" size={20} />
+                <div>
+                  <p className="text-sm font-bold text-red-100">System Warning</p>
+                  <p className="text-xs text-red-300">{dbError}</p>
+                </div>
+                <button onClick={() => setDbError(null)} className="ml-2 text-red-500 hover:text-red-300">
+                  <X size={16} />
+                </button>
+              </div>
             )}
+
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} />} />
+              <Route path="/admin" element={user.role === UserRole.ADMIN ? <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={handleOpenLink} setNotification={setNotification} /> : <Navigate to="/dashboard" />} />
+              <Route path="/module" element={selectedModule ? <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} onOpenExternalLink={handleOpenLink} /> : <Navigate to="/dashboard" />} />
+              <Route path="/external-view" element={<ExternalView />} />
+              <Route path="*" element={<Navigate to="/dashboard" />} />
+            </Routes>
           </main>
 
           <footer className="bg-slate-900 border-t border-slate-800 p-4 text-center text-slate-500 text-sm">
