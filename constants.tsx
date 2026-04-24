@@ -210,6 +210,32 @@ export const COMPILER_LINKS: Record<string, string> = {
 
 export const INTERNSHIP_MOCK: Internship[] = [
   { 
+    id: 'ril-summer-intern-2026', 
+    title: 'Reliance Industries Internship 2026 Details', 
+    company: 'Reliance Industries', 
+    stipend: 'Competitive (Best in Industry)', 
+    duration: 'Summer 2026', 
+    location: 'Navi Mumbai', 
+    type: 'paid', 
+    link: 'https://careers.ril.com/rilcareers/frmJobSearch.aspx?JBTITLE=+7ecS8qBIi14riHtXzlz1w==&jbID=AlX/g4HFieFNnhdpzJoP/A==',
+    postedAt: '2026-04-24',
+    description: 'Role: Summer Intern\nQualification: MBA\nExperience: 0–3 years (Freshers can apply)\nApplication Deadline: Apply ASAP',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Reliance_Industries_Logo.svg/1200px-Reliance_Industries_Logo.svg.png'
+  },
+  { 
+    id: 'deloitte-marketing-intern-2026', 
+    title: 'Intern – Marketing, Brands & Communications', 
+    company: 'Deloitte', 
+    stipend: 'Paid Internship', 
+    duration: 'Program Duration', 
+    location: 'Mumbai (Hybrid)', 
+    type: 'paid', 
+    link: 'https://www.linkedin.com/jobs/view/4400425279/',
+    postedAt: '2026-04-24',
+    description: 'Qualification: Graduate degree\nEligible Batches: 2024, 2025, 2026\nExperience: Freshers / Students\nMode: Hybrid',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Deloitte.svg/1200px-Deloitte.svg.png'
+  },
+  { 
     id: 'google-swe-summer-2026', 
     title: 'Google Summer Internship 2026 Details', 
     company: 'Google', 
@@ -695,6 +721,32 @@ export const EXAMS_MOCK = [
 ];
 
 export const CERTIFICATIONS_MOCK: Internship[] = [
+  { 
+    id: 'microsoft-ai-for-everyone-beginner', 
+    title: 'Unlocking AI for Everyone (Beginner)', 
+    company: 'Microsoft', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://www.skillindiadigital.gov.in/courses/detail/658a7e4d-dadd-4922-8f22-9593b904f690',
+    postedAt: '2026-04-24',
+    description: 'A beginner-friendly course by Microsoft designed to help everyone understand the fundamentals of Artificial Intelligence and its applications. Join over 7,000+ learners.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png'
+  },
+  { 
+    id: 'skill-india-resume-writing-tips', 
+    title: 'Skill India Digital Hub Resume Writing Tips Course', 
+    company: 'Skill India Digital', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://www.skillindiadigital.gov.in/courses/detail/0374a5b0-7f63-4274-b18b-cad5cab79663',
+    postedAt: '2026-04-24',
+    description: 'Resume Writing Tips: Free Online Learning for Better Job Applications. This course provides essential tips and strategies for creating effective resumes that stand out to employers.',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/0d/Skill_India_logo.svg/1200px-Skill_India_logo.svg.png'
+  },
   { 
     id: 'stock-market-foundation-skill-india', 
     title: 'Stock Market Foundation Course', 
