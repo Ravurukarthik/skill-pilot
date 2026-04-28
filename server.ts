@@ -38,6 +38,11 @@ async function startServer() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", mode: process.env.NODE_ENV || 'development' });
+  });
+
   // API Route for Proxying Content (to bypass X-Frame-Options)
   app.get("/api/proxy", async (req, res) => {
     let targetUrl = req.query.url as string;
@@ -695,9 +700,17 @@ async function startServer() {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "spa" });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+    const distPath = path.resolve(__dirname, "dist");
+    console.log(`[Production] Serving static files from: ${distPath}`);
     app.use(express.static(distPath));
-    app.get("*all", (req, res) => res.sendFile(path.join(distPath, "index.html")));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"), (err) => {
+        if (err) {
+          console.error("Error sending index.html:", err);
+          res.status(500).send("Error serving the application. Please check if the 'dist' directory is correctly generated.");
+        }
+      });
+    });
   }
 
   app.listen(PORT, "0.0.0.0", () => console.log(`Server running on http://localhost:${PORT}`));
