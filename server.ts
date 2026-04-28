@@ -4,7 +4,7 @@ import cors from "cors";
 import compression from "compression";
 import multer from "multer";
 import nodemailer from "nodemailer";
-import puppeteer from "puppeteer";
+// import puppeteer from "puppeteer"; // Lazy loaded later
 import axios from "axios";
 import * as cheerio from "cheerio";
 import https from "https";
@@ -397,9 +397,12 @@ async function startServer() {
 
     const targetUrl = targetUrls[resultType] || targetUrls['1st_REGULAR'];
     
-    let browser;
+    let browser: any;
     try {
       console.log(`Starting extraction for HT: ${hallTicket} on ${targetUrl}`);
+      
+      // Dynamic import for puppeteer to avoid crashes if chromium is missing or environment is restricted
+      const { default: puppeteer } = await import("puppeteer");
       
       browser = await puppeteer.launch({
         headless: true,
@@ -701,17 +704,21 @@ async function startServer() {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "spa" });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.resolve(__dirname, "dist");
+    const distPath = path.resolve(process.cwd(), "dist");
     console.log(`[Production] Serving static files from: ${distPath}`);
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"), (err) => {
-        if (err) {
-          console.error("Error sending index.html:", err);
-          res.status(500).send("Error serving the application. Please check if the 'dist' directory is correctly generated.");
-        }
+    
+    // On Vercel, we let Vercel handle static serving for better performance and path reliability
+    if (!process.env.VERCEL) {
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(distPath, "index.html"), (err) => {
+          if (err) {
+            console.error("Error sending index.html:", err);
+            res.status(500).send("Error serving the application. Please check if the 'dist' directory is correctly generated.");
+          }
+        });
       });
-    });
+    }
   }
 
   if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
