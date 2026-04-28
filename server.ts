@@ -29,8 +29,9 @@ const httpsAgent = new https.Agent({
   maxSockets: 50,
 });
 
+const app = express();
+
 async function startServer() {
-  const app = express();
   const PORT = 3000;
 
   app.use(compression());
@@ -40,7 +41,7 @@ async function startServer() {
 
   // Health check
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", mode: process.env.NODE_ENV || 'development' });
+    res.json({ status: "ok", mode: process.env.NODE_ENV || 'development', vercel: !!process.env.VERCEL });
   });
 
   // API Route for Proxying Content (to bypass X-Frame-Options)
@@ -713,7 +714,11 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => console.log(`Server running on http://localhost:${PORT}`));
+  if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => console.log(`Server running on http://localhost:${PORT}`));
+  }
 }
 
 startServer();
+
+export default app;

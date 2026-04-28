@@ -1,18 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { User, ModuleType, UserRole } from './types';
-import Auth from './components/Auth';
-import Dashboard from './components/Dashboard';
-import ModuleView from './components/ModuleView';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import AdminPanel from './components/AdminPanel';
-import PaymentModal from './components/PaymentModal';
-import ExternalLinkModal from './components/ExternalLinkModal';
-import ExternalView from './components/ExternalView';
 import TopNavBar from './components/TopNavBar';
 import { ErrorBoundary } from './components/ErrorBoundary';
+
+// Lazy load heavy components
+const Auth = lazy(() => import('./components/Auth'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const ModuleView = lazy(() => import('./components/ModuleView'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const PaymentModal = lazy(() => import('./components/PaymentModal'));
+const ExternalLinkModal = lazy(() => import('./components/ExternalLinkModal'));
+const ExternalView = lazy(() => import('./components/ExternalView'));
+
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc, onSnapshot, getDocFromServer, setDoc } from 'firebase/firestore';
@@ -467,7 +470,15 @@ const App: React.FC = () => {
   }
 
   if (!user) {
-    return <Auth onLogin={handleLogin} />;
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-950">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+        </div>
+      }>
+        <Auth onLogin={handleLogin} />
+      </Suspense>
+    );
   }
 
   return (
@@ -522,13 +533,19 @@ const App: React.FC = () => {
               </div>
             )}
 
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} />} />
-              <Route path="/admin" element={user.role === UserRole.ADMIN ? <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={handleOpenLink} setNotification={setNotification} /> : <Navigate to="/dashboard" />} />
-              <Route path="/module" element={selectedModule ? <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} onOpenExternalLink={handleOpenLink} /> : <Navigate to="/dashboard" />} />
-              <Route path="/external-view" element={<ExternalView />} />
-              <Route path="*" element={<Navigate to="/dashboard" />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="flex items-center justify-center p-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+              </div>
+            }>
+              <Routes>
+                <Route path="/dashboard" element={<Dashboard onSelectModule={navigateToModule} user={user} onUpdateGoal={updateDailyGoal} />} />
+                <Route path="/admin" element={user.role === UserRole.ADMIN ? <AdminPanel onBack={navigateHome} user={user} onOpenExternalLink={handleOpenLink} setNotification={setNotification} /> : <Navigate to="/dashboard" />} />
+                <Route path="/module" element={selectedModule ? <ModuleView type={selectedModule} onBack={navigateHome} user={user} onUpgrade={handleStartUpgrade} onOpenExternalLink={handleOpenLink} /> : <Navigate to="/dashboard" />} />
+                <Route path="/external-view" element={<ExternalView />} />
+                <Route path="*" element={<Navigate to="/dashboard" />} />
+              </Routes>
+            </Suspense>
           </main>
 
           <footer className="bg-slate-900 border-t border-slate-800 p-4 text-center text-slate-500 text-sm">
@@ -536,20 +553,22 @@ const App: React.FC = () => {
           </footer>
         </div>
 
-        {showPaymentModal && (
-          <PaymentModal 
-            onClose={() => setShowPaymentModal(false)} 
-            onUpload={handleReceiptUpload}
-            isProcessing={isVerifyingPayment}
-          />
-        )}
+        <Suspense fallback={null}>
+          {showPaymentModal && (
+            <PaymentModal 
+              onClose={() => setShowPaymentModal(false)} 
+              onUpload={handleReceiptUpload}
+              isProcessing={isVerifyingPayment}
+            />
+          )}
 
-        {externalUrl && (
-          <ExternalLinkModal 
-            url={externalUrl} 
-            onClose={() => setExternalUrl(null)} 
-          />
-        )}
+          {externalUrl && (
+            <ExternalLinkModal 
+              url={externalUrl} 
+              onClose={() => setExternalUrl(null)} 
+            />
+          )}
+        </Suspense>
 
         {notification && (
           <div className="fixed bottom-4 right-4 z-[300] animate-in slide-in-from-right-4 fade-in duration-300">
