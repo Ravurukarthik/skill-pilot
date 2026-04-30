@@ -12,9 +12,15 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [react(), tailwindcss()],
+      optimizeDeps: {
+        include: ["react", "react-dom", "react-router-dom", "react/jsx-runtime"]
+      },
       build: {
         outDir: 'dist',
         emptyOutDir: true,
+        commonjsOptions: {
+          transformMixedEsModules: true
+        },
         rollupOptions: {
           output: {
             manualChunks: (id) => {
@@ -35,10 +41,11 @@ export default defineConfig(({ mode }) => {
       },
       resolve: {
         alias: {
-          '@': path.resolve(process.cwd(), '.'),
-          'react': path.resolve(process.cwd(), 'node_modules/react'),
-          'react-dom': path.resolve(process.cwd(), 'node_modules/react-dom'),
-        }
+          '@': path.resolve(__dirname, '.'),
+          'react': path.resolve(__dirname, 'node_modules/react'),
+          'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+        },
+        dedupe: ['react', 'react-dom']
       }
     };
 });
