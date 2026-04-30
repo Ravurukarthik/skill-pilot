@@ -1,5 +1,6 @@
 
 import { auth } from './firebase';
+import { safeStringify } from '../lib/safeJson';
 
 export enum OperationType {
   CREATE = 'create',
@@ -49,7 +50,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path
   };
   
-  const errorString = JSON.stringify(errInfo);
+  const errorString = safeStringify(errInfo);
   console.error('Firestore Error: ', errorString);
   throw new Error(errorString);
 }

@@ -20,6 +20,7 @@ import { auth, db } from './services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc, onSnapshot, getDocFromServer, setDoc } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from './services/firestoreUtils';
+import { safeStringify } from './lib/safeJson';
 import { AlertTriangle, ExternalLink, Settings, X, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -278,7 +279,7 @@ const App: React.FC = () => {
               setCurrentView('dashboard');
             }
             
-            localStorage.setItem('skillpilot_user', JSON.stringify(userData));
+            localStorage.setItem('skillpilot_user', safeStringify(userData));
           } else {
             // If profile doesn't exist yet (might happen during sign up race condition)
             const isAdmin = firebaseUser.email === 'ravurukarthik740@gmail.com';
@@ -320,7 +321,7 @@ const App: React.FC = () => {
 
   const handleLogin = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('skillpilot_user', JSON.stringify(userData));
+    localStorage.setItem('skillpilot_user', safeStringify(userData));
   };
 
   const handleStartUpgrade = () => {
