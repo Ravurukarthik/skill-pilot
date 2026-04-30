@@ -163,7 +163,6 @@ const App: React.FC = () => {
     // Test Firestore connection
     const testConnection = async () => {
       try {
-        console.log('Testing connection to DB:', (db as any)._databaseId?.database || 'default');
         await getDocFromServer(doc(db, 'test', 'connection'));
       } catch (error: any) {
         console.error('Firestore connection test error:', error);

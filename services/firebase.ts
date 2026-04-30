@@ -13,13 +13,12 @@ export const auth = getAuth(app);
 
 // Test connection to Firestore
 async function testConnection() {
-  const dbId = (db as any)._databaseId?.database || 'default';
   try {
-    console.log(`Firestore: Testing connection to [${dbId}]...`);
+    console.log(`Firestore: Testing connection...`);
     await getDocFromServer(doc(db, 'test', 'connection'));
-    console.log(`Firestore: Connected successfully to [${dbId}]`);
+    console.log(`Firestore: Connected successfully`);
   } catch (error: any) {
-    console.error(`Firestore Connectivity Error [${dbId}]:`, error);
+    console.error(`Firestore Connectivity Error:`, error);
     if (error.code === 'unavailable' || (error.message && error.message.includes('the client is offline'))) {
       console.warn("Firestore service is currently unavailable. This is often transient or requires the Firebase setup to be finalized in the Cloud console.");
     }

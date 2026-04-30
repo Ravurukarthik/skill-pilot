@@ -50,7 +50,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack, user, onOpenExternalLin
     const fetchTotalCount = async () => {
       try {
         const coll = collection(db, 'users');
-        console.log('Fetching total count from DB:', (db as any)._databaseId?.database || 'default');
         const snapshot = await getCountFromServer(coll);
         setTotalUsers(snapshot.data().count);
       } catch (err) {
