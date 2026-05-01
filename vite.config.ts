@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react(), tailwindcss()],
       optimizeDeps: {
-        include: ["react", "react-dom", "react-router-dom", "react/jsx-runtime"]
+        include: ["react", "react-dom", "react-router-dom"]
       },
       build: {
         outDir: 'dist',
@@ -36,7 +36,6 @@ export default defineConfig(({ mode }) => {
         chunkSizeWarningLimit: 1000
       },
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
       },
       resolve: {
@@ -44,7 +43,6 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, 'src'),
           'react': path.resolve(__dirname, 'node_modules/react'),
           'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
-          'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime'),
         },
         dedupe: ['react', 'react-dom']
       }

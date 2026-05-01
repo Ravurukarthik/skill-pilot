@@ -2,25 +2,25 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { User, ModuleType, UserRole } from './types';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
-import TopNavBar from './components/TopNavBar';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/Sidebar';
+import TopNavBar from '@/components/TopNavBar';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load heavy components
-const Auth = lazy(() => import('./components/Auth'));
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const ModuleView = lazy(() => import('./components/ModuleView'));
-const AdminPanel = lazy(() => import('./components/AdminPanel'));
-const PaymentModal = lazy(() => import('./components/PaymentModal'));
-const ExternalLinkModal = lazy(() => import('./components/ExternalLinkModal'));
-const ExternalView = lazy(() => import('./components/ExternalView'));
+const Auth = lazy(() => import('@/components/Auth'));
+const Dashboard = lazy(() => import('@/components/Dashboard'));
+const ModuleView = lazy(() => import('@/components/ModuleView'));
+const AdminPanel = lazy(() => import('@/components/AdminPanel'));
+const PaymentModal = lazy(() => import('@/components/PaymentModal'));
+const ExternalLinkModal = lazy(() => import('@/components/ExternalLinkModal'));
+const ExternalView = lazy(() => import('@/components/ExternalView'));
 
-import { auth, db } from './services/firebase';
+import { auth, db } from '@/services/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc, onSnapshot, getDocFromServer, setDoc } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from './services/firestoreUtils';
-import { safeStringify } from './lib/safeJson';
+import { handleFirestoreError, OperationType } from '@/services/firestoreUtils';
+import { safeStringify } from '@/lib/safeJson';
 import { AlertTriangle, ExternalLink, Settings, X, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
