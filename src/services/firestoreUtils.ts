@@ -1,6 +1,6 @@
 
 import { auth } from './firebase';
-import { safeStringify } from '@/lib/safeJson';
+import { safeStringify } from '../lib/safeJson';
 
 export enum OperationType {
   CREATE = 'create',

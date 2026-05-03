@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, UserRole } from '@/types';
-import { db } from '@/services/firebase';
+import { User, UserRole } from '../types';
+import { db } from '../services/firebase';
 import { collection, onSnapshot, query, orderBy, doc, updateDoc, limit, getCountFromServer } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '@/services/firestoreUtils';
+import { handleFirestoreError, OperationType } from '../services/firestoreUtils';
 import { 
   Users, 
   ShieldCheck, 

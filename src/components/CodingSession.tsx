@@ -6,9 +6,9 @@ import {
   HelpCircle, Clock, Maximize2, Monitor, Code2, ListChecks, ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Question, TestCase, QuestionType, User } from '@/types';
-import { C_QUESTIONS as QUESTIONS } from '@/data/cQuestions';
-import { db } from '@/services/firebase';
+import { Question, TestCase, QuestionType, User } from '../types';
+import { C_QUESTIONS as QUESTIONS } from '../data/cQuestions';
+import { db } from '../services/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 interface Props {

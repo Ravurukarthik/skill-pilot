@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ModuleType, BTechCourse, User, Internship, Job } from '@/types';
-import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, PAPER_LINKS_BTECH, PAPER_LINKS_MTECH, PAPER_LINKS_MBA, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '@/constants';
+import { ModuleType, BTechCourse, User, Internship, Job } from '../types';
+import { SUB_MODULES_GENERAL, BTECH_COURSES, MTECH_BRANCHES, MBA_YEARS, COMPETITIVE_EXAM_CATEGORIES, SUBJECTS_MOCK, PAPER_LINKS_10TH, PAPER_LINKS_INTER_1ST, PAPER_LINKS_INTER_2ND, PAPER_LINKS_BTECH, PAPER_LINKS_MTECH, PAPER_LINKS_MBA, HALL_TICKET_LINK_10TH, HALL_TICKET_LINKS_INTER, MARK_LIST_LINK_10TH, MARK_LIST_LINKS_INTER, INTERNSHIP_MOCK, JOBS_MOCK, CERTIFICATIONS_MOCK, COMPILER_LINKS, EXAMS_MOCK, HACKATHONS_MOCK } from '../constants';
 import { 
   ArrowLeft, ArrowRight, BookOpen, ChevronRight, FileSearch, Sparkles, Loader2, ExternalLink, 
   FileText, Download, ScrollText, Lock, ShieldCheck, Zap, Briefcase, MapPin, Calendar, 
@@ -10,17 +10,17 @@ import {
   VolumeX, Maximize, Printer, RefreshCw, CheckCircle, Info, ClipboardPaste, AlertCircle, AlertTriangle
 } from 'lucide-react';
 import ReactPlayer from 'react-player';
-import { getTutorialSummary } from '@/services/geminiService';
+import { getTutorialSummary } from '../services/geminiService';
 import { CodingSession } from './CodingSession';
-import { C_QUESTIONS } from '@/data/cQuestions';
-import { PYTHON_QUESTIONS } from '@/data/pythonQuestions';
-import { JAVA_QUESTIONS } from '@/data/javaQuestions';
-import { JAVASCRIPT_QUESTIONS } from '@/data/javascriptQuestions';
-import { CPP_QUESTIONS } from '@/data/cppQuestions';
-import { SQL_QUESTIONS } from '@/data/sqlQuestions';
-import { CSHARP_QUESTIONS } from '@/data/csharpQuestions';
-import { TYPESCRIPT_QUESTIONS } from '@/data/typescriptQuestions';
-import { PHP_QUESTIONS } from '@/data/phpQuestions';
+import { C_QUESTIONS } from '../data/cQuestions';
+import { PYTHON_QUESTIONS } from '../data/pythonQuestions';
+import { JAVA_QUESTIONS } from '../data/javaQuestions';
+import { JAVASCRIPT_QUESTIONS } from '../data/javascriptQuestions';
+import { CPP_QUESTIONS } from '../data/cppQuestions';
+import { SQL_QUESTIONS } from '../data/sqlQuestions';
+import { CSHARP_QUESTIONS } from '../data/csharpQuestions';
+import { TYPESCRIPT_QUESTIONS } from '../data/typescriptQuestions';
+import { PHP_QUESTIONS } from '../data/phpQuestions';
 
 interface ModuleViewProps {
   type: ModuleType;
