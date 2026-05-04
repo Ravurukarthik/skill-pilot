@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { ArrowLeft, Share2, MoreVertical } from 'lucide-react';
 
 interface TopNavBarProps {

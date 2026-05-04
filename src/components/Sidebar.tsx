@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { ModuleType, UserRole } from '../types';
 import { MODULES_DATA } from '../constants';
 import { LayoutDashboard, GraduationCap, ShieldCheck, Clock, Settings, X } from 'lucide-react';

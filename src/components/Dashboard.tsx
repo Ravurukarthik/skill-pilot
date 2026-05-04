@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { ModuleType, User } from '../types';
 import { MODULES_DATA } from '../constants';
 import { ArrowRight, Sparkles, User as UserIcon, Mail, Lock, ShieldAlert, Settings } from 'lucide-react';

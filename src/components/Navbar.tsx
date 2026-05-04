@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { User } from '../types';
 import { LogOut, User as UserIcon, Bell, Search, ShieldCheck, Mail, Menu } from 'lucide-react';
 

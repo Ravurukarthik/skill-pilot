@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import * as React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Terminal, X, CheckCircle2, AlertCircle, Play, Undo2, Copy, BookOpen, 
   ChevronDown, ChevronRight, RotateCcw, ChevronLeft, Layout, Settings, 

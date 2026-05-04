@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { X, ExternalLink, ShieldAlert, ChevronRight, Globe } from 'lucide-react';
 
 interface ExternalLinkModalProps {

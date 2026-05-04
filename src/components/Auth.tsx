@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import * as React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, UserRole } from '../types';
 import { Mail, Lock, User as UserIcon, ArrowRight, Compass, Loader2, CheckCircle2, X, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react';
 import { auth, db } from '../services/firebase';

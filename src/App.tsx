@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import * as React from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { User, ModuleType, UserRole } from './types';
 import Navbar from './components/Navbar';

@@ -16,12 +16,10 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [react(), tailwindcss()],
-      optimizeDeps: {
-        include: ["react", "react-dom", "react-router-dom"]
-      },
       build: {
         outDir: 'dist',
         emptyOutDir: true,
+        sourcemap: true,
         commonjsOptions: {
           transformMixedEsModules: true
         },
@@ -30,8 +28,8 @@ export default defineConfig(({ mode }) => {
             manualChunks: (id) => {
               if (id.includes('node_modules')) {
                 if (id.includes('firebase')) return 'vendor-firebase';
-                if (id.includes('react')) return 'vendor-react';
                 if (id.includes('lucide')) return 'vendor-lucide';
+                // Remove vendor-react to let Vite handle React bundling natively for better safety
                 return 'vendor';
               }
             }
@@ -45,8 +43,6 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: {
           '@': path.resolve(__dirname, 'src'),
-          'react': path.resolve(__dirname, 'node_modules/react'),
-          'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
         },
         dedupe: ['react', 'react-dom']
       }
