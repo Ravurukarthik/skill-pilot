@@ -449,6 +449,28 @@ export const INTERNSHIP_MOCK: Internship[] = [
 
 export const JOBS_MOCK: Job[] = [
   {
+    id: 'capgemini-software-engineer-2026',
+    title: 'Software Engineer',
+    company: 'Capgemini',
+    postedAt: '2026-05-05',
+    applicants: 'Be the first to apply',
+    location: 'Chennai',
+    description: 'Capgemini Careers Jobs 2026 Details\nRole: Software Engineer\nCategory: IT Jobs\nQualification: B.E / B.Tech\nExperience: Minimum 1 year\nSalary: Best in the industry\nLocation: Chennai\nApplication Deadline: Apply as soon as possible',
+    link: 'https://careers.capgemini.com/job/Chennai-%28ex-Madras%29-Software-Engineer/1389746933/?feedId=388933&utm_source=LinkedInJobPostings',
+    type: 'IT Jobs'
+  },
+  {
+    id: 'infosys-sp-dse-2026',
+    title: 'Specialist Programmer / Digital Specialist Engineer (2026 Batch)',
+    company: 'Infosys',
+    postedAt: '2026-05-05',
+    applicants: 'Be the first to apply',
+    location: 'Across India',
+    description: 'Infosys Hiring for 2026 Batch Details\nJob Role: Specialist Programmer / Digital Specialist Engineer\nCategory: Off-Campus Hiring\nEligibility: B.E / B.Tech / M.E / M.Tech / MCA / MSc\nBatch: 2026\nExperience: Freshers\nSalary: ₹6.25 LPA – ₹21 LPA\nLocation: Across India\nLast Date: Apply as soon as possible',
+    link: 'https://surveys.infosysapps.com/r/a/SPOffCampusregistration_apr26',
+    type: 'Off-Campus Hiring'
+  },
+  {
     id: 'cognizant-backoffice-helpdesk-2026',
     title: 'Backoffice Helpdesk - 2026 Details',
     company: 'Cognizant',
@@ -721,6 +743,32 @@ export const EXAMS_MOCK = [
 ];
 
 export const CERTIFICATIONS_MOCK: Internship[] = [
+  { 
+    id: 'udemy-python-beginners-2026', 
+    title: 'Python Free Online Course For Beginners | Enroll Now and Get Certified', 
+    company: 'Udemy', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://www.udemy.com/course/python-for-every1/?sharedid=&irpid=2050810&utm_medium=affiliate&utm_source=impact&utm_audience=mx&utm_tactic=%22Content%22%2C%22India%22&utm_content=3193860&utm_campaign=2050810&irgwc=1&afsrc=1&im_ref=VfL1XnwuQxyZWUtwSYz2v2C2UkuU0Uy400000w0',
+    postedAt: '2026-05-05',
+    description: 'Enroll in this free Python course for beginners on Udemy and get certified upon completion. Learn the essentials of Python programming.',
+    logo: 'https://www.udemy.com/static/images/brand/logo-udemy.svg'
+  },
+  { 
+    id: 'microsoft-devops-course-2026', 
+    title: 'Microsoft Free DevOps Course 2026 | Learn Azure DevOps & GitHub with Certification', 
+    company: 'Microsoft', 
+    stipend: 'Free', 
+    duration: 'Self-Paced', 
+    location: 'Online', 
+    type: 'unpaid', 
+    link: 'https://learn.microsoft.com/en-us/training/modules/introduction-to-devops/',
+    postedAt: '2026-05-05',
+    description: 'Learn the fundamentals of DevOps with Azure and GitHub through this free course by Microsoft. Get certified upon completion.',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png'
+  },
   { 
     id: 'microsoft-ai-for-everyone-beginner', 
     title: 'Unlocking AI for Everyone (Beginner)', 
