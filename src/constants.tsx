@@ -270,7 +270,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Virtual', 
     type: 'unpaid', 
     link: 'https://www.theforage.com/simulations/tata/data-visualisation-p5xo',
-    postedAt: '2026-03-31',
+    postedAt: '2026-05-02',
     description: 'Gain insights into leveraging data visualisations as a tool for making informed business decisions.',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tata_logo.svg/1200px-Tata_logo.svg.png'
   },
@@ -283,7 +283,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Virtual', 
     type: 'unpaid', 
     link: 'https://www.theforage.com/simulations/tata/cybersecurity-sbda',
-    postedAt: '2026-03-31',
+    postedAt: '2026-05-02',
     description: 'Assist the cybersecurity consulting team and become an IAM expert by enhancing TechCorp\'s digital defences.',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tata_logo.svg/1200px-Tata_logo.svg.png'
   },
@@ -296,7 +296,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Virtual', 
     type: 'unpaid', 
     link: 'https://www.theforage.com/simulations/tata/data-analytics-t3zr',
-    postedAt: '2026-03-31',
+    postedAt: '2026-05-02',
     description: 'GenAI-Powered No-Code Analytics to Realize Business Objectives.',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Tata_logo.svg/1200px-Tata_logo.svg.png'
   },
@@ -387,7 +387,7 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: '100% Virtual', 
     type: 'unpaid', 
     link: 'https://surveys.infosysapps.com/r/a/Si41PRd2gAG5',
-    postedAt: '2026-03-15',
+    postedAt: '2026-05-01',
     description: '🚀 Now Announcing — 7th Edition\nEmpowering Students with Industry-Ready Technology Skills\n\n7 Edition | 8 Weeks | 5 Tech Tracks | 100% Virtual\n🤖 Artificial Intelligence\n⚡ Angular Full Stack\n⚡ Python Technology\n⚡ Java Tech Stack\n⚡ Data Visualization',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Infosys_logo.svg/1280px-Infosys_logo.svg.png'
   },
@@ -426,10 +426,10 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: 'Fully Online', 
     type: 'aicte', 
     link: 'https://internship.aicte-india.org/internship-details.php?uid=SU5URVJOU0hJUF8xNzc0NDIwNjY0NjljMzgyYjg3MTU3Yw==&level=NA==',
-    postedAt: '2026-03-25',
-    description: 'Domains: Networking, Cybersecurity, Artificial Intelligence\nDuration: 2 months (8 weeks)\nMode: Fully online (work from home)\nStipend: No stipend (skill-focused program)\nApplication Deadline: April 25, 2026',
+    postedAt: '2026-05-01',
+    description: 'Domains: Networking, Cybersecurity, Artificial Intelligence\nDuration: 2 months (8 weeks)\nMode: Fully online (work from home)\nStipend: No stipend (skill-focused program)\nApplication Deadline: June 25, 2026',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/1200px-Cisco_logo_blue_2016.svg.png',
-    expiresAt: '2026-04-25T23:59:59Z'
+    expiresAt: '2026-06-25T23:59:59Z'
   },
   { 
     id: 'ibm-ai-virtual-internship-2026', 
@@ -440,10 +440,10 @@ export const INTERNSHIP_MOCK: Internship[] = [
     location: '100% Online', 
     type: 'aicte', 
     link: 'https://internship.aicte-india.org/internship-details.php?uid=SU5URVJOU0hJUF8xNzc1NDkwMDIwNjlkM2QzZTRmMzkwMw==&level=NA==',
-    postedAt: '2026-04-19',
-    description: 'Duration: 4 to 6 weeks\nMode: 100% Online (accessible across India)\nFocus Areas: Artificial Intelligence (AI), Machine Learning (ML), IBM Cloud\nApplication Deadline: 30 April 2026\nStart Date: May 2026',
+    postedAt: '2026-05-01',
+    description: 'Duration: 4 to 6 weeks\nMode: 100% Online (accessible across India)\nFocus Areas: Artificial Intelligence (AI), Machine Learning (ML), IBM Cloud\nApplication Deadline: 30 June 2026\nStart Date: July 2026',
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/1200px-IBM_logo.svg.png',
-    expiresAt: '2026-04-30T23:59:59Z'
+    expiresAt: '2026-06-30T23:59:59Z'
   },
 ];
 

@@ -779,13 +779,13 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   };
 
   const renderInternships = () => {
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
     const filteredInternships = INTERNSHIP_MOCK.filter(i => {
       const isCorrectType = i.type === internshipTab;
       const postedDate = new Date(i.postedAt);
-      const isRecent = postedDate >= oneMonthAgo;
+      const isRecent = postedDate >= threeMonthsAgo;
       const isNotExpired = !i.expiresAt || new Date(i.expiresAt) > new Date();
       const matchesSearch = i.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            i.company.toLowerCase().includes(searchQuery.toLowerCase());
@@ -949,12 +949,12 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   };
 
   const renderJobs = () => {
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
     const filteredJobs = JOBS_MOCK.filter(job => {
       const postedDate = new Date(job.postedAt);
-      const isRecent = postedDate >= oneMonthAgo;
+      const isRecent = postedDate >= threeMonthsAgo;
       const isNotExpired = !job.expiresAt || new Date(job.expiresAt) > new Date();
       const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            job.company.toLowerCase().includes(searchQuery.toLowerCase());
