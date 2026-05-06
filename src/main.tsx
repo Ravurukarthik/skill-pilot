@@ -7,7 +7,12 @@ import App from './App';
 
 // Global error handling for production debugging
 window.addEventListener('error', (event) => {
-  console.error('[Global Error]', event.error);
+  // Try to log the error safely. Error objects might have circular refs.
+  try {
+    console.error('[Global Error]', event.error?.message || event.error || event.message);
+  } catch (e) {
+    console.error('[Global Error] Unloggable error occurred');
+  }
 });
 
 const rootElement = document.getElementById('root');

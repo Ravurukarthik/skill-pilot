@@ -12,6 +12,16 @@ export function safeStringify(obj: any): string {
       cache.add(value);
     }
     
+    // Handle Error objects - they don't stringify well by default
+    if (value instanceof Error) {
+      return {
+        name: value.name,
+        message: value.message,
+        stack: value.stack,
+        ...value
+      };
+    }
+
     // Handle bigints
     if (typeof value === 'bigint') {
         return value.toString();

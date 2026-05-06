@@ -22,6 +22,12 @@ import { SQL_QUESTIONS } from '../data/sqlQuestions';
 import { CSHARP_QUESTIONS } from '../data/csharpQuestions';
 import { TYPESCRIPT_QUESTIONS } from '../data/typescriptQuestions';
 import { PHP_QUESTIONS } from '../data/phpQuestions';
+import { RUBY_QUESTIONS } from '../data/rubyQuestions';
+import { GO_QUESTIONS } from '../data/goQuestions';
+import { SWIFT_QUESTIONS } from '../data/swiftQuestions';
+import { RUST_QUESTIONS } from '../data/rustQuestions';
+import { KOTLIN_QUESTIONS } from '../data/kotlinQuestions';
+import { MONGODB_QUESTIONS } from '../data/mongodbQuestions';
 
 interface ModuleViewProps {
   type: ModuleType;
@@ -1120,7 +1126,13 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
         'SQL': 150,
         'C#': 150,
         'TypeScript': 150,
-        'PHP': 150
+        'PHP': 150,
+        'Ruby': 150,
+        'Go': 150,
+        'Swift': 150,
+        'Rust': 150,
+        'Kotlin': 150,
+        'MongoDB': 150
       };
 
       if (interactiveConfigs[lang]) {
@@ -1493,7 +1505,7 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
   const isCodingSession = type === ModuleType.CODING_SESSION;
   const hasBranches = isBTech || isMTech || isMBA || isCompetitiveExams;
 
-  const interactiveLanguages = ['C', 'Python', 'Java', 'JavaScript', 'C++', 'SQL', 'C#', 'TypeScript', 'PHP'];
+  const interactiveLanguages = ['C', 'Python', 'Java', 'JavaScript', 'C++', 'SQL', 'C#', 'TypeScript', 'PHP', 'Ruby', 'Go', 'Swift', 'Rust', 'Kotlin', 'MongoDB'];
   
   if (selectedSubject && interactiveLanguages.includes(selectedSubject)) {
     const questions = selectedSubject === 'C' ? C_QUESTIONS : 
@@ -1504,7 +1516,13 @@ const ModuleView: React.FC<ModuleViewProps> = ({ type, onBack, user, onUpgrade, 
                      selectedSubject === 'SQL' ? SQL_QUESTIONS :
                      selectedSubject === 'C#' ? CSHARP_QUESTIONS :
                      selectedSubject === 'TypeScript' ? TYPESCRIPT_QUESTIONS :
-                     selectedSubject === 'PHP' ? PHP_QUESTIONS : [];
+                     selectedSubject === 'PHP' ? PHP_QUESTIONS :
+                     selectedSubject === 'Ruby' ? RUBY_QUESTIONS :
+                     selectedSubject === 'Go' ? GO_QUESTIONS :
+                     selectedSubject === 'Swift' ? SWIFT_QUESTIONS :
+                     selectedSubject === 'Rust' ? RUST_QUESTIONS :
+                     selectedSubject === 'Kotlin' ? KOTLIN_QUESTIONS :
+                     selectedSubject === 'MongoDB' ? MONGODB_QUESTIONS : [];
     
     return (
       <div className="fixed inset-0 z-[150] bg-[#0f1115] overflow-hidden">

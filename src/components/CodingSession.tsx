@@ -43,7 +43,9 @@ export const CodingSession: React.FC<Props> = ({ onBack, user, questions, langua
     if (questions[currentIdx]) {
       setCode(questions[currentIdx].initialCode || "");
       setSelectedOptions([]);
-      setBlankAnswers(new Array(questions[currentIdx].correctAnswers?.length || 0).fill(""));
+      const rawCorrect = questions[currentIdx].correctAnswers;
+      const correctArr = Array.isArray(rawCorrect) ? rawCorrect : (rawCorrect !== undefined ? [rawCorrect] : []);
+      setBlankAnswers(new Array(correctArr.length).fill(""));
       setResults(null);
       setIsOutputVisible(false);
       setExpandedSection(null);
@@ -84,31 +86,37 @@ export const CodingSession: React.FC<Props> = ({ onBack, user, questions, langua
     let message = "";
     let testCaseResults: any[] = [];
 
+    const rawCorrectAnswers = currentQuestion.correctAnswers;
+    const correctAnswersArr = Array.isArray(rawCorrectAnswers) 
+      ? rawCorrectAnswers 
+      : (rawCorrectAnswers !== undefined ? [rawCorrectAnswers] : []);
+
     if (currentQuestion.type === 'theory') {
       isCorrect = 
-        selectedOptions.length === currentQuestion.correctAnswers?.length &&
-        selectedOptions.every(val => currentQuestion.correctAnswers?.includes(val));
+        selectedOptions.length === correctAnswersArr.length &&
+        selectedOptions.every(val => correctAnswersArr.includes(val));
       
       message = isCorrect ? "Correct! You understand the basics." : "Not quite. Check the options again.";
       testCaseResults = currentQuestion.options?.map((opt, i) => {
-         const expected = currentQuestion.correctAnswers?.includes(i) ? "Selected" : "Not Selected";
+         const expected = correctAnswersArr.includes(i) ? "Selected" : "Not Selected";
          const actual = selectedOptions.includes(i) ? "Selected" : "Not Selected";
          return {
            description: opt.substring(0, 30) + '...',
-           passed: currentQuestion.correctAnswers?.includes(i) ? selectedOptions.includes(i) : !selectedOptions.includes(i),
+           passed: correctAnswersArr.includes(i) ? selectedOptions.includes(i) : !selectedOptions.includes(i),
            expected,
            actual
          };
       }) || [];
     } else if (currentQuestion.type === 'blanks') {
-      isCorrect = blankAnswers.every((ans, i) => 
-        ans.trim().toLowerCase() === currentQuestion.correctAnswers[i].toLowerCase()
-      );
+      isCorrect = blankAnswers.length === correctAnswersArr.length && 
+                 blankAnswers.every((ans, i) => 
+                   ans.trim().toLowerCase() === String(correctAnswersArr[i] || "").toLowerCase()
+                 );
       message = isCorrect ? "Excellent! You filled the blanks correctly." : "Wait, some answers are incorrect. Try again.";
-      testCaseResults = currentQuestion.correctAnswers.map((expected: string, i: number) => ({
+      testCaseResults = correctAnswersArr.map((expected: any, i: number) => ({
         description: `Blank ${i+1} check`,
-        passed: blankAnswers[i]?.trim().toLowerCase() === expected.toLowerCase(),
-        expected: expected,
+        passed: (blankAnswers[i] || "").trim().toLowerCase() === String(expected || "").toLowerCase(),
+        expected: String(expected),
         actual: blankAnswers[i] || "Empty"
       }));
     } else {
